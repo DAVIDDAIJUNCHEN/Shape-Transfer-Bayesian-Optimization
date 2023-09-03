@@ -2,6 +2,7 @@
 
 import os
 import numpy as np
+from scipy.stats import norm
 
 
 class ZeroGProcess:
@@ -123,10 +124,25 @@ class ZeroGProcess:
 
         return var_current        
 
-    def conf_interval(self, confidence=0.9):
-        "compute the confidence interval with confidence value"
+    def conf_interval(self, current_point, confidence=0.9):
+        "compute the confidence interval with two sides"
+        alpha = (1 - confidence) / 2.
+        lower_bound_std = norm.ppf(alpha)
+        upper_bound_std = norm.ppf(1 - alpha)
+
+        mean_current = self.compute_mean(current_point)[0, 0]
+        var_current = self.compute_var(current_point)[0, 0]
+        
+        lower_bound = mean_current + np.sqrt(var_current)*lower_bound_std
+        upper_bound = mean_current + np.sqrt(var_current)*upper_bound_std
+
+        return lower_bound, upper_bound
+
+    def plot(self, lst_points, confidence=0.9):
+        "draw Gaussian Process mean values and confidence interval of lst_points"
         
         return 0
+
 
 if __name__ == "__main__":
     zeroGP = ZeroGProcess()
@@ -135,7 +151,8 @@ if __name__ == "__main__":
     print(zeroGP.X)
     print(zeroGP.Y)
     
-    x = [3, 6, 9]
+    x = [90, 6, 9]
 
     print(zeroGP.compute_mean(x))
     print(zeroGP.compute_var(x))
+    print(zeroGP.conf_interval(x))
