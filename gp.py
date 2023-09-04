@@ -3,6 +3,7 @@
 import os
 import numpy as np
 from scipy.stats import norm
+import matplotlib.pyplot as plt
 
 
 class ZeroGProcess:
@@ -104,7 +105,7 @@ class ZeroGProcess:
         response_vec = np.transpose(np.matrix(self.Y))
         mean = np.matmul(mean_partA, response_vec)
 
-        return mean
+        return mean[0, 0]
 
     def compute_var(self, current_point):
         "compute the variance value at current_point"
@@ -122,7 +123,7 @@ class ZeroGProcess:
         else:
             var_current = self.sigma2 * s2_current
 
-        return var_current        
+        return var_current[0, 0]        
 
     def conf_interval(self, current_point, confidence=0.9):
         "compute the confidence interval with two sides"
@@ -130,17 +131,33 @@ class ZeroGProcess:
         lower_bound_std = norm.ppf(alpha)
         upper_bound_std = norm.ppf(1 - alpha)
 
-        mean_current = self.compute_mean(current_point)[0, 0]
-        var_current = self.compute_var(current_point)[0, 0]
+        mean_current = self.compute_mean(current_point)
+        var_current = self.compute_var(current_point)
         
         lower_bound = mean_current + np.sqrt(var_current)*lower_bound_std
         upper_bound = mean_current + np.sqrt(var_current)*upper_bound_std
 
         return lower_bound, upper_bound
 
-    def plot(self, lst_points, confidence=0.9):
+    def plot(self, num_points=100, confidence=0.9):
         "draw Gaussian Process mean values and confidence interval of lst_points"
-        
+        min_point = min(self.X)[0]
+        max_point = max(self.X)[0]
+        delta = max_point - min_point
+
+        x_draw = np.linspace(min_point-0.25*delta, max_point+0.25*delta, num_points)
+
+        y_mean = [self.compute_mean([ele]) for ele in x_draw]
+        y_conf_int = [self.conf_interval([ele], confidence) for ele in x_draw]
+        y_lower = [ele[0] for ele in y_conf_int]
+        y_upper = [ele[1] for ele in y_conf_int]
+
+        fig, ax = plt.subplots()
+        ax.plot(x_draw, y_mean)
+        ax.fill_between(x_draw, y_lower, y_upper, alpha=0.2)
+        ax.plot(self.X, self.Y, 'o', color="tab:red")
+        fig.savefig("./example.png")
+
         return 0
 
 
@@ -151,8 +168,10 @@ if __name__ == "__main__":
     print(zeroGP.X)
     print(zeroGP.Y)
     
-    x = [90, 6, 9]
+    x = [9]
 
     print(zeroGP.compute_mean(x))
     print(zeroGP.compute_var(x))
     print(zeroGP.conf_interval(x))
+    
+    zeroGP.plot(1000)
