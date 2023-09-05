@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 
 import os
 import numpy as np
@@ -133,19 +133,24 @@ class ZeroGProcess:
 
         mean_current = self.compute_mean(current_point)
         var_current = self.compute_var(current_point)
-        
+
         lower_bound = mean_current + np.sqrt(var_current)*lower_bound_std
         upper_bound = mean_current + np.sqrt(var_current)*upper_bound_std
 
         return lower_bound, upper_bound
 
-    def plot(self, num_points=100, confidence=0.9):
-        "draw Gaussian Process mean values and confidence interval of lst_points"
+    def plot(self, num_points=100, exp_ratio=1, confidence=0.9):
+        """
+        draw Gaussian Process mean values and confidence interval
+        num_points: number of points evenly distributed [min_x-delta, max_x+delta]
+        confidence: confidence bands with probablity (confidence)
+        exp_ratio: [min_x - exp_ratio*delta, max_x + exp_ratio*delta], delta = max_x - min_x  
+        """
         min_point = min(self.X)[0]
         max_point = max(self.X)[0]
         delta = max_point - min_point
 
-        x_draw = np.linspace(min_point-0.25*delta, max_point+0.25*delta, num_points)
+        x_draw = np.linspace(min_point-exp_ratio*delta, max_point+exp_ratio*delta, num_points)
 
         y_mean = [self.compute_mean([ele]) for ele in x_draw]
         y_conf_int = [self.conf_interval([ele], confidence) for ele in x_draw]
@@ -161,6 +166,10 @@ class ZeroGProcess:
         return 0
 
 
+###### TODO: GProcess with regression components ######
+#class GProcess():
+
+
 if __name__ == "__main__":
     zeroGP = ZeroGProcess()
     zeroGP.get_data_from_file("data/experiment_points.tsv")
@@ -174,4 +183,4 @@ if __name__ == "__main__":
     print(zeroGP.compute_var(x))
     print(zeroGP.conf_interval(x))
     
-    zeroGP.plot(1000)
+    zeroGP.plot(num_points=1000, exp_ratio=2, confidence=0.90)
