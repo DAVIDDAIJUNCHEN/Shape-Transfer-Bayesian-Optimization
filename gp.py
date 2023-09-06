@@ -183,4 +183,4 @@ if __name__ == "__main__":
     print(zeroGP.compute_var(x))
     print(zeroGP.conf_interval(x))
     
-    zeroGP.plot(num_points=1000, exp_ratio=2, confidence=0.90)
+    zeroGP.plot(num_points=1000, exp_ratio=0.05, confidence=0.30)

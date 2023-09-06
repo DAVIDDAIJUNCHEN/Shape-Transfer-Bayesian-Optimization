@@ -33,7 +33,9 @@ class UpperConfidenceBound(ZeroGProcess):
 
     def find_next_point(self):
         "find maximum point based on auxillary function"
-        pass 
+        pass
+
+    def plot(self):
 
 
 class ExpectedImprovement(ZeroGProcess):
@@ -44,7 +46,7 @@ class ExpectedImprovement(ZeroGProcess):
     def __init__(self):  
         super(ExpectedImprovement, self).__init__()    # can use data from parent class 
 
-    def aux_func(self, current_point, kessi=0.0, zeroCheck=1e-15):
+    def aux_func(self, current_point, kessi=0.0, zeroCheck=1e-13):
         """
         auxillary function: a(x|D_t) = (y_max - mean(x) - kessi)*F(Z) + sqrt(sigma^2*s2(x))*f(Z)
         Z = (y_max - mean(x) - kessi) / sqrt(sigma^2*s2(x))
@@ -56,6 +58,7 @@ class ExpectedImprovement(ZeroGProcess):
         s2_currentA = np.matmul(np.transpose(kernel_Vec_mat), inv_kernel_Cov)
         s2_currentB = np.matmul(s2_currentA, kernel_Vec_mat)
         s2_current = self.kernel(current_point, current_point) - s2_currentB   
+        s2_current = s2_current[0, 0]
 
         if s2_current < zeroCheck:
             aux_ei_current = 0.0
@@ -64,27 +67,30 @@ class ExpectedImprovement(ZeroGProcess):
             mean_current = self.compute_mean(current_point)
 
             if self.sigma2 == None:   # sigma2 <= mle of sigma2
-                self.sigma2 = self.compute_mle_sigma2()
+                self.sigma2 = self.compute_mle_sigma2()[0,0]
             
-            Z_denom = y_max - mean_current - kessi
+            Z_denom = mean_current - y_max + kessi
             Z = Z_denom / np.sqrt(s2_current*self.sigma2)
 
             aux_ei_current = Z_denom*norm.cdf(Z) + np.sqrt(s2_current*self.sigma2)*norm.pdf(Z)
 
-        return aux_ei_current[0, 0]
+        return aux_ei_current
 
     def find_next_point(self):
         "find maximum point based on auxillary function"
         pass
 
+    def plot(self):
+        
+
 
 class ShapeTransferBO(ZeroGProcess):
     """
-    class ShapeTransferBO: 
+    class ShapeTransferBO:
     
     """
     def __init__(self):
-        super(ZeroGProcess, self).__init__()
+        super(ShapeTransferBO, self).__init__()
 
 
 class BiasCorrectedBO(ZeroGProcess):
@@ -93,7 +99,7 @@ class BiasCorrectedBO(ZeroGProcess):
     
     """
     def __init__(self):
-        super(ZeroGProcess, self).__init__()
+        super(ShapeTransferBO, self).__init__()
 
 
 if __name__ == "__main__":
@@ -103,10 +109,11 @@ if __name__ == "__main__":
     print(UCB.X)
     print(UCB.Y)
 
-    x = [9]
     gamma = 0.9
-    print(UCB.aux_func(x, gamma))
-    print("UCB({:.2f}) = {:.2f}".format(x[0], UCB.aux_func(x, gamma)))
+    x1 = [1.5]
+    print("UCB({:.2f}) = {:.2f}".format(x1[0], UCB.aux_func(x1, gamma)))
+    x2 = [10.4]
+    print("UCB({:.2f}) = {:.2f}".format(x2[0], UCB.aux_func(x2, gamma)))
 
     # Test EI
     EI = ExpectedImprovement()
@@ -114,8 +121,8 @@ if __name__ == "__main__":
     print(EI.X)
     print(EI.Y)
 
-    x1 = [3]
-    kessi = 0.0
+    kessi = 15
+    x1 = [1.5]
     print("EI({:.2f}) = {:.2f}".format(x1[0], EI.aux_func(x1, kessi)))
-    x2 = [3.5]
+    x2 = [10.4]
     print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func(x2, kessi)))
