@@ -2,8 +2,8 @@
 
 import os
 import numpy as np
-from scipy.stats import norm
 import matplotlib.pyplot as plt
+from scipy.stats import norm
 
 
 class ZeroGProcess:
@@ -183,4 +183,8 @@ if __name__ == "__main__":
     print(zeroGP.compute_var(x))
     print(zeroGP.conf_interval(x))
     
-    zeroGP.plot(num_points=1000, exp_ratio=0.05, confidence=0.30)
+    zeroGP.plot(num_points=1000, exp_ratio=2, confidence=0.30)
+
+    # test plot function
+    
+

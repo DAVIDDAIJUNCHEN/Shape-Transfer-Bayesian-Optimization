@@ -2,6 +2,7 @@
 
 import os
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.stats import norm
 from gp import ZeroGProcess
 
@@ -9,7 +10,8 @@ from gp import ZeroGProcess
 class UpperConfidenceBound(ZeroGProcess):
     """
     class UpperConfidenceBound: 1. construct UCB auxillary function
-                                2. find maximum point of UCB auxillary function
+                                2. find maximum point of UCB acquisition function
+                                3. plot acquisition function & confidence bands
     """
     def __init__(self):
         super(UpperConfidenceBound, self).__init__()  # can use data from parent class
@@ -35,7 +37,44 @@ class UpperConfidenceBound(ZeroGProcess):
         "find maximum point based on auxillary function"
         pass
 
-    def plot(self):
+    def plot(self, num_points=100, exp_ratio=1, confidence=0.9, gammas=[0.9]):
+        "plot the acquisition function as well as ZeroGP in a figure with two figs"
+        min_point = min(self.X)[0]
+        max_point = max(self.X)[0]
+        delta = max_point - min_point
+
+        x_draw = np.linspace(min_point-exp_ratio*delta, max_point+exp_ratio*delta, num_points)
+
+        # subplot 1: GProcess mean & confidence band
+        y_mean = [self.compute_mean([ele]) for ele in x_draw]
+        y_conf_int = [self.conf_interval([ele], confidence) for ele in x_draw]
+        y_lower = [ele[0] for ele in y_conf_int]
+        y_upper = [ele[1] for ele in y_conf_int]
+
+        # subplot 2: 
+        ac_values_lst = []
+        if isinstance(gammas, list):
+            for gamma in gammas:
+                ac_gamma = [self.aux_func([ele], gamma) for ele in x_draw]
+                ac_values_lst.append(ac_gamma)
+        elif isinstance(gammas, float):
+            ac_gamma = [self.aux_func([ele], gammas) for ele in x_draw]
+            ac_values_lst.append(ac_gamma)
+
+        fig, (ax_gp, ax_ac) = plt.subplots(2, 1, sharex=True)
+
+        ax_gp.set_title("GProcess Confidence Band")
+        ax_gp.plot(x_draw, y_mean)
+        ax_gp.fill_between(x_draw, y_lower, y_upper, alpha=0.2)
+        ax_gp.plot(self.X, self.Y, 'o', color="tab:red")
+
+        ax_ac.set_title("UCB Acquisition Function")
+        ax_ac.plot(x_draw, ac_values_lst[0])
+
+        fig.tight_layout()
+        fig.savefig("./example_ac.png")
+
+        return 0
 
 
 class ExpectedImprovement(ZeroGProcess):
@@ -81,7 +120,7 @@ class ExpectedImprovement(ZeroGProcess):
         pass
 
     def plot(self):
-        
+        pass 
 
 
 class ShapeTransferBO(ZeroGProcess):
@@ -114,6 +153,8 @@ if __name__ == "__main__":
     print("UCB({:.2f}) = {:.2f}".format(x1[0], UCB.aux_func(x1, gamma)))
     x2 = [10.4]
     print("UCB({:.2f}) = {:.2f}".format(x2[0], UCB.aux_func(x2, gamma)))
+
+    UCB.plot()
 
     # Test EI
     EI = ExpectedImprovement()
