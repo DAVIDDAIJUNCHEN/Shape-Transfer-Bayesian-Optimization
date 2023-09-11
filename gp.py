@@ -48,7 +48,7 @@ class ZeroGProcess:
 
         return 0
 
-    def kernel(self, x1, x2, theta = 1.0):
+    def kernel(self, x1, x2, theta=1.0):
         "compute k(x1, x2) with Gaussian | Matern Kernel"
 
         if self.kernel_type == "gaussian":
@@ -59,6 +59,16 @@ class ZeroGProcess:
             pass
         
         return k_x1_x2
+
+    def kernel_grad(self, x1_grad_pos, x2, theta=1.0):
+        "compute gradient of k(x1_grad_pos, x2) at x1_grad_pos"
+        if self.kernel_type == "gaussian":
+            x1_x2 = [ele1 - ele2 for ele1, ele2 in zip(x1_grad_pos, x2)]
+            grad_kernel_x1 = [(-1 / theta**2)*ele* self.kernel(x1_grad_pos, x2) for ele in x1_x2]
+        elif self.kernel_type == "matern":
+            pass
+
+        return grad_kernel_x1
 
     def compute_kernel_cov(self, lst_exp_points, theta=1.0):
         "compute kernel covariance matrix: K = (k(x_i, x_j))"
@@ -106,6 +116,10 @@ class ZeroGProcess:
         mean = np.matmul(mean_partA, response_vec)
 
         return mean[0, 0]
+
+    def compute_grad_mean(self, current_point):
+        "compute the gradient of mean(x) at current_point"
+        
 
     def compute_var(self, current_point):
         "compute the variance value at current_point"
@@ -184,6 +198,7 @@ if __name__ == "__main__":
     print(zeroGP.conf_interval(x))
     
     zeroGP.plot(num_points=1000, exp_ratio=2, confidence=0.30)
+    print(zeroGP.kernel_grad(x, [9]))
 
     # test plot function
     

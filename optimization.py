@@ -123,6 +123,30 @@ class ExpectedImprovement(ZeroGProcess):
 
         return aux_ei_current
 
+    def auto_grad(self, current_point, num_mc=10000, zeroCheck=1e-13):
+        "compute gradient at current_point by Monte Carlo method after reparameterization"
+        y_max = max(self.Y)
+
+        if self.sigma2 == None:
+            self.sigma2 = self.compute_mle_sigma2()[0,0]
+
+        mean_current = self.compute_mean(current_point)
+        var_current = self.compute_var(current_point)
+
+        # step 1: 
+        grads_current_util = []
+
+        for i in range(num_mc):
+            z = np.random.normal(0, 1, 1)
+            current_util = mean_current + np.sqrt(var_current)*z - y_max
+
+            if current_util < zeroCheck: # pointwise utility function \hat{l}(x)<0 ===> grad = 0
+                grads_current_util.append(0.0)
+            else:
+                # 
+
+
+
     def find_NextBest_point(self):
         "find maximum point based on auxillary function"
         pass
