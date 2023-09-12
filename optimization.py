@@ -138,7 +138,7 @@ class ExpectedImprovement(ZeroGProcess):
         var_current = self.compute_var(current_point)
 
         grads_current_util = []
-
+        
         for i in range(num_mc):
             z = np.random.normal(0, 1, 1)
             current_util = mean_current + np.sqrt(var_current)*z - y_max
@@ -156,7 +156,7 @@ class ExpectedImprovement(ZeroGProcess):
                 grad = grad_mean + grad_var * z
             
             grads_current_util.append(grad)
-        
+
         grad_current_util = np.mean(grads_current_util, axis=0) # take element-wise mean 
 
         return grad_current_util
@@ -239,7 +239,7 @@ if __name__ == "__main__":
     x2 = [10.4]
     print("UCB({:.2f}) = {:.2f}".format(x2[0], UCB.aux_func(x2, gamma)))
 
-    UCB.plot(gammas=[0.8, 0.9, 1])
+    #UCB.plot(gammas=[0.8, 0.9, 1])
 
     # Test EI
     EI = ExpectedImprovement()
@@ -248,9 +248,24 @@ if __name__ == "__main__":
     print(EI.Y)
 
     kessi = 15
-    x1 = [1.5]
+    x1 = [14]
     print("EI({:.2f}) = {:.2f}".format(x1[0], EI.aux_func(x1, kessi)))
     x2 = [10.4]
     print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func(x2, kessi)))
 
-    EI.plot(kessis=[0.0, 0.1, 0.2])
+    EI.plot(kessis=[0.0])
+
+    print("grad(18)", EI.auto_grad([18], num_mc=10000))
+    print("grad(18.2)", EI.auto_grad([18.2], num_mc=10000))
+    print("grad(18.4)", EI.auto_grad([18.4], num_mc=10000))
+    print("grad(18.6)", EI.auto_grad([18.6], num_mc=10000))
+    print("grad(18.8)", EI.auto_grad([18.8], num_mc=10000))
+    print("grad(19)", EI.auto_grad([19], num_mc=10000))
+    print("grad(19.3)", EI.auto_grad([19.3], num_mc=10000))
+    print("grad(19.6)", EI.auto_grad([19.6], num_mc=10000))
+    print("grad(20)", EI.auto_grad([20], num_mc=10000))
+    print("grad(20.5)", EI.auto_grad([20.5], num_mc=10000))
+    print("grad(21)", EI.auto_grad([21], num_mc=10000))
+    print("grad(21.5)", EI.auto_grad([21.5], num_mc=10000))
+    print("grad(22)", EI.auto_grad([22], num_mc=10000))
+    
