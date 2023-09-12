@@ -94,6 +94,20 @@ class ZeroGProcess:
      
         return kernel_Vec
 
+    def compute_grad_kernel_vec(self, lst_exp_points, current_point, theta=1.0):
+        "compute gradient of row kernel vector k_x^T = (k(x, x_i))^T, matrix (d*t)"
+        dim = len(lst_exp_points)
+        grad_kernel_vec = []
+
+        for i in range(dim):
+            x_i = lst_exp_points[i]
+            grad_kernel_xi = self.kernel_grad(current_point, x_i, theta)
+            grad_kernel_vec.append(grad_kernel_xi)
+        
+        grad_kernel_vec = np.transpose(np.matrix(grad_kernel_vec))
+
+        return grad_kernel_vec
+
     def compute_mle_sigma2(self):
         "compute the MLE(maximum likelihood estimation) of sigma^2"
         response_vec = np.transpose(np.matrix(self.Y))
@@ -114,12 +128,25 @@ class ZeroGProcess:
         mean_partA = np.matmul(np.transpose(kernel_Vec_mat), inv_kernel_Cov)
         response_vec = np.transpose(np.matrix(self.Y))
         mean = np.matmul(mean_partA, response_vec)
-
+        
         return mean[0, 0]
 
     def compute_grad_mean(self, current_point):
         "compute the gradient of mean(x) at current_point"
-        
+        kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
+        inv_kernel_Cov = np.linalg.inv(kernel_Cov_mat)
+        response_vec = np.transpose(np.matrix(self.Y))
+        grad_partB = np.matmul(inv_kernel_Cov, response_vec)
+
+        grad_kernel_lst = []
+        for x2 in self.X:
+            grad_kernel_lst.append(self.kernel_grad(current_point, x2))
+
+        grad_kernel_mat = np.transpose(np.matrix(grad_kernel_lst))
+
+        grad_mean = np.matmul(grad_kernel_mat, grad_partB)
+
+        return grad_mean
 
     def compute_var(self, current_point):
         "compute the variance value at current_point"
@@ -191,14 +218,13 @@ if __name__ == "__main__":
     print(zeroGP.X)
     print(zeroGP.Y)
     
-    x = [9]
+    x = [9, 4]
 
     print(zeroGP.compute_mean(x))
     print(zeroGP.compute_var(x))
     print(zeroGP.conf_interval(x))
     
-    zeroGP.plot(num_points=1000, exp_ratio=2, confidence=0.30)
-    print(zeroGP.kernel_grad(x, [9]))
-
-    # test plot function
+    #zeroGP.plot(num_points=1000, exp_ratio=2, confidence=0.30)
+    print(zeroGP.compute_grad_mean(x))
+    print(zeroGP.compute_grad_kernel_vec(zeroGP.X, x))
     

@@ -130,10 +130,13 @@ class ExpectedImprovement(ZeroGProcess):
         if self.sigma2 == None:
             self.sigma2 = self.compute_mle_sigma2()[0,0]
 
+        kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
+        kernel_Vec_mat = self.compute_kernel_vec(self.X, current_point, self.theta)
+        inv_kernel_Cov = np.linalg.inv(kernel_Cov_mat)
+
         mean_current = self.compute_mean(current_point)
         var_current = self.compute_var(current_point)
 
-        # step 1: 
         grads_current_util = []
 
         for i in range(num_mc):
@@ -141,11 +144,22 @@ class ExpectedImprovement(ZeroGProcess):
             current_util = mean_current + np.sqrt(var_current)*z - y_max
 
             if current_util < zeroCheck: # pointwise utility function \hat{l}(x)<0 ===> grad = 0
-                grads_current_util.append(0.0)
+                grad = np.zeros(shape=(self.dim, 1))
             else:
-                # 
+                grad_mean = self.compute_grad_mean(current_point)
 
+                grad_var_part1 = self.sigma2 / np.sqrt(var_current)
+                grad_var_part2 = self.compute_grad_kernel_vec(self.X, current_point, self.theta) 
+                grad_var_part3 = np.matmul(inv_kernel_Cov, kernel_Vec_mat)
+                grad_var = -1 * grad_var_part1 * np.matmul(grad_var_part2, grad_var_part3)
 
+                grad = grad_mean + grad_var * z
+            
+            grads_current_util.append(grad)
+        
+        grad_current_util = np.mean(grads_current_util, axis=0) # take element-wise mean 
+
+        return grad_current_util
 
     def find_NextBest_point(self):
         "find maximum point based on auxillary function"
