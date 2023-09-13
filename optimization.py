@@ -18,7 +18,7 @@ class UpperConfidenceBound(ZeroGProcess):
 
     def aux_func(self, current_point, current_gamma=0.9):
         """
-        auxillary function: a(x|D_t) = mean(x) + current_gamma * s2(x)
+        Acquisition function: a(x|D_t) = mean(x) + current_gamma * s2(x)
         """
         kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
         kernel_Vec_mat = self.compute_kernel_vec(self.X, current_point, self.theta)
@@ -39,7 +39,7 @@ class UpperConfidenceBound(ZeroGProcess):
         pass 
 
     def find_NextBest_point(self):
-        "find maximum point based on auxillary function"
+        "find maximum point based on Acquisition function"
         pass
 
     def plot(self, num_points=100, exp_ratio=1, confidence=0.9, gammas=[0.9]):
@@ -87,15 +87,15 @@ class UpperConfidenceBound(ZeroGProcess):
 
 class ExpectedImprovement(ZeroGProcess):
     """
-    class ExpectedImprovement: 1. construct EI auxillary function 
-                               2. find maximum point of EI auxillary function
+    class ExpectedImprovement: 1. construct EI Acquisition function 
+                               2. find maximum point of EI Acquisition function
     """
     def __init__(self):  
         super(ExpectedImprovement, self).__init__()    # can use data from parent class 
 
     def aux_func(self, current_point, kessi=0.0, zeroCheck=1e-13):
         """
-        auxillary function: a(x|D_t) = (y_max - mean(x) - kessi)*F(Z) + sqrt(sigma^2*s2(x))*f(Z)
+        Acquisition function: a(x|D_t) = (y_max - mean(x) - kessi)*F(Z) + sqrt(sigma^2*s2(x))*f(Z)
         Z = (y_max - mean(x) - kessi) / sqrt(sigma^2*s2(x))
         """
         kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
@@ -123,7 +123,7 @@ class ExpectedImprovement(ZeroGProcess):
 
         return aux_ei_current
 
-    def auto_grad(self, current_point, num_mc=10000, zeroCheck=1e-13):
+    def auto_grad(self, current_point, num_mc=1000, zeroCheck=1e-13):
         "compute gradient at current_point by Monte Carlo method after reparameterization"
         y_max = max(self.Y)
 
@@ -161,9 +161,31 @@ class ExpectedImprovement(ZeroGProcess):
 
         return grad_current_util
 
-    def find_NextBest_point(self):
-        "find maximum point based on auxillary function"
-        pass
+    def find_NextBest_point(self, init_point, num_step=500, thres=1e-3, learn_rate=0.001, beta_1=0.9, beta_2=0.999, epslon=1e-8):
+        "find maximum point of Acquisition function by using ADAM algorithm"
+        dim = self.dim
+        assert(len(init_point) == dim)
+        
+        # initialize momentum & rmsp vector & gradient at init point
+        m_t = np.zeros(shape=(dim, 1))
+        gamma_t = np.zeros(shape=(dim, 1))
+        point_current_vec = np.reshape(np.array(init_point), newshape=(dim, 1))
+        point_current = init_point
+
+        for t in range(num_step):
+            grad_current = self.auto_grad(point_current)
+            m_t = beta_1*m_t + (1 - beta_1)*grad_current
+            gamma_t = beta_2*gamma_t + (1 - beta_2)*grad_current**2
+
+            # BC (bias correct) m_t and gamma_t
+            m_t_BC = m_t / (1 - beta_1)
+            gamma_t_BC = gamma_t / (1 - beta_2)  
+
+            point_current_vec = point_current_vec + m_t_BC * learn_rate / np.sqrt(gamma_t_BC + epslon)
+            point_current = np.reshape(point_current_vec, newshape=(1, dim)).tolist()
+            point_current = point_current[0]
+
+        return point_current
 
     def plot(self, num_points=100, exp_ratio=1, confidence=0.9, kessis=[0.9]):
         "plot the acquisition function as well as ZeroGP in a figure with two figs"
@@ -255,17 +277,20 @@ if __name__ == "__main__":
 
     EI.plot(kessis=[0.0])
 
-    print("grad(18)", EI.auto_grad([18], num_mc=10000))
-    print("grad(18.2)", EI.auto_grad([18.2], num_mc=10000))
-    print("grad(18.4)", EI.auto_grad([18.4], num_mc=10000))
-    print("grad(18.6)", EI.auto_grad([18.6], num_mc=10000))
-    print("grad(18.8)", EI.auto_grad([18.8], num_mc=10000))
-    print("grad(19)", EI.auto_grad([19], num_mc=10000))
-    print("grad(19.3)", EI.auto_grad([19.3], num_mc=10000))
-    print("grad(19.6)", EI.auto_grad([19.6], num_mc=10000))
-    print("grad(20)", EI.auto_grad([20], num_mc=10000))
-    print("grad(20.5)", EI.auto_grad([20.5], num_mc=10000))
-    print("grad(21)", EI.auto_grad([21], num_mc=10000))
-    print("grad(21.5)", EI.auto_grad([21.5], num_mc=10000))
-    print("grad(22)", EI.auto_grad([22], num_mc=10000))
+    # print("grad(18)", EI.auto_grad([18], num_mc=10000))
+    # print("grad(18.2)", EI.auto_grad([18.2], num_mc=10000))
+    # print("grad(18.4)", EI.auto_grad([18.4], num_mc=10000))
+    # print("grad(18.6)", EI.auto_grad([18.6], num_mc=10000))
+    # print("grad(18.8)", EI.auto_grad([18.8], num_mc=10000))
+    # print("grad(19)", EI.auto_grad([19], num_mc=10000))
+    # print("grad(19.3)", EI.auto_grad([19.3], num_mc=10000))
+    # print("grad(19.6)", EI.auto_grad([19.6], num_mc=10000))
+    # print("grad(20)", EI.auto_grad([20], num_mc=10000))
+    # print("grad(20.5)", EI.auto_grad([20.5], num_mc=10000))
+    # print("grad(21)", EI.auto_grad([21], num_mc=10000))
+    # print("grad(21.5)", EI.auto_grad([21.5], num_mc=10000))
+    # print("grad(22)", EI.auto_grad([22], num_mc=10000))
     
+    x1 = [18.5]
+    best_x1 = EI.find_NextBest_point(x1)
+    print("best point from ", x1, ": ", best_x1)
