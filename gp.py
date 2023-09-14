@@ -148,7 +148,7 @@ class ZeroGProcess:
 
         return grad_mean
 
-    def compute_var(self, current_point):
+    def compute_var(self, current_point, zeroCheck=1e-13):
         "compute the variance value at current_point"
         kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
         kernel_Vec_mat = self.compute_kernel_vec(self.X, current_point, self.theta)
@@ -164,7 +164,10 @@ class ZeroGProcess:
         else:
             var_current = self.sigma2 * s2_current
 
-        return var_current[0, 0]        
+            if var_current < zeroCheck: # avoid negative variance (negative but close to zero)
+                return 0.0
+
+        return var_current[0, 0]
 
     def conf_interval(self, current_point, confidence=0.9):
         "compute the confidence interval with two sides"
@@ -227,4 +230,3 @@ if __name__ == "__main__":
     #zeroGP.plot(num_points=1000, exp_ratio=2, confidence=0.30)
     print(zeroGP.compute_grad_mean(x))
     print(zeroGP.compute_grad_kernel_vec(zeroGP.X, x))
-    

@@ -4,6 +4,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
+from operator import itemgetter
 from gp import ZeroGProcess
 
 
@@ -161,8 +162,8 @@ class ExpectedImprovement(ZeroGProcess):
 
         return grad_current_util
 
-    def find_NextBest_point(self, init_point, num_step=500, thres=1e-3, learn_rate=0.001, beta_1=0.9, beta_2=0.999, epslon=1e-8):
-        "find maximum point of Acquisition function by using ADAM algorithm"
+    def find_best_from_point(self, init_point, num_step=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
+        "find maximum point of Acquisition function from init_point by using ADAM algorithm"
         dim = self.dim
         assert(len(init_point) == dim)
         
@@ -184,10 +185,29 @@ class ExpectedImprovement(ZeroGProcess):
             point_current_vec = point_current_vec + m_t_BC * learn_rate / np.sqrt(gamma_t_BC + epslon)
             point_current = np.reshape(point_current_vec, newshape=(1, dim)).tolist()
             point_current = point_current[0]
+            aux_current = self.aux_func(point_current)
 
-        return point_current
+        return point_current, aux_current
 
-    def plot(self, num_points=100, exp_ratio=1, confidence=0.9, kessis=[0.9]):
+    def find_best_NextPoint(self, init_points=None, num_step=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
+        """ find best next point of Acquisition function by starting from multi-points
+            init_points: init_points = experiment points if None,
+        """
+        if init_points == None:
+            init_points = self.X 
+        
+        best_points_aux = []
+
+        for point_k in init_points:
+            best_point_k, best_aux_k = self.find_best_from_point(point_k, num_step, thres, learn_rate, beta_1, beta_2, epslon)
+            best_points_aux.append((best_point_k, best_aux_k))
+
+        best_point, best_aux = max(best_points_aux, key=itemgetter(1))
+        print(best_points_aux)
+
+        return best_point, best_aux
+
+    def plot(self, num_points=100, exp_ratio=1, confidence=0.9, kessis=[0.9], highlight_point=None):
         "plot the acquisition function as well as ZeroGP in a figure with two figs"
         min_point = min(self.X)[0]
         max_point = max(self.X)[0]
@@ -222,6 +242,9 @@ class ExpectedImprovement(ZeroGProcess):
         ax_ac.set_title("EI Acquisition Function")
         for ac_value, kessi in zip(ac_values_lst, kessis):
             ax_ac.plot(x_draw, ac_value, label="kessi: "+str(kessi))
+        
+        if highlight_point != None:
+            ax_ac.plot(highlight_point[0], highlight_point[1], 'o', color="tab:red")
 
         ax_ac.legend()
         fig.tight_layout()
@@ -275,7 +298,7 @@ if __name__ == "__main__":
     x2 = [10.4]
     print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func(x2, kessi)))
 
-    EI.plot(kessis=[0.0])
+    # EI.plot(kessis=[0.0])
 
     # print("grad(18)", EI.auto_grad([18], num_mc=10000))
     # print("grad(18.2)", EI.auto_grad([18.2], num_mc=10000))
@@ -290,7 +313,6 @@ if __name__ == "__main__":
     # print("grad(21)", EI.auto_grad([21], num_mc=10000))
     # print("grad(21.5)", EI.auto_grad([21.5], num_mc=10000))
     # print("grad(22)", EI.auto_grad([22], num_mc=10000))
-    
-    x1 = [18.5]
-    best_x1 = EI.find_NextBest_point(x1)
-    print("best point from ", x1, ": ", best_x1)
+
+    next_point, next_point_aux = EI.find_best_NextPoint([[12], [3], [13], [23]], learn_rate=0.5, num_step=100)
+    EI.plot(kessis=[0.0], highlight_point=[next_point, next_point_aux])
