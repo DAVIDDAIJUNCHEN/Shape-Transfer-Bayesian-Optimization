@@ -96,8 +96,8 @@ class ExpectedImprovement(ZeroGProcess):
 
     def aux_func(self, current_point, kessi=0.0, zeroCheck=1e-13):
         """
-        Acquisition function: a(x|D_t) = (y_max - mean(x) - kessi)*F(Z) + sqrt(sigma^2*s2(x))*f(Z)
-        Z = (y_max - mean(x) - kessi) / sqrt(sigma^2*s2(x))
+        Acquisition function: a(x|D_t) = (mean(x) - y_max + kessi)*F(Z) + sqrt(sigma^2*s2(x))*f(Z)
+        Z = (mean(x) - y_max + kessi) / sqrt(sigma^2*s2(x))
         """
         kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
         kernel_Vec_mat = self.compute_kernel_vec(self.X, current_point, self.theta)
@@ -260,8 +260,47 @@ class ShapeTransferBO(ZeroGProcess):
     """
     def __init__(self):
         super(ShapeTransferBO, self).__init__()
+        self.zeroGP1 = None
 
-    def 
+    def build_task1_gp(self, file_exp_task1):
+        "build ZeroGProcess for task1 with known experiment points"
+        zeroGP1 = ZeroGProcess()
+        zeroGP1.get_data_from_file(file_exp_task1)
+        self.zeroGP1 = zeroGP1
+
+        return 0
+
+    def build_diff_gp(self, file_exp_task2):
+        "build ZeroGProcess on difference between task2 and task1_gp"
+        
+        diffGP = ZeroGProcess()
+        diffGP.get_data_from_file(file_exp_task2)
+        
+        assert(len(diffGP.X) == len(diffGP.Y))
+
+        # compute difference between task2 and task1_gp
+        X_task2 = diffGP.X
+        Y_task2 = diffGP.Y
+
+        diff_X = X_task2
+        diff_Y = []
+
+        for point, y_task2 in zip(X_task2, Y_task2):
+            mean_GP1_point = self.zeroGP1.compute_mean(point)
+            diff_y_point = y_task2 - mean_GP1_point
+            diff_Y.append(diff_y_point)
+    
+        diffGP.Y = diff_Y
+    
+        return 0
+
+    def aux_func_ei(self, current_point, kessi=0.0, zeroCheck=1e-13):
+        "Acquisition function: a(x|D2_t, D1) = (mean_GP1(x) + mean_diffGP(x) - y2_max + kessi)"
+
+    def auto_grad_ei():
+
+        return 0
+
 
 class BiasCorrectedBO(ZeroGProcess):
     """
