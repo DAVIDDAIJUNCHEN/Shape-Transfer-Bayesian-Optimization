@@ -115,6 +115,7 @@ class ZeroGProcess:
         inv_kernel_Cov = np.linalg.inv(kernel_Cov_mat)
 
         sigma2_hat_A = np.matmul(np.matrix(self.Y), inv_kernel_Cov)
+        self.num_points = len(self.Y)
         sigma2_hat = np.matmul(sigma2_hat_A, response_vec) / self.num_points
 
         return sigma2_hat
@@ -148,6 +149,18 @@ class ZeroGProcess:
 
         return grad_mean
 
+    def compute_s2(self, current_point):
+        "compute the s^2(x) at current_point"
+        kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
+        kernel_Vec_mat = self.compute_kernel_vec(self.X, current_point, self.theta)
+        inv_kernel_Cov = np.linalg.inv(kernel_Cov_mat)
+
+        s2_currentA = np.matmul(np.transpose(kernel_Vec_mat), inv_kernel_Cov)
+        s2_currentB = np.matmul(s2_currentA, kernel_Vec_mat)
+        s2_current = self.kernel(current_point, current_point) - s2_currentB
+
+        return s2_current[0, 0]
+
     def compute_var(self, current_point, zeroCheck=1e-13):
         "compute the variance value at current_point"
         kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
@@ -164,8 +177,8 @@ class ZeroGProcess:
         else:
             var_current = self.sigma2 * s2_current
 
-            if var_current < zeroCheck: # avoid negative variance (negative but close to zero)
-                return 0.0
+        if var_current[0,0] < zeroCheck: # avoid negative variance (negative but close to zero)
+            return 0.0
 
         return var_current[0, 0]
 

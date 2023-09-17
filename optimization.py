@@ -17,7 +17,7 @@ class UpperConfidenceBound(ZeroGProcess):
     def __init__(self):
         super(UpperConfidenceBound, self).__init__()  # can use data from parent class
 
-    def aux_func(self, current_point, current_gamma=0.9):
+    def aux_func_ucb(self, current_point, current_gamma=0.9):
         """
         Acquisition function: a(x|D_t) = mean(x) + current_gamma * s2(x)
         """
@@ -34,12 +34,12 @@ class UpperConfidenceBound(ZeroGProcess):
 
         return aux_ucb_current[0, 0]
 
-    def auto_grad(self, current_point):
+    def auto_grad_ucb(self, current_point):
         "compute gradient at current_point"
 
         pass 
 
-    def find_NextBest_point(self):
+    def find_NextBest_point_ucb(self):
         "find maximum point based on Acquisition function"
         pass
 
@@ -61,10 +61,10 @@ class UpperConfidenceBound(ZeroGProcess):
         ac_values_lst = []
         if isinstance(gammas, list):
             for gamma in gammas:
-                ac_gamma = [self.aux_func([ele], gamma) for ele in x_draw]
+                ac_gamma = [self.aux_func_ucb([ele], gamma) for ele in x_draw]
                 ac_values_lst.append(ac_gamma)
         elif isinstance(gammas, float):
-            ac_gamma = [self.aux_func([ele], gammas) for ele in x_draw]
+            ac_gamma = [self.aux_func_ucb([ele], gammas) for ele in x_draw]
             ac_values_lst.append(ac_gamma)
             gammas = [gammas]
 
@@ -94,37 +94,28 @@ class ExpectedImprovement(ZeroGProcess):
     def __init__(self):  
         super(ExpectedImprovement, self).__init__()    # can use data from parent class 
 
-    def aux_func(self, current_point, kessi=0.0, zeroCheck=1e-13):
+    def aux_func_ei(self, current_point, kessi=0.0, zeroCheck=1e-13):
         """
         Acquisition function: a(x|D_t) = (mean(x) - y_max + kessi)*F(Z) + sqrt(sigma^2*s2(x))*f(Z)
         Z = (mean(x) - y_max + kessi) / sqrt(sigma^2*s2(x))
         """
-        kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
-        kernel_Vec_mat = self.compute_kernel_vec(self.X, current_point, self.theta)
-        inv_kernel_Cov = np.linalg.inv(kernel_Cov_mat)
 
-        s2_currentA = np.matmul(np.transpose(kernel_Vec_mat), inv_kernel_Cov)
-        s2_currentB = np.matmul(s2_currentA, kernel_Vec_mat)
-        s2_current = self.kernel(current_point, current_point) - s2_currentB   
-        s2_current = s2_current[0, 0]
+        var_current = self.compute_var(current_point)
 
-        if s2_current < zeroCheck:
+        if var_current < zeroCheck:
             aux_ei_current = 0.0
         else:
             y_max = max(self.Y)
             mean_current = self.compute_mean(current_point)
 
-            if self.sigma2 == None:   # sigma2 <= mle of sigma2
-                self.sigma2 = self.compute_mle_sigma2()[0,0]
-            
             Z_denom = mean_current - y_max + kessi
-            Z = Z_denom / np.sqrt(s2_current*self.sigma2)
+            Z = Z_denom / np.sqrt(var_current)
 
-            aux_ei_current = Z_denom*norm.cdf(Z) + np.sqrt(s2_current*self.sigma2)*norm.pdf(Z)
+            aux_ei_current = Z_denom*norm.cdf(Z) + np.sqrt(var_current)*norm.pdf(Z)
 
         return aux_ei_current
 
-    def auto_grad(self, current_point, num_mc=1000, zeroCheck=1e-13):
+    def auto_grad_ei(self, current_point, num_mc=1000, zeroCheck=1e-13):
         "compute gradient at current_point by Monte Carlo method after reparameterization"
         y_max = max(self.Y)
 
@@ -162,7 +153,7 @@ class ExpectedImprovement(ZeroGProcess):
 
         return grad_current_util
 
-    def find_best_from_point(self, init_point, num_step=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
+    def find_best_from_point_ei(self, init_point, num_step=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
         "find maximum point of Acquisition function from init_point by using ADAM algorithm"
         dim = self.dim
         assert(len(init_point) == dim)
@@ -174,7 +165,7 @@ class ExpectedImprovement(ZeroGProcess):
         point_current = init_point
 
         for t in range(num_step):
-            grad_current = self.auto_grad(point_current)
+            grad_current = self.auto_grad_ei(point_current)
             m_t = beta_1*m_t + (1 - beta_1)*grad_current
             gamma_t = beta_2*gamma_t + (1 - beta_2)*grad_current**2
 
@@ -185,11 +176,11 @@ class ExpectedImprovement(ZeroGProcess):
             point_current_vec = point_current_vec + m_t_BC * learn_rate / np.sqrt(gamma_t_BC + epslon)
             point_current = np.reshape(point_current_vec, newshape=(1, dim)).tolist()
             point_current = point_current[0]
-            aux_current = self.aux_func(point_current)
+            aux_current = self.aux_func_ei(point_current)
 
         return point_current, aux_current
 
-    def find_best_NextPoint(self, init_points=None, num_step=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
+    def find_best_NextPoint_ei(self, init_points=None, num_step=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
         """ find best next point of Acquisition function by starting from multi-points
             init_points: init_points = experiment points if None,
         """
@@ -199,7 +190,7 @@ class ExpectedImprovement(ZeroGProcess):
         best_points_aux = []
 
         for point_k in init_points:
-            best_point_k, best_aux_k = self.find_best_from_point(point_k, num_step, thres, learn_rate, beta_1, beta_2, epslon)
+            best_point_k, best_aux_k = self.find_best_from_point_ei(point_k, num_step, thres, learn_rate, beta_1, beta_2, epslon)
             best_points_aux.append((best_point_k, best_aux_k))
 
         best_point, best_aux = max(best_points_aux, key=itemgetter(1))
@@ -207,7 +198,7 @@ class ExpectedImprovement(ZeroGProcess):
 
         return best_point, best_aux
 
-    def plot(self, num_points=100, exp_ratio=1, confidence=0.9, kessis=[0.9], highlight_point=None):
+    def plot_ei(self, num_points=100, exp_ratio=1, confidence=0.9, kessis=[0.0], highlight_point=None):
         "plot the acquisition function as well as ZeroGP in a figure with two figs"
         min_point = min(self.X)[0]
         max_point = max(self.X)[0]
@@ -225,10 +216,10 @@ class ExpectedImprovement(ZeroGProcess):
         ac_values_lst = []
         if isinstance(kessis, list):
             for kessi in kessis:
-                ac_kessi = [self.aux_func([ele], kessi) for ele in x_draw]
+                ac_kessi = [self.aux_func_ei([ele], kessi) for ele in x_draw]
                 ac_values_lst.append(ac_kessi)
         elif isinstance(kessis, float):
-            ac_kessi = [self.aux_func([ele], kessis) for ele in x_draw]
+            ac_kessi = [self.aux_func_ei([ele], kessis) for ele in x_draw]
             ac_values_lst.append(ac_kessi)
             kessis = [kessis]
 
@@ -253,7 +244,7 @@ class ExpectedImprovement(ZeroGProcess):
         return 0
 
 
-class ShapeTransferBO(ZeroGProcess):
+class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
     """
     class ShapeTransferBO:
     
@@ -261,45 +252,61 @@ class ShapeTransferBO(ZeroGProcess):
     def __init__(self):
         super(ShapeTransferBO, self).__init__()
         self.zeroGP1 = None
+        self.diffGP = None
 
     def build_task1_gp(self, file_exp_task1):
         "build ZeroGProcess for task1 with known experiment points"
         zeroGP1 = ZeroGProcess()
         zeroGP1.get_data_from_file(file_exp_task1)
+        assert(len(zeroGP1.X) == len(zeroGP1.Y))
+
         self.zeroGP1 = zeroGP1
 
         return 0
 
-    def build_diff_gp(self, file_exp_task2):
+    def build_diff_gp(self):
         "build ZeroGProcess on difference between task2 and task1_gp"
-        
+
         diffGP = ZeroGProcess()
-        diffGP.get_data_from_file(file_exp_task2)
-        
-        assert(len(diffGP.X) == len(diffGP.Y))
+        assert(len(self.X) == len(self.Y))
 
         # compute difference between task2 and task1_gp
-        X_task2 = diffGP.X
-        Y_task2 = diffGP.Y
+        X_task2 = self.X
+        Y_task2 = self.Y
 
-        diff_X = X_task2
         diff_Y = []
 
         for point, y_task2 in zip(X_task2, Y_task2):
             mean_GP1_point = self.zeroGP1.compute_mean(point)
             diff_y_point = y_task2 - mean_GP1_point
             diff_Y.append(diff_y_point)
-    
+        
         diffGP.Y = diff_Y
-    
-        return 0
-
-    def aux_func_ei(self, current_point, kessi=0.0, zeroCheck=1e-13):
-        "Acquisition function: a(x|D2_t, D1) = (mean_GP1(x) + mean_diffGP(x) - y2_max + kessi)"
-
-    def auto_grad_ei():
+        diffGP.X = self.X
+        self.diffGP = diffGP
 
         return 0
+
+    def compute_var(self, current_point, zeroCheck=1e-13):
+        "compute the variance value at current_point"
+        var_GP1 = self.zeroGP1.compute_var(current_point, zeroCheck)
+        var_diffGP = self.diffGP.compute_var(current_point, zeroCheck)
+        var_current = var_GP1 + var_diffGP
+
+        if var_current < zeroCheck:
+            return 0.0
+
+        return var_current
+
+    def compute_mean(self, current_point):
+        "compute the mean value of GP1 + diffGP at current_point"
+        mean_GP1 = self.zeroGP1.compute_mean(current_point)
+        mean_diffGP = self.diffGP.compute_mean(current_point)
+
+        mean_current = mean_GP1 + mean_diffGP
+
+        return mean_current
+
 
 
 class BiasCorrectedBO(ZeroGProcess):
@@ -320,8 +327,27 @@ if __name__ == "__main__":
 
     gamma = 0.9
     x1 = [1.5]
-    print("UCB({:.2f}) = {:.2f}".format(x1[0], UCB.aux_func(x1, gamma)))
+    print("UCB({:.2f}) = {:.2f}".format(x1[0], UCB.aux_func_ucb(x1, gamma)))
     x2 = [10.4]
-    print("UCB({:.2f}) = {:.2f}".format(x2[0], UCB.aux_func(x2, gamma)))
+    print("UCB({:.2f}) = {:.2f}".format(x2[0], UCB.aux_func_ucb(x2, gamma)))
 
     #UCB.plot(gammas=[0.8, 0.9, 1])
+
+    # Test STBO 
+    STBO = ShapeTransferBO()
+    STBO.get_data_from_file("./data/experiment_points_task2.tsv")
+    STBO.build_task1_gp("./data/experiment_points_task1.tsv")
+    STBO.build_diff_gp()
+
+    print(STBO.X)
+    print(STBO.Y)
+
+    print(STBO.zeroGP1.X)
+    print(STBO.zeroGP1.Y)
+
+    print(STBO.diffGP.X)
+    print(STBO.diffGP.Y)
+
+    x1 = [1.5]
+    print(STBO.aux_func_ei(x1))
+    STBO.plot_ei(highlight_point=[5, STBO.aux_func_ei([5])])
