@@ -122,12 +122,8 @@ class ExpectedImprovement(ZeroGProcess):
         if self.sigma2 == None:
             self.sigma2 = self.compute_mle_sigma2()[0,0]
 
-        kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
-        kernel_Vec_mat = self.compute_kernel_vec(self.X, current_point, self.theta)
-        inv_kernel_Cov = np.linalg.inv(kernel_Cov_mat)
-
         mean_current = self.compute_mean(current_point)
-        var_current = self.compute_var(current_point)
+        var_current = self.compute_var(current_point, zeroCheck)
 
         grads_current_util = []
         
@@ -139,12 +135,7 @@ class ExpectedImprovement(ZeroGProcess):
                 grad = np.zeros(shape=(self.dim, 1))
             else:
                 grad_mean = self.compute_grad_mean(current_point)
-
-                grad_var_part1 = self.sigma2 / np.sqrt(var_current)
-                grad_var_part2 = self.compute_grad_kernel_vec(self.X, current_point, self.theta) 
-                grad_var_part3 = np.matmul(inv_kernel_Cov, kernel_Vec_mat)
-                grad_var = -1 * grad_var_part1 * np.matmul(grad_var_part2, grad_var_part3)
-
+                grad_var = 0.5 / np.sqrt(var_current) * self.compute_grad_var(current_point)
                 grad = grad_mean + grad_var * z
             
             grads_current_util.append(grad)
@@ -193,8 +184,7 @@ class ExpectedImprovement(ZeroGProcess):
             best_point_k, best_aux_k = self.find_best_from_point_ei(point_k, num_step, thres, learn_rate, beta_1, beta_2, epslon)
             best_points_aux.append((best_point_k, best_aux_k))
 
-        best_point, best_aux = max(best_points_aux, key=itemgetter(1))
-        print(best_points_aux)
+        best_point, best_aux = max(best_points_aux, key=itemgetter(1)) 
 
         return best_point, best_aux
 
@@ -287,26 +277,51 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
 
         return 0
 
+    def compute_mean(self, current_point):
+        "compute the mean value of GP1 + diffGP at current_point"
+        mean_GP1 = self.zeroGP1.compute_mean(current_point)
+        mean_diffGP = self.diffGP.compute_mean(current_point)
+        mean_current = mean_GP1 + mean_diffGP
+
+        return mean_current
+
+    def compute_grad_mean(self, current_point):
+        "compute the gradient of mean(x) in GP1 + diffGP at current_point"
+        grad_mean_a = self.zeroGP1.compute_grad_mean(current_point)
+        grad_mean_b = self.diffGP.compute_grad_mean(current_point)
+
+        grad_mean = grad_mean_a + grad_mean_b
+
+        return grad_mean
+
+    def compute_mle_sigma2(self):
+        """
+        compute the MLE of sigma^2 in GP1 + diffGP
+        Note: GP1 
+        """
+        sigma2_hat = self.diffGP.compute_mle_sigma2()
+
+        return sigma2_hat
+
     def compute_var(self, current_point, zeroCheck=1e-13):
-        "compute the variance value at current_point"
-        var_GP1 = self.zeroGP1.compute_var(current_point, zeroCheck)
+        """
+        compute the variance value of GP1 + diffGP at current_point
+        Note: GP1 is simply treated as constant function without randomness 
+        """
+
         var_diffGP = self.diffGP.compute_var(current_point, zeroCheck)
-        var_current = var_GP1 + var_diffGP
+        var_current = var_diffGP
 
         if var_current < zeroCheck:
             return 0.0
 
         return var_current
 
-    def compute_mean(self, current_point):
-        "compute the mean value of GP1 + diffGP at current_point"
-        mean_GP1 = self.zeroGP1.compute_mean(current_point)
-        mean_diffGP = self.diffGP.compute_mean(current_point)
+    def compute_grad_var(self, current_point, zeroCheck=1e-13):
+        "compute the gradient of var(x) in GP1 + diffGP at current_point"
+        grad_var = self.diffGP.compute_grad_var(current_point, zeroCheck)
 
-        mean_current = mean_GP1 + mean_diffGP
-
-        return mean_current
-
+        return grad_var
 
 
 class BiasCorrectedBO(ZeroGProcess):
@@ -331,23 +346,4 @@ if __name__ == "__main__":
     x2 = [10.4]
     print("UCB({:.2f}) = {:.2f}".format(x2[0], UCB.aux_func_ucb(x2, gamma)))
 
-    #UCB.plot(gammas=[0.8, 0.9, 1])
-
-    # Test STBO 
-    STBO = ShapeTransferBO()
-    STBO.get_data_from_file("./data/experiment_points_task2.tsv")
-    STBO.build_task1_gp("./data/experiment_points_task1.tsv")
-    STBO.build_diff_gp()
-
-    print(STBO.X)
-    print(STBO.Y)
-
-    print(STBO.zeroGP1.X)
-    print(STBO.zeroGP1.Y)
-
-    print(STBO.diffGP.X)
-    print(STBO.diffGP.Y)
-
-    x1 = [1.5]
-    print(STBO.aux_func_ei(x1))
-    STBO.plot_ei(highlight_point=[5, STBO.aux_func_ei([5])])
+    UCB.plot(gammas=[0.8, 0.9, 1])

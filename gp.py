@@ -182,6 +182,23 @@ class ZeroGProcess:
 
         return var_current[0, 0]
 
+    def compute_grad_var(self, current_point, zeroCheck=1e-13):
+        "compute the gradient of var(x) at current_point"
+        if self.sigma2 == None:
+            self.sigma2 = self.compute_mle_sigma2()[0,0]
+        
+        kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
+        kernel_Vec_mat = self.compute_kernel_vec(self.X, current_point, self.theta)
+        inv_kernel_Cov = np.linalg.inv(kernel_Cov_mat)
+
+        grad_var_part1 = -2*self.sigma2
+        grad_var_part2 = self.compute_grad_kernel_vec(self.X, current_point, self.theta) 
+        grad_var_part3 = np.matmul(inv_kernel_Cov, kernel_Vec_mat)
+
+        grad_var = grad_var_part1 * np.matmul(grad_var_part2, grad_var_part3)
+
+        return grad_var
+
     def conf_interval(self, current_point, confidence=0.9):
         "compute the confidence interval with two sides"
         alpha = (1 - confidence) / 2.
@@ -234,12 +251,14 @@ if __name__ == "__main__":
     print(zeroGP.X)
     print(zeroGP.Y)
     
-    x = [9, 4]
+    x = [9, 10]
 
     print(zeroGP.compute_mean(x))
     print(zeroGP.compute_var(x))
     print(zeroGP.conf_interval(x))
-    
+
     #zeroGP.plot(num_points=1000, exp_ratio=2, confidence=0.30)
     print(zeroGP.compute_grad_mean(x))
     print(zeroGP.compute_grad_kernel_vec(zeroGP.X, x))
+
+    print(zeroGP.compute_grad_var(x))
