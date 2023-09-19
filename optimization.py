@@ -297,7 +297,7 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
     def compute_mle_sigma2(self):
         """
         compute the MLE of sigma^2 in GP1 + diffGP
-        Note: GP1 
+        Note: GP1 is simply treated as constant function without randomness
         """
         sigma2_hat = self.diffGP.compute_mle_sigma2()
 
@@ -323,6 +323,72 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
 
         return grad_var
 
+    def plot_ei(self, num_points=100, exp_ratio=1, confidence=0.9, kessis=[0.0], highlight_point=None):
+        "plot the acquisition function as well as ZeroGP in a figure with two figs"
+        min_point_exp1 = min(self.zeroGP1.X)[0]
+        min_point_exp2 = min(self.X)[0]
+        min_point = min(min_point_exp1, min_point_exp2)
+
+        max_point_exp1 = max(self.zeroGP1.X)[0]
+        max_point_exp2 = max(self.X)[0]
+        max_point = max(max_point_exp1, max_point_exp2)
+
+        delta = max_point - min_point
+
+        x_draw = np.linspace(min_point-exp_ratio*delta, max_point+exp_ratio*delta, num_points)
+
+        # subplot 1: GProcess means & confidence bands of GP2 (normal zero GP on data 2) and STBO
+        GP2_only = ZeroGProcess()
+        GP2_only.X = self.X
+        GP2_only.Y = self.Y
+        y2Only_mean = [GP2_only.compute_mean([ele]) for ele in x_draw]
+        y2Only_conf_int = [GP2_only.conf_interval([ele], confidence) for ele in x_draw]
+        y2Only_lower = [ele[0] for ele in y2Only_conf_int]
+        y2Only_upper = [ele[1] for ele in y2Only_conf_int]
+
+        y_mean = [self.compute_mean([ele]) for ele in x_draw]
+        y_conf_int = [self.conf_interval([ele], confidence) for ele in x_draw]
+        y_lower = [ele[0] for ele in y_conf_int]
+        y_upper = [ele[1] for ele in y_conf_int]
+
+        # subplot 2: EI AC function with multiple parameters 
+        ac_values_lst = []
+        if isinstance(kessis, list):
+            for kessi in kessis:
+                ac_kessi = [self.aux_func_ei([ele], kessi) for ele in x_draw]
+                ac_values_lst.append(ac_kessi)
+        elif isinstance(kessis, float):
+            ac_kessi = [self.aux_func_ei([ele], kessis) for ele in x_draw]
+            ac_values_lst.append(ac_kessi)
+            kessis = [kessis]
+
+        fig, (ax_gp, ax_ac) = plt.subplots(2, 1, sharex=True)
+
+        # GP2 only 
+        ax_gp.set_title("GProcess Confidence Band")
+        ax_gp.plot(x_draw, y2Only_mean, label="GP2 Only")
+        ax_gp.fill_between(x_draw, y2Only_lower, y2Only_upper, alpha=0.2)
+        ax_gp.plot(GP2_only.X, GP2_only.Y, 'o', color="tab:red")
+
+        # STBO 
+        ax_gp.plot(x_draw, y_mean, label="STBO")
+        ax_gp.fill_between(x_draw, y_lower, y_upper, alpha=0.2)
+        ax_gp.plot(self.X, self.Y, 'o', color="tab:red")
+        ax_gp.legend()
+
+        # STBO AC function 
+        ax_ac.set_title("STBO EI Acquisition Function")
+        for ac_value, kessi in zip(ac_values_lst, kessis):
+            ax_ac.plot(x_draw, ac_value, label="kessi: "+str(kessi))
+
+        if highlight_point != None:
+            ax_ac.plot(highlight_point[0], highlight_point[1], 'o', color="tab:red")
+
+        ax_ac.legend()
+        fig.tight_layout()
+        fig.savefig("./example_stbo_ac_ei.png")
+
+        return 0
 
 class BiasCorrectedBO(ZeroGProcess):
     """
