@@ -46,13 +46,10 @@ if __name__ == "__main__":
     print(STBO.compute_mle_sigma2())
     print(STBO.diffGP.compute_mle_sigma2())
 
-    x1 = [15]
-    print(STBO.aux_func_ei(x1))
-    STBO.plot_ei(highlight_point=[15, STBO.aux_func_ei([15])])
-
     for x_k in range(10, 20, 1):
         print("grad at ", x_k, " ", STBO.auto_grad_ei([x_k]))
 
     start_points = [[0], [11], [15]]
-    next_point, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=100)    
-    STBO.plot_ei(kessis=[0.0], highlight_point=[next_point, next_point_aux])
+    next_point, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=60)    
+    STBO.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
+    print(STBO.aux_func_ei(next_point))

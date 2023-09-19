@@ -185,7 +185,7 @@ class ExpectedImprovement(ZeroGProcess):
             best_points_aux.append((best_point_k, best_aux_k))
 
         best_point, best_aux = max(best_points_aux, key=itemgetter(1)) 
-
+        print(best_point, best_aux)
         return best_point, best_aux
 
     def plot_ei(self, num_points=100, exp_ratio=1, confidence=0.9, kessis=[0.0], highlight_point=None):
