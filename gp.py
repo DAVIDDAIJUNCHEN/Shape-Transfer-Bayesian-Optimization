@@ -13,20 +13,20 @@ class ZeroGProcess:
     def __init__(self, sigma_square=None, type_kernel = "gaussian", param_kernel = 1.0) -> None:
         self.Y = [] 
         self.X = []
-        self.dim = 0
-        self.num_points = 0
+        self.dim = None
+        self.num_points = None
         self.sigma2 = sigma_square          # None => sigam is unknown => MLE
         self.kernel_type = type_kernel
         self.theta = param_kernel
 
-    def get_data_from_file(self, file_exp):
+    def get_data_from_file(self, file_exp, sep="\t"):
         "get response vec and input from file_in"
         res_col = 0  # default column number of response
         num_points = 0
 
         with open(file_exp, "r", encoding="utf-8") as f_in:
             for line in f_in:
-                lst_line = line.split()
+                lst_line = line.split(sep)
                 lst_line = [ele.strip() for ele in lst_line]
 
                 if '#' in line:  # with header line => get column of response
@@ -38,7 +38,9 @@ class ZeroGProcess:
                     res_col = lst_res_col.index(True)
                     continue
                 else:
-                    dim = len(lst_line) - 1
+                    dim_nonHeader = len(lst_line) - 1
+                    assert(dim_header == dim_nonHeader)   # ensure all lines have same dim
+
                     lst_line = [float(pnt) for pnt in lst_line]
                     self.Y.append(lst_line[res_col])
                     self.X.append(lst_line[:res_col] + lst_line[(res_col+1):])
@@ -50,7 +52,16 @@ class ZeroGProcess:
 
     def kernel(self, x1, x2, theta=1.0):
         "compute k(x1, x2) with Gaussian | Matern Kernel"
+        # do not allow to call any methods before get experiment data
+        assert(len(self.X) == len(self.Y))
+        assert(len(self.X) > 0)
 
+        # if data were not imported from get_data_from_file
+        if (self.dim==None) or (self.num_points==None):
+            self.dim = len(self.X[0])
+            self.num_points = len(self.X)
+
+        # compute k(x1, x2)
         if self.kernel_type == "gaussian":
             x1_x2 = [ele1 - ele2 for ele1, ele2 in zip(x1, x2)]
             norm2_x1_x2 = sum([ele**2 for ele in x1_x2])
@@ -62,6 +73,7 @@ class ZeroGProcess:
 
     def kernel_grad(self, x1_grad_pos, x2, theta=1.0):
         "compute gradient of k(x1_grad_pos, x2) at x1_grad_pos"
+
         if self.kernel_type == "gaussian":
             x1_x2 = [ele1 - ele2 for ele1, ele2 in zip(x1_grad_pos, x2)]
             grad_kernel_x1 = [(-1 / theta**2)*ele* self.kernel(x1_grad_pos, x2) for ele in x1_x2]
@@ -72,6 +84,7 @@ class ZeroGProcess:
 
     def compute_kernel_cov(self, lst_exp_points, theta=1.0):
         "compute kernel covariance matrix: K = (k(x_i, x_j))"
+
         dim = len(lst_exp_points)
         kernel_Cov = np.zeros(shape=(dim, dim))
 

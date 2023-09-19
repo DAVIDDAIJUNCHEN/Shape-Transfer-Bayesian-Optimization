@@ -115,7 +115,7 @@ class ExpectedImprovement(ZeroGProcess):
 
         return aux_ei_current
 
-    def auto_grad_ei(self, current_point, num_mc=1000, zeroCheck=1e-13):
+    def auto_grad_ei(self, current_point, num_mc=1000, kessi=0.0, zeroCheck=1e-13):
         "compute gradient at current_point by Monte Carlo method after reparameterization"
         y_max = max(self.Y)
 
@@ -129,7 +129,7 @@ class ExpectedImprovement(ZeroGProcess):
         
         for i in range(num_mc):
             z = np.random.normal(0, 1, 1)
-            current_util = mean_current + np.sqrt(var_current)*z - y_max
+            current_util = mean_current + np.sqrt(var_current)*z + kessi - y_max
 
             if current_util < zeroCheck: # pointwise utility function \hat{l}(x)<0 ===> grad = 0
                 grad = np.zeros(shape=(self.dim, 1))
@@ -281,6 +281,8 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
         "compute the mean value of GP1 + diffGP at current_point"
         mean_GP1 = self.zeroGP1.compute_mean(current_point)
         mean_diffGP = self.diffGP.compute_mean(current_point)
+        assert(len(mean_GP1) == len(mean_diffGP))
+
         mean_current = mean_GP1 + mean_diffGP
 
         return mean_current
@@ -289,6 +291,7 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
         "compute the gradient of mean(x) in GP1 + diffGP at current_point"
         grad_mean_a = self.zeroGP1.compute_grad_mean(current_point)
         grad_mean_b = self.diffGP.compute_grad_mean(current_point)
+        assert(len(grad_mean_a) == len(grad_mean_b))
 
         grad_mean = grad_mean_a + grad_mean_b
 
@@ -324,7 +327,7 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
         return grad_var
 
     def plot_ei(self, num_points=100, exp_ratio=1, confidence=0.9, kessis=[0.0], highlight_point=None):
-        "plot the acquisition function as well as ZeroGP in a figure with two figs"
+        "plot the acquisition function as well as ZeroGP&STBO in a figure with two figs"
         min_point_exp1 = min(self.zeroGP1.X)[0]
         min_point_exp2 = min(self.X)[0]
         min_point = min(min_point_exp1, min_point_exp2)
