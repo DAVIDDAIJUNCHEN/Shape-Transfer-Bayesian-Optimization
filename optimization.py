@@ -325,6 +325,7 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
 
         return grad_var
 
+sdsd
     def plot_ei(self, num_points=100, exp_ratio=1, confidence=0.9, kessis=[0.0], highlight_point=None):
         "plot the acquisition function as well as ZeroGP&STBO in a figure with two figs"
         min_point_exp1 = min(self.zeroGP1.X)[0]
