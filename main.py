@@ -16,7 +16,7 @@ if __name__ == "__main__":
     print(EI.Y)
 
     kessi = 1
-    x1 = [14]
+    x1 = [12]
     print("EI({:.2f}) = {:.2f}".format(x1[0], EI.aux_func_ei(x1, kessi)))
     x2 = [10.4]
     print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func_ei(x2, kessi)))
@@ -43,3 +43,4 @@ if __name__ == "__main__":
     start_points = [[0], [13], [15], [20]]
     next_point, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=60)    
     STBO.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
+    print(next_point)
