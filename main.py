@@ -40,12 +40,6 @@ if __name__ == "__main__":
     print(STBO.diffGP.X)
     print(STBO.diffGP.Y)
 
-    print(STBO.compute_mle_sigma2())
-    print(STBO.diffGP.compute_mle_sigma2())
-
-    for x_k in range(10, 20, 1):
-        print("grad at ", x_k, " ", STBO.auto_grad_ei([x_k]))
-
     start_points = [[0], [13], [15], [20]]
     next_point, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=60)    
     STBO.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
