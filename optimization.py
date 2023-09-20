@@ -144,7 +144,7 @@ class ExpectedImprovement(ZeroGProcess):
 
         return grad_current_util
 
-    def find_best_from_point_ei(self, init_point, num_step=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
+    def find_best_from_point_ei(self, init_point, num_step=1000, kessi=0.0, num_mc=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
         "find maximum point of Acquisition function from init_point by using ADAM algorithm"
         dim = self.dim
         assert(len(init_point) == dim)
@@ -156,7 +156,7 @@ class ExpectedImprovement(ZeroGProcess):
         point_current = init_point
 
         for t in range(num_step):
-            grad_current = self.auto_grad_ei(point_current)
+            grad_current = self.auto_grad_ei(point_current, num_mc, kessi)
             m_t = beta_1*m_t + (1 - beta_1)*grad_current
             gamma_t = beta_2*gamma_t + (1 - beta_2)*grad_current**2
 
@@ -167,11 +167,11 @@ class ExpectedImprovement(ZeroGProcess):
             point_current_vec = point_current_vec + m_t_BC * learn_rate / np.sqrt(gamma_t_BC + epslon)
             point_current = np.reshape(point_current_vec, newshape=(1, dim)).tolist()
             point_current = point_current[0]
-            aux_current = self.aux_func_ei(point_current)
+            aux_current = self.aux_func_ei(point_current, kessi)
 
         return point_current, aux_current
 
-    def find_best_NextPoint_ei(self, init_points=None, num_step=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
+    def find_best_NextPoint_ei(self, init_points=None, num_step=1000, kessi=0.0, num_mc=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
         """ find best next point of Acquisition function by starting from multi-points
             init_points: init_points = experiment points if None,
         """
@@ -181,11 +181,11 @@ class ExpectedImprovement(ZeroGProcess):
         best_points_aux = []
 
         for point_k in init_points:
-            best_point_k, best_aux_k = self.find_best_from_point_ei(point_k, num_step, thres, learn_rate, beta_1, beta_2, epslon)
+            best_point_k, best_aux_k = self.find_best_from_point_ei(point_k, num_step, kessi, num_mc, thres, learn_rate, beta_1, beta_2, epslon)
             best_points_aux.append((best_point_k, best_aux_k))
 
         best_point, best_aux = max(best_points_aux, key=itemgetter(1)) 
-        print(best_point, best_aux)
+
         return best_point, best_aux
 
     def plot_ei(self, num_points=100, exp_ratio=1, confidence=0.9, kessis=[0.0], highlight_point=None):
@@ -281,7 +281,6 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
         "compute the mean value of GP1 + diffGP at current_point"
         mean_GP1 = self.zeroGP1.compute_mean(current_point)
         mean_diffGP = self.diffGP.compute_mean(current_point)
-        assert(len(mean_GP1) == len(mean_diffGP))
 
         mean_current = mean_GP1 + mean_diffGP
 
@@ -340,7 +339,20 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
 
         x_draw = np.linspace(min_point-exp_ratio*delta, max_point+exp_ratio*delta, num_points)
 
-        # subplot 1: GProcess means & confidence bands of GP2 (normal zero GP on data 2) and STBO
+        # subplot 1: GProcess means & confidence bands of zeroGP1 (on data 1) and diffGP (on task2 - mean1)
+        GP1 = self.zeroGP1
+        y1_mean = [GP1.compute_mean([ele]) for ele in x_draw]
+        y1_conf_int = [GP1.conf_interval([ele]) for ele in x_draw]
+        y1_lower = [ele[0] for ele in y1_conf_int]
+        y1_upper = [ele[1] for ele in y1_conf_int]
+
+        diffGP = self.diffGP
+        yDiff_mean = [diffGP.compute_mean([ele]) for ele in x_draw]
+        yDiff_conf_int = [diffGP.conf_interval([ele]) for ele in x_draw]
+        yDiff_lower = [ele[0] for ele in yDiff_conf_int]
+        yDiff_upper = [ele[1] for ele in yDiff_conf_int]
+
+        # subplot 2: GProcess means & confidence bands of GP2 (normal zero GP on data 2) and STBO
         GP2_only = ZeroGProcess()
         GP2_only.X = self.X
         GP2_only.Y = self.Y
@@ -354,7 +366,7 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
         y_lower = [ele[0] for ele in y_conf_int]
         y_upper = [ele[1] for ele in y_conf_int]
 
-        # subplot 2: EI AC function with multiple parameters 
+        # subplot 3: EI AC function with multiple parameters 
         ac_values_lst = []
         if isinstance(kessis, list):
             for kessi in kessis:
@@ -365,21 +377,33 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
             ac_values_lst.append(ac_kessi)
             kessis = [kessis]
 
-        fig, (ax_gp, ax_ac) = plt.subplots(2, 1, sharex=True)
+        fig, (ax_gp1_diff, ax_gp_stbo, ax_ac) = plt.subplots(3, 1, sharex=True)
 
-        # GP2 only 
-        ax_gp.set_title("GProcess Confidence Band")
-        ax_gp.plot(x_draw, y2Only_mean, label="GP2 Only")
-        ax_gp.fill_between(x_draw, y2Only_lower, y2Only_upper, alpha=0.2)
-        ax_gp.plot(GP2_only.X, GP2_only.Y, 'o', color="tab:red")
+        # subplot 1: GP1 & diffGP
+        ax_gp1_diff.set_title("GProcess Confidence Band")
+        ax_gp1_diff.plot(x_draw, y1_mean, label="GP1")
+        ax_gp1_diff.fill_between(x_draw, y1_lower, y1_upper, alpha=0.2)
+        ax_gp1_diff.plot(GP1.X, GP1.Y, 'o', color="tab:blue")
 
-        # STBO 
-        ax_gp.plot(x_draw, y_mean, label="STBO")
-        ax_gp.fill_between(x_draw, y_lower, y_upper, alpha=0.2)
-        ax_gp.plot(self.X, self.Y, 'o', color="tab:red")
-        ax_gp.legend()
+        # 
+        ax_gp1_diff.plot(x_draw, yDiff_mean, label="diffGP")
+        ax_gp1_diff.fill_between(x_draw, yDiff_lower, yDiff_upper, alpha=0.2)
+        ax_gp1_diff.plot(diffGP.X, diffGP.Y, 'o', color="tab:red")
+        ax_gp1_diff.legend()
 
-        # STBO AC function 
+        # subplot 2: GP2 only 
+        ax_gp_stbo.set_title("GProcess Confidence Band")
+        ax_gp_stbo.plot(x_draw, y2Only_mean, label="GP2 Only")
+        ax_gp_stbo.fill_between(x_draw, y2Only_lower, y2Only_upper, alpha=0.2)
+        ax_gp_stbo.plot(GP2_only.X, GP2_only.Y, 'o', color="tab:red")
+
+        # STBO
+        ax_gp_stbo.plot(x_draw, y_mean, label="STBO")
+        ax_gp_stbo.fill_between(x_draw, y_lower, y_upper, alpha=0.2)
+        ax_gp_stbo.plot(self.X, self.Y, 'o', color="tab:red")
+        ax_gp_stbo.legend()
+
+        # subplot 3: STBO AC function 
         ax_ac.set_title("STBO EI Acquisition Function")
         for ac_value, kessi in zip(ac_values_lst, kessis):
             ax_ac.plot(x_draw, ac_value, label="kessi: "+str(kessi))
