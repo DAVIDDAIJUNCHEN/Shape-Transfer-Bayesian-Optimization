@@ -19,16 +19,13 @@ class ZeroGProcess:
         self.kernel_type = type_kernel
         self.theta = param_kernel
 
-    def get_data_from_file(self, file_exp, sep="\t"):
+    def get_data_from_file(self, file_exp):
         "get response vec and input from file_in"
         res_col = 0  # default column number of response
         num_points = 0
 
         with open(file_exp, "r", encoding="utf-8") as f_in:
             for line in f_in:
-                lst_line = line.split(sep)
-                lst_line = [ele.strip() for ele in lst_line]
-
                 if '#' in line:  # with header line => get column of response
                     lst_line = line.split('#')
                     lst_line = [ele.strip() for ele in lst_line]
@@ -38,6 +35,8 @@ class ZeroGProcess:
                     res_col = lst_res_col.index(True)
                     continue
                 else:
+                    lst_line = line.split()
+                    lst_line = [ele.strip() for ele in lst_line]
                     dim_nonHeader = len(lst_line) - 1
                     assert(dim_header == dim_nonHeader)   # ensure all lines have same dim
 
