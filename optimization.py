@@ -417,13 +417,64 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
 
         return 0
 
-class BiasCorrectedBO(ZeroGProcess):
+
+class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
     """
-    class BiasCorrectedBO:
-    
+    class BiasCorrectedBO: 
+        A competitive method proposed in paper: 
+        Regret Bounds for Transfer Learning in Bayesian Optimization
+
     """
     def __init__(self):
-        super(ShapeTransferBO, self).__init__()
+        super(BiasCorrectedBO, self).__init__()
+        self.zeroGP1 = None
+        self.diffGP = None
+
+    def build_task1_gp(self, file_exp_task1):
+        "build ZeroGProcess for task1 with known experiment points"
+        zeroGP1 = ZeroGProcess()
+        zeroGP1.get_data_from_file(file_exp_task1)
+        assert(len(zeroGP1.X) == len(zeroGP1.Y))
+
+        self.zeroGP1 = zeroGP1
+
+        return 0
+    
+    def build_diff_gp(self):
+        "build ZeroGProcess on difference between task2 and task1_gp"
+
+        diffGP = ZeroGProcess()
+        assert(len(self.X) == len(self.Y))
+
+        # compute difference between task2 and task1_gp
+        X_task2 = self.X
+        Y_task2 = self.Y
+
+        diff_Y = []
+
+        for point, y_task2 in zip(X_task2, Y_task2):
+            mean_GP1_point = self.zeroGP1.compute_mean(point)
+            diff_y_point = y_task2 - mean_GP1_point
+            diff_Y.append(diff_y_point)
+        
+        diffGP.Y = diff_Y
+        diffGP.X = self.X
+        self.diffGP = diffGP
+
+        # bias correct data of zeroGP1 
+        X1 = self.zeroGP1.X
+        Y1 = self.zeroGP1.Y
+        Y1_bc = []
+
+        assert(len(X1) == len(Y1))
+        for i in range(len(X1)):
+            Y1_bc.append(Y1[i] + diffGP.compute_mean(X1[i]))
+
+        # merge bias correct data into exp 2
+        self.X.extend(X1)
+        self.Y.extend(Y1_bc)
+
+        return 0
 
 
 if __name__ == "__main__":
@@ -440,3 +491,18 @@ if __name__ == "__main__":
     print("UCB({:.2f}) = {:.2f}".format(x2[0], UCB.aux_func_ucb(x2, gamma)))
 
     UCB.plot(gammas=[0.8, 0.9, 1])
+
+    # BiasCorrectedBO
+    BCBO = BiasCorrectedBO()
+    BCBO.get_data_from_file("data/experiment_points_task2.tsv")
+
+    print("before bias correction")
+    print(BCBO.X)
+    print(BCBO.Y)
+
+    BCBO.build_task1_gp("./data/experiment_points_task1.tsv")
+    BCBO.build_diff_gp()
+
+    print("after bias correction & merge")
+    print(BCBO.X)
+    print(BCBO.Y)
