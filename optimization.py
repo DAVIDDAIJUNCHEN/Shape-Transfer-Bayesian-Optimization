@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os
+import os, copy
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
@@ -458,21 +458,99 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
             diff_Y.append(diff_y_point)
         
         diffGP.Y = diff_Y
-        diffGP.X = self.X
+        diffGP.X = copy.deepcopy(self.X)
         self.diffGP = diffGP
 
         # bias correct data of zeroGP1 
         X1 = self.zeroGP1.X
         Y1 = self.zeroGP1.Y
-        Y1_bc = []
 
         assert(len(X1) == len(Y1))
-        for i in range(len(X1)):
-            Y1_bc.append(Y1[i] + diffGP.compute_mean(X1[i]))
 
-        # merge bias correct data into exp 2
-        self.X.extend(X1)
-        self.Y.extend(Y1_bc)
+        # only add points from X1, which are not in exp 2
+        for i in range(len(X1)):
+            if X1[i] not in self.X:
+                self.Y.append(Y1[i] + diffGP.compute_mean(X1[i]))
+                self.X.append(X1[i])
+        
+        return 0
+
+    def plot_ei(self, num_points=100, exp_ratio=1, confidence=0.9, kessis=[0.0], highlight_point=None):
+        "plot the acquisition function as well as ZeroGP&STBO in a figure with two figs"
+        min_point_exp1 = min(self.zeroGP1.X)[0]
+        min_point_exp2 = min(self.X)[0]
+        min_point = min(min_point_exp1, min_point_exp2)
+
+        max_point_exp1 = max(self.zeroGP1.X)[0]
+        max_point_exp2 = max(self.X)[0]
+        max_point = max(max_point_exp1, max_point_exp2)
+
+        delta = max_point - min_point
+
+        x_draw = np.linspace(min_point-exp_ratio*delta, max_point+exp_ratio*delta, num_points)
+
+        # subplot 1: GProcess means & confidence bands of zeroGP1 (on data 1) and diffGP (on task2 - mean1)
+        GP1 = self.zeroGP1
+        y1_mean = [GP1.compute_mean([ele]) for ele in x_draw]
+        y1_conf_int = [GP1.conf_interval([ele]) for ele in x_draw]
+        y1_lower = [ele[0] for ele in y1_conf_int]
+        y1_upper = [ele[1] for ele in y1_conf_int]
+
+        diffGP = self.diffGP
+        yDiff_mean = [diffGP.compute_mean([ele]) for ele in x_draw]
+        yDiff_conf_int = [diffGP.conf_interval([ele]) for ele in x_draw]
+        yDiff_lower = [ele[0] for ele in yDiff_conf_int]
+        yDiff_upper = [ele[1] for ele in yDiff_conf_int]
+
+        # subplot 2: GProcess means & confidence bands of Bias Corrected Bayeisan Optimization
+        y_mean = [self.compute_mean([ele]) for ele in x_draw]
+        y_conf_int = [self.conf_interval([ele], confidence) for ele in x_draw]
+        y_lower = [ele[0] for ele in y_conf_int]
+        y_upper = [ele[1] for ele in y_conf_int]
+
+        # subplot 3: EI AC function with multiple parameters 
+        ac_values_lst = []
+        if isinstance(kessis, list):
+            for kessi in kessis:
+                ac_kessi = [self.aux_func_ei([ele], kessi) for ele in x_draw]
+                ac_values_lst.append(ac_kessi)
+        elif isinstance(kessis, float):
+            ac_kessi = [self.aux_func_ei([ele], kessis) for ele in x_draw]
+            ac_values_lst.append(ac_kessi)
+            kessis = [kessis]
+
+        fig, (ax_gp1_diff, ax_gp_bcbo, ax_ac) = plt.subplots(3, 1, sharex=True)
+
+        # subplot 1: GP1 & diffGP
+        ax_gp1_diff.set_title("GProcess Confidence Band")
+        ax_gp1_diff.plot(x_draw, y1_mean, label="GP1")
+        ax_gp1_diff.fill_between(x_draw, y1_lower, y1_upper, alpha=0.2)
+        ax_gp1_diff.plot(GP1.X, GP1.Y, 'o', color="tab:blue")
+
+        # 
+        ax_gp1_diff.plot(x_draw, yDiff_mean, label="diffGP")
+        ax_gp1_diff.fill_between(x_draw, yDiff_lower, yDiff_upper, alpha=0.2)
+        ax_gp1_diff.plot(diffGP.X, diffGP.Y, 'o', color="tab:red")
+        ax_gp1_diff.legend()
+
+        # subplot 2: GP2 only 
+        ax_gp_bcbo.set_title("GProcess Confidence Band")
+        ax_gp_bcbo.plot(x_draw, y_mean, label="BCBO")
+        ax_gp_bcbo.fill_between(x_draw, y_lower, y_upper, alpha=0.2)
+        ax_gp_bcbo.plot(self.X, self.Y, 'o', color="tab:red")
+        ax_gp_bcbo.legend()
+
+        # subplot 3: STBO AC function 
+        ax_ac.set_title("STBO EI Acquisition Function")
+        for ac_value, kessi in zip(ac_values_lst, kessis):
+            ax_ac.plot(x_draw, ac_value, label="kessi: "+str(kessi))
+
+        if highlight_point != None:
+            ax_ac.plot(highlight_point[0], highlight_point[1], 'o', color="tab:red")
+
+        ax_ac.legend()
+        fig.tight_layout()
+        fig.savefig("./example_bcbo_ac_ei.png")
 
         return 0
 
@@ -491,18 +569,3 @@ if __name__ == "__main__":
     print("UCB({:.2f}) = {:.2f}".format(x2[0], UCB.aux_func_ucb(x2, gamma)))
 
     UCB.plot(gammas=[0.8, 0.9, 1])
-
-    # BiasCorrectedBO
-    BCBO = BiasCorrectedBO()
-    BCBO.get_data_from_file("data/experiment_points_task2.tsv")
-
-    print("before bias correction")
-    print(BCBO.X)
-    print(BCBO.Y)
-
-    BCBO.build_task1_gp("./data/experiment_points_task1.tsv")
-    BCBO.build_diff_gp()
-
-    print("after bias correction & merge")
-    print(BCBO.X)
-    print(BCBO.Y)
