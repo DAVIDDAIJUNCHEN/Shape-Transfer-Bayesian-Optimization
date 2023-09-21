@@ -6,6 +6,7 @@ from gp import ZeroGProcess
 from optimization import UpperConfidenceBound
 from optimization import ExpectedImprovement
 from optimization import ShapeTransferBO
+from optimization import BiasCorrectedBO
 
 
 if __name__ == "__main__":
@@ -44,3 +45,30 @@ if __name__ == "__main__":
     next_point, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=60)    
     STBO.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
     print(next_point)
+
+    # BCBO on Experiment 1 & 2
+    BCBO = BiasCorrectedBO()
+    BCBO.get_data_from_file("data/experiment_points_task2.tsv")
+
+    print("before bias correction")
+    print(BCBO.X)
+    print(BCBO.Y)
+
+    BCBO.build_task1_gp("./data/experiment_points_task1.tsv")
+    BCBO.build_diff_gp()
+
+    print("after bias correction & merge")
+    print(BCBO.X)
+    print(BCBO.Y)
+
+    print(BCBO.zeroGP1.X)
+    print(BCBO.zeroGP1.Y)
+
+    print(BCBO.diffGP.X)
+    print(BCBO.diffGP.Y)
+
+    start_points = [[0], [13], [15], [20]]
+    next_point, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=60)    
+    BCBO.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
+    print(next_point)
+    
