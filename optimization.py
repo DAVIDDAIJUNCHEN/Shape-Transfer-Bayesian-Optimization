@@ -404,7 +404,7 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
         ax_gp_stbo.legend()
 
         # subplot 3: STBO AC function 
-        ax_ac.set_title("STBO EI Acquisition Function")
+        ax_ac.set_title("Shape Transfer BO EI Acquisition Function")
         for ac_value, kessi in zip(ac_values_lst, kessis):
             ax_ac.plot(x_draw, ac_value, label="kessi: "+str(kessi))
 
@@ -541,7 +541,7 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
         ax_gp_bcbo.legend()
 
         # subplot 3: STBO AC function 
-        ax_ac.set_title("STBO EI Acquisition Function")
+        ax_ac.set_title("Bias Corrected BO EI Acquisition Function")
         for ac_value, kessi in zip(ac_values_lst, kessis):
             ax_ac.plot(x_draw, ac_value, label="kessi: "+str(kessi))
 
