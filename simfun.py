@@ -59,4 +59,3 @@ if __name__ == "__main__":
     ax.legend()
     fig.tight_layout()
     fig.savefig("./rhks_norm_mu1_mu2")
-    

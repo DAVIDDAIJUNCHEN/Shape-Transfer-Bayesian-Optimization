@@ -41,7 +41,6 @@ if __name__ == "__main__":
     x2 = [17]
     print("STBO EI({:.2f}) = {:.2f}".format(x2[0], STBO.aux_func_ei(x2, kessi)))
 
-
     start_points = [[0], [13], [15], [20]]
     next_point, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=500)    
     STBO.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
