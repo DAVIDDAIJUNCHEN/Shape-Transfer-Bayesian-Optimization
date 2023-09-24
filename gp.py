@@ -134,6 +134,7 @@ class ZeroGProcess:
 
     def compute_mean(self, current_point):
         "compute the mean value at current_point"
+        
         kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
         kernel_Vec_mat = self.compute_kernel_vec(self.X, current_point, self.theta)
         inv_kernel_Cov = np.linalg.inv(kernel_Cov_mat)
