@@ -52,11 +52,11 @@ if __name__ == "__main__":
     
     print(diff_mu1_mu2([0, 0], [1, 1], theta=3))
     fig, ax = plt.subplots(1, 1)
-    ax.set_title("RHKS Norm of mu1-mu2")
+    ax.set_title("RKHS Norm of mu1-mu2")
     ax.plot(x_draw, y_theta_1_2, label="theta=0.5")
     ax.plot(x_draw, y_theta_1, label="theta=1")
     ax.plot(x_draw, y_theta_3, label="theta=3")
 
     ax.legend()
     fig.tight_layout()
-    fig.savefig("./rhks_norm_mu1_mu2")
+    fig.savefig("./rkhs_norm_mu1_mu2")
