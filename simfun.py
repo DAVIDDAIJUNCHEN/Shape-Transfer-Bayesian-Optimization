@@ -50,6 +50,7 @@ if __name__ == "__main__":
     y_theta_1_2 = [diff_mu1_mu2([0], [ele], theta=0.5) for ele in x_draw]
     y_theta_3 = [diff_mu1_mu2([0], [ele], theta=3) for ele in x_draw]
     
+    print(diff_mu1_mu2([0, 0], [1, 1], theta=3))
     fig, ax = plt.subplots(1, 1)
     ax.set_title("RHKS Norm of mu1-mu2")
     ax.plot(x_draw, y_theta_1_2, label="theta=0.5")

@@ -1,9 +1,9 @@
 #!/bin/env bash
 
 # Part 1: Exponential target function
-Thetas="5"
-mu_1="0.0_1.0"
-mu_2="1.0_0.0"
+Thetas="1"
+mu_1="0.0_0.0"
+mu_2="1.0_1.0"
 
 T1=10
 T2=4
