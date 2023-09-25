@@ -2,6 +2,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
+from mpl_toolkits.mplot3d import axes3d
 
 def branin(input=[3., 4.]):
     "Branin function: "
@@ -23,6 +25,35 @@ def mod_branin(input=[3., 4.]):
 
     return branin(input) + 20*x1 - 30*x2
 
+def show_branin(x_low=-1, x_up=1, y_low=-1, y_up=1, x_nums=100, y_nums=100):
+    fig = plt.figure(figsize=plt.figaspect(0.5))
+    ax = fig.add_subplot(1, 2, 1, projection='3d')
+
+    X = np.arange(-5, 10, 0.25)
+    Y = np.arange(0, 15, 0.25)
+    X, Y = np.meshgrid(X, Y)
+
+    branin1 = Y - 5.1*(X**2) / (4*np.pi**2) + 5*X / np.pi - 6
+    branin2 = 10*(1 - 1/(8*np.pi))*np.cos(X)
+    branin = branin1**2 + branin2 + 10
+    Z = branin
+
+    surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm,
+                           linewidth=0, antialiased=False)
+
+    ax.set_zlim(-20, 300)
+    fig.colorbar(surf, shrink=0.5, aspect=10)
+
+    ax = fig.add_subplot(1, 2, 2, projection='3d')
+    ax.plot_wireframe(X, Y, Z, rstride=5, cstride=5)
+    ax.set_zlim(-20, 300)
+
+    plt.show()
+
+    fig.savefig("./branin_3d")
+
+    return 0
+
 def exp_mu(input, mu, theta=1):
     """
     Exponential function on ||input - mu||^2,
@@ -42,21 +73,27 @@ def diff_mu1_mu2(mu1, mu2, theta=1):
 
     return norm_rkhs
 
-
-if __name__ == "__main__":
-    x_draw = np.linspace(0, 7, 100)
-
-    y_theta_1 = [diff_mu1_mu2([0], [ele], theta=1) for ele in x_draw]
-    y_theta_1_2 = [diff_mu1_mu2([0], [ele], theta=0.5) for ele in x_draw]
-    y_theta_3 = [diff_mu1_mu2([0], [ele], theta=3) for ele in x_draw]
+def plot_rkhs_norm(low_diff=0, up_diff=7, theta_lst=[0.25, 0.5, 1, 1.5, 3]):
+    """
+    x-axis: mu1 - mu2, 1-dim scenario
+    y-axis: diff_mu1_mu2
+    """
+    x_draw = np.linspace(low_diff, up_diff, 100)
     
-    print(diff_mu1_mu2([0, 0], [1, 1], theta=3))
     fig, ax = plt.subplots(1, 1)
     ax.set_title("RKHS Norm of mu1-mu2")
-    ax.plot(x_draw, y_theta_1_2, label="theta=0.5")
-    ax.plot(x_draw, y_theta_1, label="theta=1")
-    ax.plot(x_draw, y_theta_3, label="theta=3")
+
+    for theta in theta_lst:
+        y_theta = [diff_mu1_mu2([0], [ele], theta) for ele in x_draw]
+        ax.plot(x_draw, y_theta, label="theta="+str(theta))
 
     ax.legend()
     fig.tight_layout()
     fig.savefig("./rkhs_norm_mu1_mu2")
+
+    return 0
+
+
+if __name__ == "__main__":
+    plot_rkhs_norm()
+    show_branin()
