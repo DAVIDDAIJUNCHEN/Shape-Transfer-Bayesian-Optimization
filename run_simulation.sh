@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
-stage=$1   # 0: run both EXP and BR; 1: run EXP only; 2: run BR only
+stage=$1       # 0: run both EXP and BR; 1: run EXP only; 2: run BR only
+from_task1=$2  # 1: start from task1, 0: start from task2
 
 # check arguments
-if [ -z $1 ]; then 
-    echo "Usage: bash run_simulation.sh <stage-number>" 
+if [ -z $1 ] || [ -z $2 ]; then 
+    echo "Usage: bash run_simulation.sh <stage-number> <start_from_task1>" 
     echo "<stage-number>: 0, run all simulation;"
     echo "<stage-number>: 1, run EXP only;"
     echo "<stage-number>: 2, run BR only." && exit 0
@@ -19,13 +20,13 @@ if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then
     mu_2="1.0_1.0"
 
     T1=15
-    T2=4
+    T2=5
 
     num_rep=1
 
     for i in $(seq 1 $num_rep); do
         for theta in $Thetas; do
-            python ./main_simulation.py  --T1 $T1  --T2 $T2  --type EXP  --mu1 $mu_1  --mu2 $mu_2  --theta $theta 
+            python ./main_simulation.py  --T1 $T1  --T2 $T2  --type EXP  --mu1 $mu_1  --mu2 $mu_2  --theta $theta --from_task1 $from_task1
 
         done
     done 
@@ -35,12 +36,12 @@ if [ $stage -eq 0 ] || [ $stage -eq 2 ]; then
     echo "Simulation 2: Branni function (task1), Modified Branni function (task2)"
     # Task 1: Branni; Task 2: Modified Branni
     T1=15
-    T2=4
+    T2=5
 
     num_rep=1
 
     for i in $(seq 1 $num_rep); do 
-        python ./main_simulation.py --T1 $T1  --T2 $T2 --type BR 
+        python ./main_simulation.py --T1 $T1  --T2 $T2 --type BR --from_task1 $from_task1
 
     done
 fi

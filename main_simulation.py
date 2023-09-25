@@ -20,7 +20,7 @@ def arg_parser():
     argparser.add_argument("--T1", default=10, help="number of experiments in target function 1")
     argparser.add_argument("--T2", default=4, help="number of experiemnts in target function 2")
     argparser.add_argument("--type", default="EXP", choices=["EXP", "BR"], help="choose target function type")
-
+    argparser.add_argument("--from_task1", default=True, choices=['0', '1'], help="start simulation from task1")
     parser = argparser.parse_args()
     
     return parser
@@ -51,7 +51,7 @@ def get_best_point(file, response_col=0):
 
 def main_exp(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
              rand_file_1="rf1.tsv", num_start_opt2=5, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
-             file_2_gp="f2_gp.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv", start_from_exp1=True):
+             file_2_gp="f2_gp.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv"):
     """
     simulation main function of Brainn target function type:
     num_exp[1 | 2]: number of experiments in task [1 | 2]
@@ -68,6 +68,7 @@ def main_exp(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, 
     theta = parser.theta
     mu1 = parser.mu1
     mu2 = parser.mu2
+    start_from_exp1 = int(parser.from_task1)
 
     mu1 = [float(ele) for ele in mu1.split("_")]
     mu2 = [float(ele) for ele in mu2.split("_")]
@@ -177,7 +178,7 @@ def main_exp(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, 
 
 def main_br(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
             rand_file_1="rf1.tsv", num_start_opt2=5, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
-            file_2_gp="f2_gp.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv", start_from_exp1=True):
+            file_2_gp="f2_gp.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv"):
     """
     simulation main function of Brainn target function type:
     num_exp[1 | 2]: number of experiments in task [1 | 2]
@@ -192,6 +193,7 @@ def main_br(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, k
     start_from_exp1: True | False, consider False if skip experiment 1 
     """
 
+    start_from_exp1 = int(parser.from_task1)
     dim = 2 
     low = -5
     high = 5
@@ -307,7 +309,7 @@ if __name__ == "__main__":
         f2_bcbo = "data/simExp_points_task2_bcbo.tsv"
 
         main_exp(T1, T2, file_1_gp=f1_gp, rand_file_1=f1_rand, file_2_gp=f2_gp, 
-                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo, start_from_exp1=True)
+                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
         
     elif fun_type == "BR":
         f1_gp = "data/simBr_points_task1_gp.tsv"
@@ -317,5 +319,5 @@ if __name__ == "__main__":
         f2_bcbo = "data/simBr_points_task2_bcbo.tsv"  
               
         main_br(T1, T2, file_1_gp=f1_gp, rand_file_1=f1_rand, file_2_gp=f2_gp, 
-                file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo, start_from_exp1=True)
+                file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
