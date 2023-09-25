@@ -23,7 +23,10 @@ def mod_branin(input=[3., 4.]):
     x1 = input[0]
     x2 = input[1]
 
-    return branin(input) + 20*x1 - 30*x2
+    #mod_bran = branin(input) + 20*x1 - 30*x2
+    mod_bran = branin(input) + 20*x1*np.sin(x2)
+    
+    return mod_bran
 
 def show_branin(x_low=-1, x_up=1, y_low=-1, y_up=1, x_nums=100, y_nums=100):
     fig = plt.figure(figsize=plt.figaspect(0.5))
