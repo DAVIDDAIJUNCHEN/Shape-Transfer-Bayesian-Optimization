@@ -131,7 +131,7 @@ class ExpectedImprovement(ZeroGProcess):
             z = np.random.normal(0, 1, 1)
             current_util = mean_current + np.sqrt(var_current)*z + kessi - y_max
 
-            if current_util < zeroCheck: # pointwise utility function \hat{l}(x)<0 ===> grad = 0
+            if (current_util < zeroCheck) or (np.sqrt(var_current) < zeroCheck): # pointwise utility function \hat{l}(x)<0 ===> grad = 0
                 grad = np.zeros(shape=(self.dim, 1))
             else:
                 grad_mean = self.compute_grad_mean(current_point)
