@@ -24,18 +24,21 @@ if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then
     mu_1="0.0_0.0"
     mu_2="1.0_1.0"
 
-    T1=15
-    T2=5
+    T1=20
+    T2=20
 
-    num_rep=1
+    num_rep=20
 
     for theta in $Thetas; do
         echo "Taks 1: mean=$mu_1, theta=$theta; Taks 2: mean=$mu_2, theta=$theta"
         for i in $(seq 1 $num_rep); do
             echo "Running $i-th simulation"
-            python ./main_simulation.py  --T1 $T1  --T2 $T2  --type EXP  --mu1 $mu_1  --mu2 $mu_2  --theta $theta --from_task1 $from_task1
-            mkdir -p $path_data/EXP_$theta/$i
-            mv $path_data/simExp*tsv   $path_data/EXP_$theta/$i/
+            mkdir -p $path_data/EXP_mu2_${mu_2}_theta_$theta/$i
+            out_dir=$path_data/EXP_mu2_${mu_2}_theta_$theta/$i
+
+            sbatch ./main_simulation.py  --T1 $T1  --T2 $T2  --out_dir $out_dir  --type EXP   \
+                                        --mu1 $mu_1  --mu2 $mu_2  --theta $theta --from_task1 $from_task1
+            echo "Submitted $i-th EXP simulation by Slurm"
         done
     done
 fi
@@ -43,15 +46,17 @@ fi
 
 if [ $stage -eq 0 ] || [ $stage -eq 2 ]; then
     echo "Simulation 2: Branin function (task1), Modified Branni function (task2)"
-    T1=15
-    T2=5
+    T1=20
+    T2=20
 
-    num_rep=1
+    num_rep=20
 
     for i in $(seq 1 $num_rep); do 
         echo "Running $i-th simulation"
-        python ./main_simulation.py --T1 $T1  --T2 $T2 --type BR --from_task1 $from_task1
         mkdir -p $path_data/Branin/$i
-        mv $path_data/simBr*tsv   $path_data/Branin/$i/
+        out_dir=$path_data/Branin/$i
+
+        sbatch ./main_simulation.py --T1 $T1  --T2 $T2 --out_dir $out_dir --type BR --from_task1 $from_task1
+        echo "Submitted $i-th BR simulation by Slurm"
     done
 fi

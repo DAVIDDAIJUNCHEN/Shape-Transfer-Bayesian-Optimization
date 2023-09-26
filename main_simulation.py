@@ -1,7 +1,9 @@
 #!/usr/bin/env python3 
 
-import argparse, os, random
+import argparse, os, sys
 import numpy as np
+
+sys.path.append(os.getcwd())
 
 from optimization import UpperConfidenceBound
 from optimization import ExpectedImprovement
@@ -12,7 +14,7 @@ from simfun import exp_mu, branin, mod_branin
 
 
 def arg_parser():
-    "parse the argument"
+    "parse the arguments"
     argparser = argparse.ArgumentParser(description="run simulation to compare 3 methods, ZeroGProcess, BCBO and STBO")
     argparser.add_argument("--theta", default="1.0", help="parameter in exponential target function")
     argparser.add_argument("--mu1", default="[0.0, 0.0]", help="mu of target function 1")
@@ -21,6 +23,7 @@ def arg_parser():
     argparser.add_argument("--T2", default=4, help="number of experiemnts in target function 2")
     argparser.add_argument("--type", default="EXP", choices=["EXP", "BR"], help="choose target function type")
     argparser.add_argument("--from_task1", default=True, choices=['0', '1'], help="start simulation from task1")
+    argparser.add_argument("--out_dir", default="./data", help="output dir")
     parser = argparser.parse_args()
     
     return parser
@@ -298,26 +301,30 @@ if __name__ == "__main__":
     parser = arg_parser()
 
     fun_type = parser.type
+    out_dir = parser.out_dir
+    
     T1 = int(parser.T1)
     T2 = int(parser.T2)
 
     if fun_type == "EXP":
-        f1_gp = "data/simExp_points_task1_gp.tsv"
-        f1_rand = "data/simExp_points_task1_rand.tsv"
-        f2_gp = "data/simExp_points_task2_gp.tsv"
-        f2_stbo = "data/simExp_points_task2_stbo.tsv"
-        f2_bcbo = "data/simExp_points_task2_bcbo.tsv"
+        f1_gp = os.path.join(out_dir, "simExp_points_task1_gp.tsv")
+        f1_rand = os.path.join(out_dir, "simExp_points_task1_rand.tsv")
+
+        f2_gp = os.path.join(out_dir, "simExp_points_task2_gp.tsv")
+        f2_stbo = os.path.join(out_dir, "simExp_points_task2_stbo.tsv")
+        f2_bcbo = os.path.join(out_dir, "simExp_points_task2_bcbo.tsv")
 
         main_exp(T1, T2, file_1_gp=f1_gp, rand_file_1=f1_rand, file_2_gp=f2_gp, 
                  file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
         
     elif fun_type == "BR":
-        f1_gp = "data/simBr_points_task1_gp.tsv"
-        f1_rand = "data/simBr_points_task1_rand.tsv"
-        f2_gp = "data/simBr_points_task2_gp.tsv"
-        f2_stbo = "data/simBr_points_task2_stbo.tsv"
-        f2_bcbo = "data/simBr_points_task2_bcbo.tsv"  
-              
+        f1_gp = os.path.join(out_dir, "simBr_points_task1_gp.tsv")
+        f1_rand = os.path.join(out_dir, "simBr_points_task1_rand.tsv")
+
+        f2_gp = os.path.join(out_dir, "simBr_points_task2_gp.tsv")
+        f2_stbo = os.path.join(out_dir, "simBr_points_task2_stbo.tsv")
+        f2_bcbo = os.path.join(out_dir, "simBr_points_task2_bcbo.tsv")
+
         main_br(T1, T2, file_1_gp=f1_gp, rand_file_1=f1_rand, file_2_gp=f2_gp, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 

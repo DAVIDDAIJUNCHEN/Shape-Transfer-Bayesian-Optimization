@@ -76,6 +76,41 @@ def diff_mu1_mu2(mu1, mu2, theta=1):
 
     return norm_rkhs
 
+def show_exp(x_low=-1, x_up=1, y_low=-1, y_up=1, theta=1, x_nums=100, y_nums=100):
+    fig = plt.figure(figsize=plt.figaspect(0.5))
+    ax = fig.add_subplot(1, 2, 1, projection='3d')
+
+    X = np.arange(-5, 5, 0.25)
+    Y = np.arange(-5, 5, 0.25)
+    X, Y = np.meshgrid(X, Y)
+
+    exp1_norm2 = X**2 + Y**2  
+    exp2_norm2 = (X+1.5)**2 + (Y+1.5)**2
+ 
+    exp1 = np.exp(-0.5 * exp1_norm2 / theta**2)
+    exp2 = np.exp(-0.5 * exp2_norm2 / theta**2)
+    Z1 = exp1
+    Z2 = exp2
+
+    surf1 = ax.plot_surface(X, Y, Z1, rstride=1, cstride=1, cmap=cm.coolwarm,
+                           linewidth=0, antialiased=False)
+    surf2 = ax.plot_surface(X, Y, Z2, rstride=1, cstride=1, cmap=cm.coolwarm,
+                       linewidth=0, antialiased=False)
+
+    ax.set_zlim(0, 1.4)
+    fig.colorbar(surf2, shrink=0.5, aspect=10)
+
+    ax = fig.add_subplot(1, 2, 2, projection='3d')
+    ax.plot_wireframe(X, Y, Z1, rstride=5, cstride=5)
+    ax.plot_wireframe(X, Y, Z2, rstride=5, cstride=5)
+    ax.set_zlim(0, 1.4)
+    
+    plt.show()
+
+    fig.savefig("./exp_3d")
+
+    return 0
+
 def plot_rkhs_norm(low_diff=0, up_diff=7, theta_lst=[0.25, 0.5, 1, 1.5, 3]):
     """
     x-axis: mu1 - mu2, 1-dim scenario
@@ -100,3 +135,4 @@ def plot_rkhs_norm(low_diff=0, up_diff=7, theta_lst=[0.25, 0.5, 1, 1.5, 3]):
 if __name__ == "__main__":
     plot_rkhs_norm()
     show_branin()
+    show_exp()
