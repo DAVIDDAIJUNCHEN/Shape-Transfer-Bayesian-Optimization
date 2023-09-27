@@ -134,7 +134,7 @@ def run_statistics(file_lsts, out_dir, header_name="response"):
             per25_lst.append(per25_t)
             per50_lst.append(per50_t)
             per75_lst.append(per75_t)
-        
+
         with open(outfile_name, 'w', encoding="utf-8") as fout:
             fout.writelines("step#mean#std#min#25% percentile#50% percentile#75% percentile#max\n")
             for t in range(max_len):
@@ -161,21 +161,23 @@ def show_errorbar(dct_mean_std, title, fig_name, conf_level=0.9):
         y_mean = [ele[0] for ele in item[1]]
         y_std = [ele[1]*conf_level for ele in item[1]]
         
-        ax.errorbar(x_draw, y_mean, yerr=y_std, label=item[0])
-        plt.legend(loc="lower right")
+        ax.errorbar(x_draw, y_mean, yerr=y_std, label=item[0], fmt='-o')
+        plt.legend()
         plt.show()
         plt.savefig(fig_name)
     
-    return
+    return 0
+
 
 if __name__ == "__main__":
     parser = arg_parser()
-    in_dir = parser.input_dir
+    in_dir = os.path.relpath(parser.input_dir)
     out_dir = parser.out_dir
     topic = parser.topic
 
     file_lsts = collect_file(in_dir, topic)
     dct_mean_std = run_statistics(file_lsts, "./simulation_results")
+    
+    fig_name = os.path.join(os.path.abspath(out_dir), os.path.basename(in_dir)) + '_' + topic + ".png" 
 
-    fig_name = os.path.basename(in_dir) + '_' + topic + ".png" 
     show_errorbar(dct_mean_std, title=topic+" error bar", fig_name=fig_name, conf_level=0.8)
