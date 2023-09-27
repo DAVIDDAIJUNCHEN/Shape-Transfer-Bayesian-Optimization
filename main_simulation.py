@@ -53,7 +53,7 @@ def get_best_point(file, response_col=0):
     return best_point
 
 def main_exp(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
-             rand_file_1="rf1.tsv", num_start_opt2=5, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
+             rand_file_1="rf1.tsv", num_start_opt2=20, lr2=0.5, num_steps_opt2=1000, kessi_2=0.0, 
              file_2_gp="f2_gp.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv"):
     """
     simulation main function of Brainn target function type:
@@ -178,9 +178,8 @@ def main_exp(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, 
 
     return 0
 
-
 def main_br(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
-            rand_file_1="rf1.tsv", num_start_opt2=5, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
+            rand_file_1="rf1.tsv", num_start_opt2=20, lr2=0.5, num_steps_opt2=1000, kessi_2=0.0, 
             file_2_gp="f2_gp.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv"):
     """
     simulation main function of Brainn target function type:
