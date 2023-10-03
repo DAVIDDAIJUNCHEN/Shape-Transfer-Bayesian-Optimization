@@ -76,7 +76,7 @@ def diff_mu1_mu2(mu1, mu2, theta=1):
 
     return norm_rkhs
 
-def show_exp(x_low=-1, x_up=1, y_low=-1, y_up=1, theta=1, x_nums=100, y_nums=100):
+def show_exp(mu2=[1, 1], x_low=-1, x_up=1, y_low=-1, y_up=1, theta=1, x_nums=100, y_nums=100):
     fig = plt.figure(figsize=plt.figaspect(0.5))
     ax = fig.add_subplot(1, 2, 1, projection='3d')
 
@@ -85,8 +85,8 @@ def show_exp(x_low=-1, x_up=1, y_low=-1, y_up=1, theta=1, x_nums=100, y_nums=100
     X, Y = np.meshgrid(X, Y)
 
     exp1_norm2 = X**2 + Y**2  
-    exp2_norm2 = (X+1.5)**2 + (Y+1.5)**2
- 
+    exp2_norm2 = (X- mu2[0])**2 + (Y - mu2[1])**2
+
     exp1 = np.exp(-0.5 * exp1_norm2 / theta**2)
     exp2 = np.exp(-0.5 * exp2_norm2 / theta**2)
     Z1 = exp1
@@ -135,4 +135,6 @@ def plot_rkhs_norm(low_diff=0, up_diff=7, theta_lst=[0.25, 0.5, 1, 1.5, 3]):
 if __name__ == "__main__":
     plot_rkhs_norm()
     show_branin()
-    show_exp()
+    show_exp(mu2=[0.5, 0.5], theta=1)
+
+    print(diff_mu1_mu2(mu1=[0, 0], mu2=[1.5, 1.5], theta=0.75))

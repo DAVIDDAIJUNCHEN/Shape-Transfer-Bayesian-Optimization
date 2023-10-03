@@ -156,7 +156,7 @@ def show_errorbar(dct_mean_std, title, fig_name, conf_level=0.9):
 
     ax.set_title(title)
 
-    for item in dct_mean_std.items():
+    for item in sorted(dct_mean_std.items()):
         x_draw = np.arange(len(item[1]))
         y_mean = [ele[0] for ele in item[1]]
         y_std = [ele[1]*conf_level for ele in item[1]]
@@ -175,8 +175,11 @@ if __name__ == "__main__":
     out_dir = parser.out_dir
     topic = parser.topic
 
+    if not os.path.isdir(out_dir):
+        os.mkdir(out_dir)
+        
     file_lsts = collect_file(in_dir, topic)
-    dct_mean_std = run_statistics(file_lsts, "./simulation_results")
+    dct_mean_std = run_statistics(file_lsts, out_dir)
     
     fig_name = os.path.join(os.path.abspath(out_dir), os.path.basename(in_dir)) + '_' + topic + ".png" 
 

@@ -20,9 +20,9 @@ fi
 if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then 
     echo "Simulation 1: Exponential target function"
 
-    Thetas="1"
-    mu_1="0.0_0.0"
-    mu_2="1.0_1.0"
+    Thetas="0.75"
+    mu_1="0_0"
+    mu_2="0.6244_0.6244"
 
     T1=20
     T2=20
@@ -30,7 +30,8 @@ if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then
     num_rep=20
 
     for theta in $Thetas; do
-        echo "Taks 1: mean=$mu_1, theta=$theta; Taks 2: mean=$mu_2, theta=$theta"
+        mkdir -p $path_data/EXP_mu2_${mu2}_theta_$theta
+        echo "Taks 1: mean=$mu_1, theta=$theta; Taks 2: mean=$mu_2, theta=$theta" 
         for i in $(seq 1 $num_rep); do
             echo "Running $i-th simulation"
             mkdir -p $path_data/EXP_mu2_${mu_2}_theta_$theta/$i
@@ -38,7 +39,7 @@ if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then
 
             sbatch ./main_simulation.py  --T1 $T1  --T2 $T2  --out_dir $out_dir  --type EXP   \
                                         --mu1 $mu_1  --mu2 $mu_2  --theta $theta --from_task1 $from_task1
-            echo "Submitted $i-th EXP simulation by Slurm"
+            echo "Submitted $i-th EXP simulation by Slurm" 
         done
     done
 fi

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3 
 
-import argparse, os, sys
+import argparse, os, sys, logging
 import numpy as np
 
 sys.path.append(os.getcwd())
@@ -52,8 +52,8 @@ def get_best_point(file, response_col=0):
 
     return best_point
 
-def main_exp(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
-             rand_file_1="rf1.tsv", num_start_opt2=20, lr2=0.5, num_steps_opt2=1000, kessi_2=0.0, 
+def main_exp(num_exp1, num_exp2, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
+             rand_file_1="rf1.tsv", num_start_opt2=10, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
              file_2_gp="f2_gp.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv"):
     """
     simulation main function of Brainn target function type:
@@ -80,9 +80,6 @@ def main_exp(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, 
     assert(len(mu1) == len(mu2))
     dim = len(mu1)
 
-    low = -5
-    high = 5
-
     # Step 1: experiment 1 (skip if start_from_exp1 is False)
     if start_from_exp1:
         # write header & init_point to file: file_1 (ZeroGP) & rand_file_1 (random search)
@@ -95,7 +92,7 @@ def main_exp(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, 
             f1.writelines(header_line)
 
         # random initialization in exp 1
-        init_point_1 = np.random.uniform(low, high, size = dim)
+        init_point_1 = np.random.uniform(low_opt1, high_opt1, size = dim)
         init_res_1 = exp_mu(init_point_1, mu1, theta)
         write_exp_result(file_1_gp, init_res_1, init_point_1)
         write_exp_result(rand_file_1, init_res_1, init_point_1)
@@ -104,7 +101,7 @@ def main_exp(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, 
         if num_exp1 > 1:
             for round_k in range(num_exp1-1):
                 # uniformly randomly pick next point
-                next_point_rand = np.random.uniform(low, high, size = dim)
+                next_point_rand = np.random.uniform(low_opt1, high_opt1, size = dim)
                 next_response_rand = exp_mu(next_point_rand, mu1, theta)
                 write_exp_result(rand_file_1, next_response_rand, next_point_rand)
 
@@ -112,7 +109,7 @@ def main_exp(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, 
                 EI = ExpectedImprovement()
                 EI.get_data_from_file(file_1_gp)
 
-                start_points = [np.random.uniform(low, high, size=dim).tolist() for i in range(num_start_opt1)]
+                start_points = [np.random.uniform(low_opt1, high_opt1, size=dim).tolist() for i in range(num_start_opt1)]
 
                 next_point, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)
                 next_response = exp_mu(next_point, mu1, theta)
@@ -142,14 +139,16 @@ def main_exp(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, 
 
     if num_exp2 > 1:
         for round_k in range(num_exp2-1):
+            # all AC optimization start from the same random start points
+            start_points = [np.random.uniform(low_opt2, high_opt2, size=dim).tolist() for i in range(num_start_opt2)]
+
             # Method 1: ZeroGProcess model based on EI
             EI = ExpectedImprovement()
             EI.get_data_from_file(file_2_gp)
 
-            start_points = [np.random.uniform(low, high, size=dim).tolist() for i in range(num_start_opt2)]
-            next_point, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
+            next_point_gp, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
                                                                    num_step=num_steps_opt2, kessi=kessi_2)
-            next_response = exp_mu(next_point, mu2, theta)
+            next_response = exp_mu(next_point_gp, mu2, theta)
             write_exp_result(file_2_gp, next_response, next_point)
 
             # Method 2: STBO mothod based on EI from our paper
@@ -158,10 +157,10 @@ def main_exp(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, 
             STBO.build_task1_gp(file_1_gp)
             STBO.build_diff_gp()
 
-            start_points = [np.random.uniform(low, high, size=dim).tolist() for i in range(num_start_opt2)]
-            next_point, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
-                                                                     num_step=num_steps_opt2, kessi=kessi_2)                 
-            next_response = exp_mu(next_point, mu2, theta)
+            next_point_stbo, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=lr2,
+                                                                      num_step=num_steps_opt2, kessi=kessi_2)
+
+            next_response = exp_mu(next_point_stbo, mu2, theta)
             write_exp_result(file_2_stbo, next_response, next_point)        
 
             # Method 3: BCBO method based on EI from some other paper
@@ -170,16 +169,16 @@ def main_exp(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, 
             BCBO.build_task1_gp(file_1_gp)
             BCBO.build_diff_gp()
 
-            start_points = [np.random.uniform(low, high, size=dim).tolist() for i in range(num_start_opt2)]
-            next_point, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
-                                                                     num_step=num_steps_opt2, kessi=kessi_2)                 
-            next_response = exp_mu(next_point, mu2, theta)
+            next_point_bcbo, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=lr2,
+                                                                     num_step=num_steps_opt2, kessi=kessi_2)
+
+            next_response = exp_mu(next_point_bcbo, mu2, theta)
             write_exp_result(file_2_bcbo, next_response, next_point)        
 
     return 0
 
 def main_br(num_exp1, num_exp2, num_start_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
-            rand_file_1="rf1.tsv", num_start_opt2=20, lr2=0.5, num_steps_opt2=1000, kessi_2=0.0, 
+            rand_file_1="rf1.tsv", num_start_opt2=5, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
             file_2_gp="f2_gp.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv"):
     """
     simulation main function of Brainn target function type:
