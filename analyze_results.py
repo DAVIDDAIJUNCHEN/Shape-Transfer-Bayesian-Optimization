@@ -157,11 +157,15 @@ def show_errorbar(dct_mean_std, title, fig_name, conf_level=0.9):
     ax.set_title(title)
 
     for item in sorted(dct_mean_std.items()):
-        x_draw = np.arange(len(item[1]))
+        x_draw = np.arange(len(item[1])) 
+        x_draw = [ele + 1 for ele in x_draw]
         y_mean = [ele[0] for ele in item[1]]
         y_std = [ele[1]*conf_level for ele in item[1]]
         
-        ax.errorbar(x_draw, y_mean, yerr=y_std, label=item[0], fmt='-o')
+        ax.errorbar(x_draw, y_mean, yerr=y_std,label=item[0], fmt='-o')
+
+        plt.xlim(left=0)
+        plt.xticks(x_draw)
         plt.legend()
         plt.show()
         plt.savefig(fig_name)
