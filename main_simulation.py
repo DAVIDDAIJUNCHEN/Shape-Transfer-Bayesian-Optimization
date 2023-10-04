@@ -311,9 +311,9 @@ if __name__ == "__main__":
         f2_bcbo = os.path.join(out_dir, "simExp_points_task2_bcbo.tsv")
 
         low_opt1 = -5
-        high_opt1 = 10
+        high_opt1 = 5
         low_opt2 = -5
-        high_opt2 = 10
+        high_opt2 = 7
 
         main_exp(T1, T2, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
                  low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)

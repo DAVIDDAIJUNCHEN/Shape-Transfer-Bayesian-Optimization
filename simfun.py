@@ -9,8 +9,7 @@ def branin(input=[3., 4.]):
     "Branin function: "
     assert(len(input) == 2)
     x1 = input[0]
-    x2 = input[1]
-
+    x2 = input[1] 
     branin1 = x2 - 5.1*(x1**2) / (4*np.pi**2) + 5*x1 / np.pi - 6
     branin2 = 10*(1 - 1/(8*np.pi))*np.cos(x1)
     branin = branin1**2 + branin2 + 10
@@ -137,4 +136,4 @@ if __name__ == "__main__":
     show_branin()
     show_exp(mu2=[0.5, 0.5], theta=1)
 
-    print(diff_mu1_mu2(mu1=[0, 0], mu2=[1.5, 1.5], theta=0.75))
+    print(diff_mu1_mu2(mu1=[0, 0], mu2=[0.707, 0.707], theta=1.414))
