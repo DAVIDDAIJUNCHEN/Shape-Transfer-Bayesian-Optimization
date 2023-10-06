@@ -44,7 +44,7 @@ def get_best_point(file, response_col=0):
             if '#' not in line:
                 line_split = line.split()
                 point = line_split[:response_col] + line_split[(response_col+1):]
-                results.append([(line_split[response_col], point)])
+                results.append([(float(line_split[response_col]), point)])
 
     best = max(results)[0]
     best_response = float(best[0])
@@ -317,7 +317,7 @@ if __name__ == "__main__":
 
         main_exp(T1, T2, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
                  low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
-        
+
     elif fun_type == "BR":
         f1_gp = os.path.join(out_dir, "simBr_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simBr_points_task1_rand.tsv")

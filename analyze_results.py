@@ -88,6 +88,7 @@ def run_statistics(file_lsts, out_dir, header_name="response"):
     file_lsts: [[file1_name1, file2_name1], [file1_name2, file2_name2]]
     """
     dct_mean_std = {}
+    dct_medium_perc = {}
 
     for file_lst_k in file_lsts:
         max_len = 0
@@ -146,11 +147,12 @@ def run_statistics(file_lsts, out_dir, header_name="response"):
 
         fname = os.path.basename(file_lst_k[0])
         dct_mean_std[fname] = [(m, s) for m, s in zip(mean_lst, std_lst)]
+        dct_medium_perc[fname] = [(p25, p50, p75) for p25, p50, p75 in zip(per25_lst, per50_lst, per75_lst)]
 
-    return dct_mean_std
+    return dct_mean_std, dct_medium_perc
 
-def show_errorbar(dct_mean_std, title, fig_name, conf_level=0.9):
-    "plot lines with error bar based on std"
+def show_mean_std_errorbar(dct_mean_std, title, fig_name, conf_level=0.9):
+    "plot lines with error bar based on mean and std"
     
     fig, ax = plt.subplots()
 
@@ -162,7 +164,31 @@ def show_errorbar(dct_mean_std, title, fig_name, conf_level=0.9):
         y_mean = [ele[0] for ele in item[1]]
         y_std = [ele[1]*conf_level for ele in item[1]]
         
-        ax.errorbar(x_draw, y_mean, yerr=y_std,label=item[0], fmt='-o')
+        ax.errorbar(x_draw, y_mean, yerr=y_std, label=item[0], fmt='-o')
+
+        plt.xlim(left=0)
+        plt.xticks(x_draw)
+        plt.legend()
+        plt.show()
+        plt.savefig(fig_name)
+    
+    return 0
+
+def show_medium_percentile_errorbar(dct_medium_perc, title, fig_name):
+    "plot lines with error bar based on medium and percentile"
+    fig, ax = plt.subplots()
+
+    ax.set_title(title)
+
+    for item in sorted(dct_medium_perc.items()):
+        x_draw = np.arange(len(item[1]))
+        x_draw = [ele + 1 for ele in x_draw]
+        y_medium = [ele[1] for ele in item[1]]
+        y_perc25 = [ele[1] - ele[0] for ele in item[1]]
+        y_perc75 = [ele[2] - ele[1] for ele in item[1]]
+        asymmetric_error = [y_perc25, y_perc75]
+
+        ax.errorbar(x_draw, y_medium, yerr=asymmetric_error, label=item[0], fmt='-o')
 
         plt.xlim(left=0)
         plt.xticks(x_draw)
@@ -183,8 +209,13 @@ if __name__ == "__main__":
         os.mkdir(out_dir)
         
     file_lsts = collect_file(in_dir, topic)
-    dct_mean_std = run_statistics(file_lsts, out_dir)
+    dct_mean_std, dct_medium_perc = run_statistics(file_lsts, out_dir)
     
-    fig_name = os.path.join(os.path.abspath(out_dir), os.path.basename(in_dir)) + '_' + topic + ".png" 
+    # draw mean + std plot
+    fig_name_mean = os.path.join(os.path.abspath(out_dir), os.path.basename(in_dir)) + '_' + topic + "_mean.png" 
+    show_mean_std_errorbar(dct_mean_std, title=topic+" error bar", fig_name=fig_name_mean, conf_level=0.8)
 
-    show_errorbar(dct_mean_std, title=topic+" error bar", fig_name=fig_name, conf_level=0.8)
+    # draw medium + percentile plot
+    fig_name_medium = os.path.join(os.path.abspath(out_dir), os.path.basename(in_dir)) + '_' + topic + "_medium.png"
+    show_medium_percentile_errorbar(dct_medium_perc, title=topic+" error bar", fig_name=fig_name_medium)
+

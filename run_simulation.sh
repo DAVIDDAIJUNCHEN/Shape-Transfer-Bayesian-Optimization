@@ -30,7 +30,6 @@ if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then
     num_rep=20
 
     for theta in $Thetas; do
-        mkdir -p $path_data/EXP_mu2_${mu2}_theta_$theta
         echo "Taks 1: mean=$mu_1, theta=$theta; Taks 2: mean=$mu_2, theta=$theta" 
         for i in $(seq 1 $num_rep); do
             echo "Running $i-th simulation"
