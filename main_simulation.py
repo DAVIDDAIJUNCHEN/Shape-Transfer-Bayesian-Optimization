@@ -21,6 +21,7 @@ def arg_parser():
     argparser.add_argument("--mu2", default="[0.5, 0.5]", help="mu of target function 2")
     argparser.add_argument("--T1", default=10, help="number of experiments in target function 1")
     argparser.add_argument("--T2", default=4, help="number of experiemnts in target function 2")
+    argparser.add_argument("--task2_start_from", default="gp", choices=["gp", "rand"], help="task2 from best point of GP/Rand task1")
     argparser.add_argument("--type", default="EXP", choices=["EXP", "BR"], help="choose target function type")
     argparser.add_argument("--from_task1", default=True, choices=['0', '1'], help="start simulation from task1")
     argparser.add_argument("--out_dir", default="./data", help="output dir")
@@ -52,7 +53,7 @@ def get_best_point(file, response_col=0):
 
     return best_point
 
-def main_exp(num_exp1, num_exp2, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
+def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
              rand_file_1="rf1.tsv", num_start_opt2=15, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
              file_2_gp="f2_gp.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv"):
     """
@@ -117,7 +118,11 @@ def main_exp(num_exp1, num_exp2, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1
 
     # Step 2: Optimization on Experiemnt 2 
     # get best point from exp1 file and get value of exp2 on best point
-    best_point_exp1 = get_best_point(file_1_gp)
+    if task2_from_gp:  # start from best point in gp
+        best_point_exp1 = get_best_point(file_1_gp)
+    else:  # start from best point in random
+        best_point_exp1 = get_best_point(rand_file_1)
+
     res2_point_exp1 = exp_mu(best_point_exp1, mu2, theta)
 
     # write header and init point for GP method
@@ -177,7 +182,7 @@ def main_exp(num_exp1, num_exp2, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1
 
     return 0
 
-def main_br(num_exp1, num_exp2, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
+def main_br(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
             rand_file_1="rf1.tsv", num_start_opt2=5, low_opt2=-5, high_opt2=5, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
             file_2_gp="f2_gp.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv"):
     """
@@ -234,7 +239,11 @@ def main_br(num_exp1, num_exp2, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1=
 
     # Step 2: Optimization on Experiemnt 2 (mod_branin)
     # get best point from exp1 file and get value of exp2 on best point
-    best_point_exp1 = get_best_point(file_1_gp)
+    if task2_from_gp:
+        best_point_exp1 = get_best_point(file_1_gp)
+    else:
+        best_point_exp1 = get_best_point(rand_file_1)
+
     res2_point_exp1 = mod_branin(best_point_exp1)
 
     # write header and init point for GP method
@@ -301,35 +310,42 @@ if __name__ == "__main__":
     
     T1 = int(parser.T1)
     T2 = int(parser.T2)
+    
+    task2_start_from = parser.task2_start_from
+
+    if task2_start_from == "gp":
+        task2_from_gp = True
+    elif task2_start_from == "rand":
+        task2_from_gp = False
 
     if fun_type == "EXP":
         f1_gp = os.path.join(out_dir, "simExp_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simExp_points_task1_rand.tsv")
 
-        f2_gp = os.path.join(out_dir, "simExp_points_task2_gp.tsv")
-        f2_stbo = os.path.join(out_dir, "simExp_points_task2_stbo.tsv")
-        f2_bcbo = os.path.join(out_dir, "simExp_points_task2_bcbo.tsv")
+        f2_gp = os.path.join(out_dir, "simExp_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
+        f2_stbo = os.path.join(out_dir, "simExp_points_task2_stbo" + "_from_" + task2_start_from + ".tsv")
+        f2_bcbo = os.path.join(out_dir, "simExp_points_task2_bcbo" + "_from_" + task2_start_from + ".tsv")
 
         low_opt1 = -5
         high_opt1 = 5
         low_opt2 = -5
         high_opt2 = 7
 
-        main_exp(T1, T2, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
+        main_exp(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
                  low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
     elif fun_type == "BR":
         f1_gp = os.path.join(out_dir, "simBr_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simBr_points_task1_rand.tsv")
 
-        f2_gp = os.path.join(out_dir, "simBr_points_task2_gp.tsv")
-        f2_stbo = os.path.join(out_dir, "simBr_points_task2_stbo.tsv")
-        f2_bcbo = os.path.join(out_dir, "simBr_points_task2_bcbo.tsv")
+        f2_gp = os.path.join(out_dir, "simBr_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
+        f2_stbo = os.path.join(out_dir, "simBr_points_task2_stbo" + "_from_" + task2_start_from + ".tsv")
+        f2_bcbo = os.path.join(out_dir, "simBr_points_task2_bcbo" + "_from_" + task2_start_from + ".tsv")
 
         low_opt1 = -5
         high_opt1 = 5
         low_opt2 = -5
         high_opt2 = 5
 
-        main_br(T1, T2, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
+        main_br(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
                 low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)

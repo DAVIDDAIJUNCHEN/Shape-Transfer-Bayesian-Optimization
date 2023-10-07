@@ -9,7 +9,7 @@ def arg_parser():
     argparser = argparse.ArgumentParser(description="analyze results in a dir")
     argparser.add_argument("input_dir", help="input dir containing subdirs of experiments")
     argparser.add_argument("out_dir", help="output dir")
-    argparser.add_argument("topic", choices=["task1", "task2"], help="choose task to analyze")
+    argparser.add_argument("topic", choices=["task1", "from_gp", "from_rand"], help="choose task to analyze")
 
     parser = argparser.parse_args()
 
