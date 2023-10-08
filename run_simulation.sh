@@ -22,9 +22,9 @@ fi
 if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then 
     echo "Simulation 1: Exponential target function"
 
-    Thetas="0.5"
+    Thetas="1"
     mu_1="0_0"
-    mu_2="1.0_1.0"
+    mu_2="2_2"
 
     T1=20
     T2=20

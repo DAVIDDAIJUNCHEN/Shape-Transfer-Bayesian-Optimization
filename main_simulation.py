@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env  /mnt/users/daijun_chen/tools/miniconda3.10/install/envs/python3_huggingface/bin/python3
 
 import argparse, os, sys, logging
 import numpy as np
@@ -181,7 +181,7 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
                 BCBO.build_task1_gp(file_1_gp)
             else:
                 BCBO.build_task1_gp(rand_file_1)
-                
+
             BCBO.build_diff_gp()
 
             next_point_bcbo, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=lr2,
@@ -290,7 +290,12 @@ def main_br(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=-
             # Method 2: STBO mothod based on EI from our paper
             STBO = ShapeTransferBO()
             STBO.get_data_from_file(file_2_stbo)
-            STBO.build_task1_gp(file_1_gp)
+
+            if task2_from_gp:
+                STBO.build_task1_gp(file_1_gp)
+            else:
+                STBO.build_task1_gp(rand_file_1)
+
             STBO.build_diff_gp()
 
             next_point_stbo, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
@@ -301,7 +306,12 @@ def main_br(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=-
             # Method 3: BCBO method based on EI from some other paper
             BCBO = BiasCorrectedBO()
             BCBO.get_data_from_file(file_2_bcbo)
-            BCBO.build_task1_gp(file_1_gp)
+
+            if task2_from_gp:
+                BCBO.build_task1_gp(file_1_gp)
+            else:
+                BCBO.build_task1_gp(rand_file_1)
+
             BCBO.build_diff_gp()
 
             next_point_bcbo, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
