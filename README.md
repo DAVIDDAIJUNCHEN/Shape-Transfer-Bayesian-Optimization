@@ -7,11 +7,11 @@ We have two types of simulation experiments. The first type takes exponential fu
 ### type 1:
 
 $$
-f_1(\bold{x}) = \exp\{-\frac{1}{2\theta^2}\|\bold{x}-\bold{\mu}_1\|^2\}
+f_1(x) = \exp\{-\frac{1}{2\theta^2}\|x-\mu_1\|^2\}
 $$
 
 $$
-f_2(\bold{x}) = \exp\{-\frac{1}{2\theta^2}\|\bold{x}-\bold{\mu}_2\|^2\}
+f_2(x) = \exp\{-\frac{1}{2\theta^2}\|x-\bold{\mu}_2\|^2\}
 $$
 
 To run the simulation, you can change the configuration given in the ``run_simulation.sh`` script.
