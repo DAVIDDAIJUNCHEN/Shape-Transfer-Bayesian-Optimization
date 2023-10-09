@@ -43,7 +43,13 @@ where both exponential and Branin types simulations will be run if `stage-number
 
 When the task1 experiments have been done,  task1 result files can be found in ./data dir. If you want to skip task1 experiments, please set `start_from_task1` 0.
 
-In task1, normal Gaussian process model and random search have been applied. Therefore, you can start task2 experiments based on Gaussian process or random search results in task1. If `task2_start_from` is `gp`, then task2 starts from Gaussian process results in task1; if `task2_start_from` is `rand`, then task2 starts from random search results in task1.
+In task1, normal Gaussian process model and random search have been applied. Therefore, you can start task2 experiments based on Gaussian process or random search results in task1. If `task2_start_from` is `gp`, then task2 starts from Gaussian process results in task1; if `task2_start_from` is `rand`, then task2 starts from random search results in task1. e.g.
+
+```
+./run_simulation.sh  1   1   rand
+```
+
+the above command execute to run exponential simulation only from task1, and run task2 based on  task 1 random search results.
 
 #### analyze results
 
