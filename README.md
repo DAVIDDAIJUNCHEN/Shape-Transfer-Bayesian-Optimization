@@ -11,7 +11,7 @@ f_1(x) = \exp\{-\frac{1}{2\theta^2}\|x-\mu_1\|^2\}
 $$
 
 $$
-f_2(x) = \exp\{-\frac{1}{2\theta^2}\|x-\bold{\mu}_2\|^2\}
+f_2(x) = \exp\{-\frac{1}{2\theta^2}\|x-\mu_2\|^2\}
 $$
 
 To run the simulation, you can change the configuration given in the ``run_simulation.sh`` script.
