@@ -55,7 +55,7 @@ def get_best_point(file, response_col=0):
 
 def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
              rand_file_1="rf1.tsv", num_start_opt2=15, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
-             file_2_gp="f2_gp.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv"):
+             file_2_gp="f2_gp.tsv", file_2_gp_cold="f2_gp_cold.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv"):
     """
     simulation main function of Brainn target function type:
     num_exp[1 | 2]: number of experiments in task [1 | 2]
@@ -122,10 +122,13 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
         best_point_exp1 = get_best_point(file_1_gp)
     else:  # start from best point in random
         best_point_exp1 = get_best_point(rand_file_1)
+    
+    cold_start_point = np.random(low_opt2, high_opt2, size=dim)
 
     res2_point_exp1 = exp_mu(best_point_exp1, mu2, theta)
+    res2_point_cold = exp_mu(cold_start_point, mu2, theta)
 
-    # write header and init point for GP method
+    # write header and init point
     with open(file_2_gp, "w", encoding="utf-8") as f2:
         header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
         f2.writelines(header_line)
@@ -136,11 +139,16 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
 
     with open(file_2_bcbo, "w", encoding="utf-8") as f2:
         header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
-        f2.writelines(header_line)    
+        f2.writelines(header_line)
+
+    with open(file_2_gp_cold, "w", encoding="utf-8") as f2:
+        header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
+        f2.writelines(header_line)            
 
     write_exp_result(file_2_gp, res2_point_exp1, best_point_exp1)
     write_exp_result(file_2_stbo, res2_point_exp1, best_point_exp1)
     write_exp_result(file_2_bcbo, res2_point_exp1, best_point_exp1)
+    write_exp_result(file_2_gp_cold, res2_point_cold, cold_start_point)
 
     if num_exp2 > 1:
         for round_k in range(num_exp2-1):
@@ -148,6 +156,7 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
             start_points = [np.random.uniform(low_opt2, high_opt2, size=dim).tolist() for i in range(num_start_opt2)]
 
             # Method 1: ZeroGProcess model based on EI
+            # 1.1 GP starting from task1 best point
             EI = ExpectedImprovement()
             EI.get_data_from_file(file_2_gp)
 
@@ -155,6 +164,15 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
                                                                    num_step=num_steps_opt2, kessi=kessi_2)
             next_response_gp = exp_mu(next_point_gp, mu2, theta)
             write_exp_result(file_2_gp, next_response_gp, next_point_gp)
+
+            # 1.2 GP with cold start point
+            EI_cold = ExpectedImprovement()
+            EI_cold.get_data_from_file(file_2_gp_cold)
+
+            next_point_gp_cold, next_point_aux = EI_cold.find_best_NextPoint_ei(start_points, learn_rate=lr2,
+                                                                                num_step=num_steps_opt2, kessi=kessi_2)
+            next_response_gp_cold = exp_mu(next_point_gp_cold, mu2, theta)
+            write_exp_result(file_2_gp_cold, next_response_gp_cold, next_point_gp_cold)
 
             # Method 2: STBO mothod based on EI from our paper
             STBO = ShapeTransferBO()
@@ -369,3 +387,4 @@ if __name__ == "__main__":
 
         main_br(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
                 low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
+

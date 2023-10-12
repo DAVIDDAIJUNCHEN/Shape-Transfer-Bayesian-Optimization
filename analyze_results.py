@@ -9,7 +9,7 @@ def arg_parser():
     argparser = argparse.ArgumentParser(description="analyze results in a dir")
     argparser.add_argument("input_dir", help="input dir containing subdirs of experiments")
     argparser.add_argument("out_dir", help="output dir")
-    argparser.add_argument("topic", choices=["task1", "from_gp", "from_rand"], help="choose task to analyze")
+    argparser.add_argument("topic", choices=["task1", "from_gp", "from_rand", "from_cold"], help="choose task to analyze")
 
     parser = argparser.parse_args()
 
@@ -207,8 +207,15 @@ if __name__ == "__main__":
 
     if not os.path.isdir(out_dir):
         os.mkdir(out_dir)
-        
-    file_lsts = collect_file(in_dir, topic)
+    
+    if topic == "from_cold":
+        file_lsts_stbo = collect_file(in_dir, "stbo_from_rand")
+        file_lsts_cold = collect_file(in_dir, "from_cold")
+        file_lsts_stbo.extend(file_lsts_cold)
+        file_lsts = file_lsts_stbo
+    else:
+        file_lsts = collect_file(in_dir, topic)
+    
     dct_mean_std, dct_medium_perc = run_statistics(file_lsts, out_dir)
     
     # draw mean + std plot

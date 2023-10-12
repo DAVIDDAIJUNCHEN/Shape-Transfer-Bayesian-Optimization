@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+ #!/usr/bin/env bash
 
 stage=$1       # 0: run both EXP and BR; 1: run EXP only; 2: run BR only
 from_task1=$2  # 1: start from task1, 0: start from task2
@@ -20,11 +20,11 @@ fi
 
 
 if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then 
-    echo "Simulation 1: Exponential target function"
+    echo "Simulation 1: transfer learning in Exponential target function"
 
-    Thetas="1"
+    Thetas="1.414"
     mu_1="0_0"
-    mu_2="2_2"
+    mu_2="0.707_0.707"
 
     T1=20
     T2=20
@@ -32,7 +32,7 @@ if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then
     num_rep=20
 
     for theta in $Thetas; do
-        echo "Taks 1: mean=$mu_1, theta=$theta; Taks 2: mean=$mu_2, theta=$theta, starts from best point in $task2_start_from" 
+        echo "Task 1: mean=$mu_1, theta=$theta; Taks 2: mean=$mu_2, theta=$theta, starts from best point in $task2_start_from" 
         for i in $(seq 1 $num_rep); do
             echo "Running $i-th simulation"
             mkdir -p $path_data/EXP_mu2_${mu_2}_theta_$theta/$i
@@ -46,8 +46,33 @@ if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then
 fi
 
 
-if [ $stage -eq 0 ] || [ $stage -eq 2 ]; then
-    echo "Simulation 2: Branin function (task1), Modified Branni function (task2) starts from best point in $task2_start_from"
+if [ $stage -eq 0 ] || [ $stage -eq 2 ]; then 
+    echo "Simulation 2: transfer vs non-transfer learning in Exponential target function"
+
+    Thetas="1.414"
+    mu_1="0_0"
+    mu_2="0.707_0.707"
+
+    T2=20
+
+    num_rep=20
+
+    for theta in $Thetas; do
+        echo "Task 2: mean=$mu_2, theta=$theta, starts from random point"
+        for i in $(seq 1 $num_rep); do
+            echo "Running $i-th simulation"
+            mkdir -p $path_data/EXP_mu2_${mu_2}_theta_$theta/$i
+            out_dir=$path_data/EXP_mu2_${mu_2}_theta_$theta/$i
+
+            sbatch  ./simulation_tbd.py --T2 $T2  --out_dir $out_dir  --type EXP --mu1 $mu_1  --mu2 $mu_2  --theta $theta 
+            echo "Submitted $i-th EXP simulation by Slurm"
+        done
+    done
+fi
+
+
+if [ $stage -eq 0 ] || [ $stage -eq 3 ]; then
+    echo "Simulation 3: Branin function (task1), Modified Branni function (task2) starts from best point in $task2_start_from"
     T1=20
     T2=20
 
