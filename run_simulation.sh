@@ -46,32 +46,7 @@ if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then
 fi
 
 
-if [ $stage -eq 0 ] || [ $stage -eq 2 ]; then 
-    echo "Simulation 2: transfer vs non-transfer learning in Exponential target function"
-
-    Thetas="1.414"
-    mu_1="0_0"
-    mu_2="0.707_0.707"
-
-    T2=20
-
-    num_rep=20
-
-    for theta in $Thetas; do
-        echo "Task 2: mean=$mu_2, theta=$theta, starts from random point"
-        for i in $(seq 1 $num_rep); do
-            echo "Running $i-th simulation"
-            mkdir -p $path_data/EXP_mu2_${mu_2}_theta_$theta/$i
-            out_dir=$path_data/EXP_mu2_${mu_2}_theta_$theta/$i
-
-            sbatch  ./simulation_tbd.py --T2 $T2  --out_dir $out_dir  --type EXP --mu1 $mu_1  --mu2 $mu_2  --theta $theta 
-            echo "Submitted $i-th EXP simulation by Slurm"
-        done
-    done
-fi
-
-
-if [ $stage -eq 0 ] || [ $stage -eq 3 ]; then
+if [ $stage -eq 0 ] || [ $stage -eq 2 ]; then
     echo "Simulation 3: Branin function (task1), Modified Branni function (task2) starts from best point in $task2_start_from"
     T1=20
     T2=20

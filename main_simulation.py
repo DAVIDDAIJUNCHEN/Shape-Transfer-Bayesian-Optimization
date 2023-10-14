@@ -361,6 +361,7 @@ if __name__ == "__main__":
         f1_rand = os.path.join(out_dir, "simExp_points_task1_rand.tsv")
 
         f2_gp = os.path.join(out_dir, "simExp_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
+        f2_gp_cold = os.path.join(out_dir, "simExp_points_task2_gp" + "_from_cold" + ".tsv")
         f2_stbo = os.path.join(out_dir, "simExp_points_task2_stbo" + "_from_" + task2_start_from + ".tsv")
         f2_bcbo = os.path.join(out_dir, "simExp_points_task2_bcbo" + "_from_" + task2_start_from + ".tsv")
 
@@ -370,7 +371,7 @@ if __name__ == "__main__":
         high_opt2 = 7
 
         main_exp(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
-                 low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
+                 low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
     elif fun_type == "BR":
         f1_gp = os.path.join(out_dir, "simBr_points_task1_gp.tsv")

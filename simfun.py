@@ -79,8 +79,8 @@ def show_exp(mu2=[1, 1], x_low=-1, x_up=1, y_low=-1, y_up=1, theta=1, x_nums=100
     fig = plt.figure(figsize=plt.figaspect(0.5))
     ax = fig.add_subplot(1, 2, 1, projection='3d')
 
-    X = np.arange(-5, 5, 0.25)
-    Y = np.arange(-5, 5, 0.25)
+    X = np.arange(x_low, x_up, 0.25)
+    Y = np.arange(y_low, y_up, 0.25)
     X, Y = np.meshgrid(X, Y)
 
     exp1_norm2 = X**2 + Y**2  
@@ -93,15 +93,17 @@ def show_exp(mu2=[1, 1], x_low=-1, x_up=1, y_low=-1, y_up=1, theta=1, x_nums=100
 
     surf1 = ax.plot_surface(X, Y, Z1, rstride=1, cstride=1, cmap=cm.coolwarm,
                            linewidth=0, antialiased=False)
-    surf2 = ax.plot_surface(X, Y, Z2, rstride=1, cstride=1, cmap=cm.coolwarm,
+    surf2 = ax.plot_surface(X, Y, Z2, rstride=1, cstride=1, cmap=cm.Blues,
                        linewidth=0, antialiased=False)
+
+    ax.set_title("mu2=("+str(mu2[0]) +","+str(mu2[1])+"), theta="+str(theta))
 
     ax.set_zlim(0, 1.4)
     fig.colorbar(surf2, shrink=0.5, aspect=10)
 
     ax = fig.add_subplot(1, 2, 2, projection='3d')
-    ax.plot_wireframe(X, Y, Z1, rstride=5, cstride=5)
-    ax.plot_wireframe(X, Y, Z2, rstride=5, cstride=5)
+    ax.plot_wireframe(X, Y, Z1, rstride=2, cstride=2, color="red")
+    ax.plot_wireframe(X, Y, Z2, rstride=2, cstride=2)
     ax.set_zlim(0, 1.4)
     
     plt.show()
@@ -130,10 +132,53 @@ def plot_rkhs_norm(low_diff=0, up_diff=7, theta_lst=[0.25, 0.5, 1, 1.5, 3]):
 
     return 0
 
+def needle_func(input=[1.0], shift=0):
+    "Needle function"
+    x = input[0] - shift
+    if x <= 2:
+        return 0.5*np.exp(x)
+    elif x>2 and x<= 2.5:
+        return -100*(x - 2.25)**2 + 6.25 + 0.5*np.exp(2)
+    else:
+        return np.sin(2*x) + 2*np.log(x) + 0.5*np.exp(2) - 2*np.log(2.5) - np.sin(5)
+
+def show_needle(x_low, x_high, shift=0):
+    "plot needle function above"
+    x_draw = np.linspace(x_low, x_high, 100)
+    y1 = [needle_func([ele]) for ele in x_draw]
+    y2 = [needle_func([ele], shift) for ele in x_draw]
+    diff_y2_y1 = [ele2 - ele1 for ele1, ele2 in zip(y1, y2)]
+
+    fig, ax = plt.subplots(1, 1)
+    ax.set_title("Needle function")
+
+    ax.plot(x_draw, y1, label="task1")
+    ax.plot(x_draw, y2, label="task2")
+    ax.plot(x_draw, diff_y2_y1, label="task2 - task1")
+
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig("./needle.png")
+
+def triple_peak_func(input=[1.0, 2.0], mu1=[1,1], mu2=[2,2], mu3=[3,3], 
+                     theta1=1, theta2=2, theta3=3):
+    "Triple peaks function"
+    x = input[0]
+    y = input[1]
+
+    pass 
+
+def show_triple_peak():
+
+    pass
+
 
 if __name__ == "__main__":
     plot_rkhs_norm()
     show_branin()
-    show_exp(mu2=[0.5, 0.5], theta=1)
+    size = 6
+    show_exp(mu2=[2, 2], theta=1, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
+    show_needle(0, 10, shift=0.3)
 
     print(diff_mu1_mu2(mu1=[0, 0], mu2=[0.707, 0.707], theta=1.414))
+
