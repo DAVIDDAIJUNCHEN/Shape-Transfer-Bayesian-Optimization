@@ -19,16 +19,16 @@ def arg_parser():
     argparser.add_argument("--type", default="EXP", choices=["EXP", "BR", "NEEDLE"], help="choose target function type")
 
     # arguments for EXP type only
-    argparser.add_argument("--theta", default="1.0", help="parameter in exponential target function")
-    argparser.add_argument("--mu1", default="[0.0, 0.0]", help="mu of target function 1 in exponential fun")
-    argparser.add_argument("--mu2", default="[0.5, 0.5]", help="mu of target function 2 in exponential fun")
+    argparser.add_argument("--theta", default="1.0", help="shape parameter in tyep EXP")
+    argparser.add_argument("--mu1", default="0.0_0.0", help="scale parameter of target function 1 in type EXP")
+    argparser.add_argument("--mu2", default="0.5_0.5", help="scale parameter of target function 2 in type EPX")
 
     # arguments for NEEDLE type only
-    argparser.add_argument("--needle_shift", default="0.3", help="task2 shift value in needle function")
+    argparser.add_argument("--needle_shift", default="0.3", help="shift parameter of target function 2 in type NEEDLE")
 
     # general arguments 
-    argparser.add_argument("--T1", default=10, help="number of experiments in target function 1")
-    argparser.add_argument("--T2", default=4,  help="number of experiemnts in target function 2")
+    argparser.add_argument("--T1", default="10", help="number of experiments in target function 1")
+    argparser.add_argument("--T2", default="4",  help="number of experiemnts in target function 2")
     argparser.add_argument("--task2_start_from", default="gp", choices=["gp", "rand"], help="task2 from best point of GP/Rand task1")
     argparser.add_argument("--from_task1", default=True, choices=['0', '1'], help="start simulation from task1 (use existing task1 results)")
     argparser.add_argument("--out_dir", default="./data", help="output dir")
