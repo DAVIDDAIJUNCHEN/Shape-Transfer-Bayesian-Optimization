@@ -73,7 +73,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
     kessi_[1 | 2]: kessi value used in AC function in task [1 | 2]
     file_[1 | 2]_gp: file of experiment points choosen by zeroGP in task [1 | 2]
     file_2_gp_cold: file of experiment points choosen by zeroGP from cold start in task 2
-    rand_file_1: file of experiemnt points choosen by random search in task 1
+    file_1_rand: file of experiemnt points choosen by random search in task 1
     file_2_stbo: file of experiment points choosen by our STBO in task 2
     file_2_bcbo: file of experiment points choosen by BCBO (bias corrected bayesian optimization) method
     start_from_exp1: True | False, consider False if skip experiment 1 
@@ -322,7 +322,7 @@ if __name__ == "__main__":
         low_opt2 = -5
         high_opt2 = 7
 
-        main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
+        main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
                 fun_type="EXP", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
@@ -340,7 +340,7 @@ if __name__ == "__main__":
         low_opt2 = -5
         high_opt2 = 5
 
-        main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
+        main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
                 fun_type="BR", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
@@ -358,7 +358,7 @@ if __name__ == "__main__":
         low_opt2 = -5
         high_opt2 = 5
 
-        main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
+        main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
                 fun_type="NEEDLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 

@@ -39,7 +39,8 @@ if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then
             mkdir -p $path_data/EXP_mu2_${mu_2}_theta_$theta/$i
             out_dir=$path_data/EXP_mu2_${mu_2}_theta_$theta/$i
 
-            sbatch ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from --out_dir $out_dir  --type EXP   \
+            job_name=EXP_mu2_${mu_2}_theta_$theta_$i
+            sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from --out_dir $out_dir  --type EXP   \
                                         --mu1 $mu_1  --mu2 $mu_2  --theta $theta --from_task1 $from_task1
             echo "Submitted $i-th EXP simulation by Slurm" 
         done
@@ -59,7 +60,8 @@ if [ $stage -eq 0 ] || [ $stage -eq 2 ]; then
         mkdir -p $path_data/Branin/$i
         out_dir=$path_data/Branin/$i
 
-        sbatch ./main_simulation.py --T1 $T1  --T2 $T2 --task2_start_from $task2_start_from --out_dir $out_dir --type BR --from_task1 $from_task1
+        job_name=Branin_$i
+        sbatch --job-name=$job_name ./main_simulation.py --T1 $T1  --T2 $T2 --task2_start_from $task2_start_from --out_dir $out_dir --type BR --from_task1 $from_task1
         echo "Submitted $i-th BR simulation by Slurm"
     done
 fi
@@ -68,7 +70,7 @@ fi
 if [ $stage -eq 0 ] || [ $stage -eq 3 ]; then
     echo "Simulation 3:  Transfer Bayesian Optimization on Needle function"
 
-    shift_task2="0.1 0.3"
+    shift_task2="0.01 0.05 0.3 1"
     T1=20
     T2=20
 
@@ -81,7 +83,8 @@ if [ $stage -eq 0 ] || [ $stage -eq 3 ]; then
             mkdir -p $path_data/Needle_shift_${shift}/$i 
             out_dir=$path_data/Needle_shift_${shift}/$i
 
-            sbatch ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir  --type NEEDLE   \
+            job_name=Needle_shift_${shift}_$i
+            sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir  --type NEEDLE   \
                                 --needle_shift ${shift} --from_task1 $from_task1
             echo "Submitted $i-th Needle simulation by Slurm"
         done
