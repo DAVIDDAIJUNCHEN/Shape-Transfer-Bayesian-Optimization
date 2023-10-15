@@ -62,7 +62,7 @@ def get_best_point(file, response_col=0):
     return best_point
 
 def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, 
-             file_1_gp="f1_gp.tsv", rand_file_1="rf1.tsv", num_start_opt2=15, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
+             file_1_gp="f1_gp.tsv", file_1_rand="f1_rand.tsv", num_start_opt2=15, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
              file_2_gp="f2_gp.tsv", file_2_gp_cold="f2_gp_cold.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv", fun_type="EXP"):
     """
     simulation main function:
@@ -104,7 +104,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
             header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
             f1.writelines(header_line)
 
-        with open(rand_file_1, "w", encoding="utf-8") as f1:
+        with open(file_1_rand, "w", encoding="utf-8") as f1:
             header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
             f1.writelines(header_line)
 
@@ -116,23 +116,27 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
             init_res_1 = branin(init_point_1)
         elif fun_type == "NEEDLE":
             init_res_1 = needle_func(init_point_1, shift=0)
+        else:
+            raise(TypeError)
 
         write_exp_result(file_1_gp, init_res_1, init_point_1)
-        write_exp_result(rand_file_1, init_res_1, init_point_1)
+        write_exp_result(file_1_rand, init_res_1, init_point_1)
 
         # run num_exp1 times on EXP 1 by random search (rand_file_1) & ZeroGP (file_1)
         if num_exp1 > 1:
             for round_k in range(num_exp1-1):
                 # uniformly randomly pick next point
-                next_point_rand = np.random.uniform(low_opt1, high_opt1, size = dim)
+                next_point_rand = np.random.uniform(low_opt1, high_opt1, size=dim)
                 if fun_type == "EXP":
                     next_response_rand = exp_mu(next_point_rand, mu1, theta)
                 elif fun_type == "BR":
                     next_response_rand = branin(next_point_rand)
                 elif fun_type == "NEEDLE":
                     next_response_rand = needle_func(next_point_rand, shift=0)
+                else:
+                    raise(TypeError)
 
-                write_exp_result(rand_file_1, next_response_rand, next_point_rand)
+                write_exp_result(file_1_rand, next_response_rand, next_point_rand)
 
                 # ZeroGProcess model with EI 
                 EI = ExpectedImprovement()
@@ -147,6 +151,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
                     next_response = branin(next_point)
                 elif fun_type == "NEEDLE":
                     next_response = needle_func(next_point, shift=0)
+                else:
+                    raise(TypeError)
 
                 write_exp_result(file_1_gp,  next_response, next_point)
 
@@ -154,10 +160,10 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
     # get best point from exp1 file and get value of exp2 on best point
     if task2_from_gp:  # start from best point in gp
         best_point_exp1 = get_best_point(file_1_gp)
-    else:  # start from best point in random
-        best_point_exp1 = get_best_point(rand_file_1)
+    else:              # start from best point in random
+        best_point_exp1 = get_best_point(file_1_rand)
     
-    cold_start_point = np.random(low_opt2, high_opt2, size=dim)
+    cold_start_point = np.random.uniform(low_opt2, high_opt2, size=dim)
 
     if fun_type == "EXP":
         res2_point_exp1 = exp_mu(best_point_exp1, mu2, theta)
@@ -168,6 +174,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
     elif fun_type == "NEEDLE":
         res2_point_exp1 = needle_func(best_point_exp1, shift=needle_shift)
         res2_point_cold = needle_func(cold_start_point, shift=needle_shift)
+    else:
+        raise(TypeError)
 
     # write header and init point
     with open(file_2_gp, "w", encoding="utf-8") as f2:
@@ -187,7 +195,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
         f2.writelines(header_line)
 
     write_exp_result(file_2_gp, res2_point_exp1, best_point_exp1)
-    write_exp_result(file_2_gp_cold, res2_point_cold, cold_start_point)
+    write_exp_result(file_2_gp_cold, res2_point_cold, cold_start_point)  # start point from cold not exp1
     write_exp_result(file_2_stbo, res2_point_exp1, best_point_exp1)
     write_exp_result(file_2_bcbo, res2_point_exp1, best_point_exp1)
 
@@ -209,6 +217,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
                 next_response_gp = mod_branin(next_point_gp)
             elif fun_type == "NEEDLE":
                 next_response_gp = needle_func(next_point_gp, shift=needle_shift)
+            else:
+                raise(TypeError)
 
             write_exp_result(file_2_gp, next_response_gp, next_point_gp)
 
@@ -224,6 +234,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
                 next_response_gp_cold = mod_branin(next_point_gp_cold)
             elif fun_type == "NEEDLE":
                 next_response_gp_cold = needle_func(next_point_gp_cold, shift=needle_shift)
+            else:
+                raise(TypeError)
 
             write_exp_result(file_2_gp_cold, next_response_gp_cold, next_point_gp_cold)
 
@@ -234,7 +246,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
             if task2_from_gp:   # task2 based on gp results of task1 
                 STBO.build_task1_gp(file_1_gp)
             else:
-                STBO.build_task1_gp(rand_file_1)
+                STBO.build_task1_gp(file_1_rand)
             
             STBO.build_diff_gp()
 
@@ -247,8 +259,10 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
                 next_response_stbo = mod_branin(next_point_stbo)
             elif fun_type == "NEEDLE":
                 next_response_stbo = needle_func(next_point_stbo, shift=needle_shift)
+            else:
+                raise(TypeError)
 
-            write_exp_result(file_2_stbo, next_response_stbo, next_point_stbo)        
+            write_exp_result(file_2_stbo, next_response_stbo, next_point_stbo)
 
             # Method 3: BCBO method based on EI from some other paper
             BCBO = BiasCorrectedBO()
@@ -257,7 +271,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
             if task2_from_gp:
                 BCBO.build_task1_gp(file_1_gp)
             else:
-                BCBO.build_task1_gp(rand_file_1)
+                BCBO.build_task1_gp(file_1_rand)
 
             BCBO.build_diff_gp()
 
@@ -270,6 +284,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
                 next_response_bcbo = mod_branin(next_point_bcbo)
             elif fun_type == "NEEDLE":
                 next_response_bcbo = needle_func(next_point_bcbo, shift=needle_shift)
+            else:
+                raise(TypeError)
 
             write_exp_result(file_2_bcbo, next_response_bcbo, next_point_bcbo)        
 
@@ -315,7 +331,7 @@ if __name__ == "__main__":
         f1_rand = os.path.join(out_dir, "simBr_points_task1_rand.tsv")
 
         f2_gp = os.path.join(out_dir, "simBr_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
-        f2_gp_cold = os.path.join(out_dir, "simExp_points_task2_gp" + "_from_cold" + ".tsv")
+        f2_gp_cold = os.path.join(out_dir, "simBr_points_task2_gp" + "_from_cold" + ".tsv")
         f2_stbo = os.path.join(out_dir, "simBr_points_task2_stbo" + "_from_" + task2_start_from + ".tsv")
         f2_bcbo = os.path.join(out_dir, "simBr_points_task2_bcbo" + "_from_" + task2_start_from + ".tsv")
 
@@ -333,7 +349,7 @@ if __name__ == "__main__":
         f1_rand = os.path.join(out_dir, "simNeedle_points_task1_rand.tsv")
 
         f2_gp = os.path.join(out_dir, "simNeedle_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
-        f2_gp_cold = os.path.join(out_dir, "simExp_points_task2_gp" + "_from_cold" + ".tsv")
+        f2_gp_cold = os.path.join(out_dir, "simNeedle_points_task2_gp" + "_from_cold" + ".tsv")
         f2_stbo = os.path.join(out_dir, "simNeedle_points_task2_stbo" + "_from_" + task2_start_from + ".tsv")
         f2_bcbo = os.path.join(out_dir, "simNeedle_points_task2_bcbo" + "_from_" + task2_start_from + ".tsv")
 
