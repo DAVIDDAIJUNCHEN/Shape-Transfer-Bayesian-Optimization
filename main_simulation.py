@@ -182,11 +182,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
     # write header and init point
     with open(file_2_gp, "w", encoding="utf-8") as f2:
         header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
-        f2.writelines(header_line)
-
-    with open(file_2_gp_cold, "w", encoding="utf-8") as f2:
-        header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
-        f2.writelines(header_line)      
+        f2.writelines(header_line)  
 
     with open(file_2_stbo, "w", encoding="utf-8") as f2:
         header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
@@ -196,10 +192,17 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
         header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
         f2.writelines(header_line)
 
+    if not task2_from_gp:   # run task2 from cold when other methods start from rand
+        with open(file_2_gp_cold, "w", encoding="utf-8") as f2:
+            header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
+            f2.writelines(header_line)
+
     write_exp_result(file_2_gp, res2_point_exp1, best_point_exp1)
-    write_exp_result(file_2_gp_cold, res2_point_cold, cold_start_point)  # start point from cold not exp1
     write_exp_result(file_2_stbo, res2_point_exp1, best_point_exp1)
     write_exp_result(file_2_bcbo, res2_point_exp1, best_point_exp1)
+    
+    if not task2_from_gp:   # run task2 from cold when other methods start from rand
+        write_exp_result(file_2_gp_cold, res2_point_cold, cold_start_point)  # start point from cold not exp1
 
     if num_exp2 > 1:
         for round_k in range(num_exp2-1):
@@ -225,21 +228,22 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
             write_exp_result(file_2_gp, next_response_gp, next_point_gp)
 
             # 1.2 GP with cold start point
-            EI_cold = ExpectedImprovement()
-            EI_cold.get_data_from_file(file_2_gp_cold)
+            if not task2_from_gp:   # when other methods start from rand
+                EI_cold = ExpectedImprovement()
+                EI_cold.get_data_from_file(file_2_gp_cold)
 
-            next_point_gp_cold, next_point_aux = EI_cold.find_best_NextPoint_ei(start_points, learn_rate=lr2,
+                next_point_gp_cold, next_point_aux = EI_cold.find_best_NextPoint_ei(start_points, learn_rate=lr2,
                                                                                 num_step=num_steps_opt2, kessi=kessi_2)
-            if fun_type == "EXP":
-                next_response_gp_cold = exp_mu(next_point_gp_cold, mu2, theta)
-            elif fun_type == "BR":
-                next_response_gp_cold = mod_branin(next_point_gp_cold)
-            elif fun_type == "NEEDLE":
-                next_response_gp_cold = needle_func(next_point_gp_cold, shift=needle_shift)
-            else:
-                raise(TypeError)
+                if fun_type == "EXP":
+                    next_response_gp_cold = exp_mu(next_point_gp_cold, mu2, theta)
+                elif fun_type == "BR":
+                    next_response_gp_cold = mod_branin(next_point_gp_cold)
+                elif fun_type == "NEEDLE":
+                    next_response_gp_cold = needle_func(next_point_gp_cold, shift=needle_shift)
+                else:
+                    raise(TypeError)
 
-            write_exp_result(file_2_gp_cold, next_response_gp_cold, next_point_gp_cold)
+                write_exp_result(file_2_gp_cold, next_response_gp_cold, next_point_gp_cold)
 
             # Method 2: STBO mothod based on EI from our paper
             STBO = ShapeTransferBO()
@@ -355,10 +359,10 @@ if __name__ == "__main__":
         f2_stbo = os.path.join(out_dir, "simNeedle_points_task2_stbo" + "_from_" + task2_start_from + ".tsv")
         f2_bcbo = os.path.join(out_dir, "simNeedle_points_task2_bcbo" + "_from_" + task2_start_from + ".tsv")
 
-        low_opt1 = -5
-        high_opt1 = 5
-        low_opt2 = -5
-        high_opt2 = 5
+        low_opt1 = 0
+        high_opt1 = 10
+        low_opt2 = 0
+        high_opt2 = 10
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
                 fun_type="NEEDLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
