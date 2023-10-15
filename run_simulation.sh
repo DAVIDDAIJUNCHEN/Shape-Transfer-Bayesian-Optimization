@@ -10,13 +10,13 @@ path_data=data/
 # check arguments
 if [ -z $1 ] || [ -z $2 ] || [ -z $3 ]; then 
     echo "Usage: bash run_simulation.sh <stage-number> <start_from_task1>" 
-    echo "<stage-number>: 0, run all simulation;"
+    echo "<stage-number>: 0, run all types of simulations;"
     echo "<stage-number>: 1, run EXP only;"
     echo "<stage-number>: 2, run Branin only;"
     echo "<stage-number>: 3, run Needle only;"
     echo "<start_from_task1>: 1, run from task1;"
     echo "<start_from_task1>: 0, skip task1 and run task 2;" 
-    echo "<task2_start_from>: gp or rand ." && exit 0
+    echo "<task2_start_from>: gp or rand, run task2 from gp or rand in task1" && exit 0
 fi
 
 
@@ -61,7 +61,8 @@ if [ $stage -eq 0 ] || [ $stage -eq 2 ]; then
         out_dir=$path_data/Branin/$i
 
         job_name=Branin_$i
-        sbatch --job-name=$job_name ./main_simulation.py --T1 $T1  --T2 $T2 --task2_start_from $task2_start_from --out_dir $out_dir --type BR --from_task1 $from_task1
+        sbatch --job-name=$job_name ./main_simulation.py --T1 $T1  --T2 $T2 --task2_start_from $task2_start_from --out_dir $out_dir \
+                                        --type BR --from_task1 $from_task1
         echo "Submitted $i-th BR simulation by Slurm"
     done
 fi
@@ -77,7 +78,7 @@ if [ $stage -eq 0 ] || [ $stage -eq 3 ]; then
     num_rep=20
 
     for shift in $shift_task2; do
-        echo "Task 1: needle function; Task 2: needle function after $shift shiftting"
+        echo "Task 1: needle function; Task 2: needle function after shiftting $shift"
         for i in $(seq 1 $num_rep); do
             echo "Running $i-th simulation"
             mkdir -p $path_data/Needle_shift_${shift}/$i 
