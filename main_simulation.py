@@ -96,6 +96,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
     elif fun_type == "NEEDLE":
         needle_shift = float(parser.needle_shift)
         dim = 1
+    else:
+        raise(TypeError)
 
     # Step 1: experiment 1 (skip if start_from_exp1 is False)
     if start_from_exp1:
