@@ -13,14 +13,15 @@ if [ -z $1 ] || [ -z $2 ] || [ -z $3 ]; then
     echo "<stage-number>: 0, run all simulation;"
     echo "<stage-number>: 1, run EXP only;"
     echo "<stage-number>: 2, run Branin only;"
+    echo "<stage-number>: 3, run Needle only;"
     echo "<start_from_task1>: 1, run from task1;"
-    echo "<start_from_task1>: 0, skip task1 and run task 2." 
-    echo "<task2_start_from>: gp or rand" && exit 0
+    echo "<start_from_task1>: 0, skip task1 and run task 2;" 
+    echo "<task2_start_from>: gp or rand ." && exit 0
 fi
 
 
 if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then 
-    echo "Simulation 1: transfer learning in Exponential target function"
+    echo "Simulation 1: Transfer Bayesian Optimization on Exponential target function"
 
     Thetas="1.414"
     mu_1="0_0"
@@ -47,7 +48,7 @@ fi
 
 
 if [ $stage -eq 0 ] || [ $stage -eq 2 ]; then
-    echo "Simulation 3: Branin function (task1), Modified Branni function (task2) starts from best point in $task2_start_from"
+    echo "Simulation 2: Branin function (task1), Modified Branni function (task2) starts from best point in $task2_start_from"
     T1=20
     T2=20
 
@@ -60,6 +61,30 @@ if [ $stage -eq 0 ] || [ $stage -eq 2 ]; then
 
         sbatch ./main_simulation.py --T1 $T1  --T2 $T2 --task2_start_from $task2_start_from --out_dir $out_dir --type BR --from_task1 $from_task1
         echo "Submitted $i-th BR simulation by Slurm"
+    done
+fi
+
+
+if [ $stage -eq 0 ] || [ $stage -eq 3 ]; then
+    echo "Simulation 3:  Transfer Bayesian Optimization on Needle function"
+
+    shift_task2="0.1 0.3"
+    T1=20
+    T2=20
+
+    num_rep=20
+
+    for shift in $shift_task2; do
+        echo "Task 1: needle function; Task 2: needle function after $shift shiftting"
+        for i in $(seq 1 $num_rep); do
+            echo "Running $i-th simulation"
+            mkdir -p $path_data/Needle_shift_${shift}/$i 
+            out_dir=$path_data/Needle_shift_${shift}/$i
+
+            sbatch ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir  --type NEEDLE   \
+                                --needle_shift ${shift} --from_task1 $from_task1
+            echo "Submitted $i-th Needle simulation by Slurm"
+        done
     done
 fi
 

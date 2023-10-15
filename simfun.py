@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -166,11 +165,11 @@ def triple_peak_func(input=[1.0, 2.0], mu1=[1,1], mu2=[2,2], mu3=[3,3],
     x = input[0]
     y = input[1]
 
-    pass 
+    return 0 
 
 def show_triple_peak():
 
-    pass
+    return 0
 
 
 if __name__ == "__main__":

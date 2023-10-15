@@ -10,21 +10,29 @@ from optimization import ExpectedImprovement
 from optimization import BiasCorrectedBO
 from optimization import ShapeTransferBO
 
-from simfun import exp_mu, branin, mod_branin
+from simfun import exp_mu, branin, mod_branin, needle_func
 
 
 def arg_parser():
     "parse the arguments"
     argparser = argparse.ArgumentParser(description="run simulation to compare 3 methods, ZeroGProcess, BCBO and STBO")
+    argparser.add_argument("--type", default="EXP", choices=["EXP", "BR", "NEEDLE"], help="choose target function type")
+
+    # arguments for EXP type only
     argparser.add_argument("--theta", default="1.0", help="parameter in exponential target function")
-    argparser.add_argument("--mu1", default="[0.0, 0.0]", help="mu of target function 1")
-    argparser.add_argument("--mu2", default="[0.5, 0.5]", help="mu of target function 2")
+    argparser.add_argument("--mu1", default="[0.0, 0.0]", help="mu of target function 1 in exponential fun")
+    argparser.add_argument("--mu2", default="[0.5, 0.5]", help="mu of target function 2 in exponential fun")
+
+    # arguments for NEEDLE type only
+    argparser.add_argument("--needle_shift", default="0.3", help="task2 shift value in needle function")
+
+    # general arguments 
     argparser.add_argument("--T1", default=10, help="number of experiments in target function 1")
-    argparser.add_argument("--T2", default=4, help="number of experiemnts in target function 2")
+    argparser.add_argument("--T2", default=4,  help="number of experiemnts in target function 2")
     argparser.add_argument("--task2_start_from", default="gp", choices=["gp", "rand"], help="task2 from best point of GP/Rand task1")
-    argparser.add_argument("--type", default="EXP", choices=["EXP", "BR"], help="choose target function type")
-    argparser.add_argument("--from_task1", default=True, choices=['0', '1'], help="start simulation from task1")
+    argparser.add_argument("--from_task1", default=True, choices=['0', '1'], help="start simulation from task1 (use existing task1 results)")
     argparser.add_argument("--out_dir", default="./data", help="output dir")
+
     parser = argparser.parse_args()
     
     return parser
@@ -53,33 +61,41 @@ def get_best_point(file, response_col=0):
 
     return best_point
 
-def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
-             rand_file_1="rf1.tsv", num_start_opt2=15, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
-             file_2_gp="f2_gp.tsv", file_2_gp_cold="f2_gp_cold.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv"):
+def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, 
+             file_1_gp="f1_gp.tsv", rand_file_1="rf1.tsv", num_start_opt2=15, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
+             file_2_gp="f2_gp.tsv", file_2_gp_cold="f2_gp_cold.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv", fun_type="EXP"):
     """
-    simulation main function of Brainn target function type:
+    simulation main function:
     num_exp[1 | 2]: number of experiments in task [1 | 2]
     num_start_opt[1 | 2]: number of start points in optimizing AC function in task [1 | 2]
     lr[1 | 2]: learning rate used in optimizing AC function in task [1 | 2]
     num_steps_opt[1 | 2]: number of steps in optimizing AC function in task [1 | 2]
     kessi_[1 | 2]: kessi value used in AC function in task [1 | 2]
     file_[1 | 2]_gp: file of experiment points choosen by zeroGP in task [1 | 2]
+    file_2_gp_cold: file of experiment points choosen by zeroGP from cold start in task 2
     rand_file_1: file of experiemnt points choosen by random search in task 1
     file_2_stbo: file of experiment points choosen by our STBO in task 2
     file_2_bcbo: file of experiment points choosen by BCBO (bias corrected bayesian optimization) method
     start_from_exp1: True | False, consider False if skip experiment 1 
     """
-    theta = parser.theta
-    mu1 = parser.mu1
-    mu2 = parser.mu2
     start_from_exp1 = int(parser.from_task1)
 
-    mu1 = [float(ele) for ele in mu1.split("_")]
-    mu2 = [float(ele) for ele in mu2.split("_")]
-    theta = float(theta.strip())
-    
-    assert(len(mu1) == len(mu2))
-    dim = len(mu1)
+    if fun_type == "EXP":
+        theta = parser.theta
+        mu1 = parser.mu1
+        mu2 = parser.mu2
+
+        theta = float(theta.strip())
+        mu1 = [float(ele) for ele in mu1.split("_")]
+        mu2 = [float(ele) for ele in mu2.split("_")]
+        
+        assert(len(mu1) == len(mu2))
+        dim = len(mu1)
+    elif fun_type == "BR":
+        dim = 2
+    elif fun_type == "NEEDLE":
+        needle_shift = float(parser.needle_shift)
+        dim = 1
 
     # Step 1: experiment 1 (skip if start_from_exp1 is False)
     if start_from_exp1:
@@ -94,7 +110,13 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
 
         # random initialization in exp 1
         init_point_1 = np.random.uniform(low_opt1, high_opt1, size = dim)
-        init_res_1 = exp_mu(init_point_1, mu1, theta)
+        if fun_type == "EXP":
+            init_res_1 = exp_mu(init_point_1, mu1, theta)
+        elif fun_type == "BR":
+            init_res_1 = branin(init_point_1)
+        elif fun_type == "NEEDLE":
+            init_res_1 = needle_func(init_point_1, shift=0)
+
         write_exp_result(file_1_gp, init_res_1, init_point_1)
         write_exp_result(rand_file_1, init_res_1, init_point_1)
 
@@ -103,7 +125,13 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
             for round_k in range(num_exp1-1):
                 # uniformly randomly pick next point
                 next_point_rand = np.random.uniform(low_opt1, high_opt1, size = dim)
-                next_response_rand = exp_mu(next_point_rand, mu1, theta)
+                if fun_type == "EXP":
+                    next_response_rand = exp_mu(next_point_rand, mu1, theta)
+                elif fun_type == "BR":
+                    next_response_rand = branin(next_point_rand)
+                elif fun_type == "NEEDLE":
+                    next_response_rand = needle_func(next_point_rand, shift=0)
+
                 write_exp_result(rand_file_1, next_response_rand, next_point_rand)
 
                 # ZeroGProcess model with EI 
@@ -113,7 +141,13 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
                 start_points = [np.random.uniform(low_opt1, high_opt1, size=dim).tolist() for i in range(num_start_opt1)]
 
                 next_point, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)
-                next_response = exp_mu(next_point, mu1, theta)
+                if fun_type == "EXP":
+                    next_response = exp_mu(next_point, mu1, theta)
+                elif fun_type == "BR":
+                    next_response = branin(next_point)
+                elif fun_type == "NEEDLE":
+                    next_response = needle_func(next_point, shift=0)
+
                 write_exp_result(file_1_gp,  next_response, next_point)
 
     # Step 2: Optimization on Experiemnt 2 
@@ -125,13 +159,24 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
     
     cold_start_point = np.random(low_opt2, high_opt2, size=dim)
 
-    res2_point_exp1 = exp_mu(best_point_exp1, mu2, theta)
-    res2_point_cold = exp_mu(cold_start_point, mu2, theta)
+    if fun_type == "EXP":
+        res2_point_exp1 = exp_mu(best_point_exp1, mu2, theta)
+        res2_point_cold = exp_mu(cold_start_point, mu2, theta)
+    elif fun_type == "BR":
+        res2_point_exp1 = mod_branin(best_point_exp1)
+        res2_point_cold = mod_branin(cold_start_point)
+    elif fun_type == "NEEDLE":
+        res2_point_exp1 = needle_func(best_point_exp1, shift=needle_shift)
+        res2_point_cold = needle_func(cold_start_point, shift=needle_shift)
 
     # write header and init point
     with open(file_2_gp, "w", encoding="utf-8") as f2:
         header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
         f2.writelines(header_line)
+
+    with open(file_2_gp_cold, "w", encoding="utf-8") as f2:
+        header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
+        f2.writelines(header_line)      
 
     with open(file_2_stbo, "w", encoding="utf-8") as f2:
         header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
@@ -141,14 +186,10 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
         header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
         f2.writelines(header_line)
 
-    with open(file_2_gp_cold, "w", encoding="utf-8") as f2:
-        header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
-        f2.writelines(header_line)            
-
     write_exp_result(file_2_gp, res2_point_exp1, best_point_exp1)
+    write_exp_result(file_2_gp_cold, res2_point_cold, cold_start_point)
     write_exp_result(file_2_stbo, res2_point_exp1, best_point_exp1)
     write_exp_result(file_2_bcbo, res2_point_exp1, best_point_exp1)
-    write_exp_result(file_2_gp_cold, res2_point_cold, cold_start_point)
 
     if num_exp2 > 1:
         for round_k in range(num_exp2-1):
@@ -162,7 +203,13 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
 
             next_point_gp, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
                                                                    num_step=num_steps_opt2, kessi=kessi_2)
-            next_response_gp = exp_mu(next_point_gp, mu2, theta)
+            if fun_type == "EXP":
+                next_response_gp = exp_mu(next_point_gp, mu2, theta)
+            elif fun_type == "BR":
+                next_response_gp = mod_branin(next_point_gp)
+            elif fun_type == "NEEDLE":
+                next_response_gp = needle_func(next_point_gp, shift=needle_shift)
+
             write_exp_result(file_2_gp, next_response_gp, next_point_gp)
 
             # 1.2 GP with cold start point
@@ -171,7 +218,13 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
 
             next_point_gp_cold, next_point_aux = EI_cold.find_best_NextPoint_ei(start_points, learn_rate=lr2,
                                                                                 num_step=num_steps_opt2, kessi=kessi_2)
-            next_response_gp_cold = exp_mu(next_point_gp_cold, mu2, theta)
+            if fun_type == "EXP":
+                next_response_gp_cold = exp_mu(next_point_gp_cold, mu2, theta)
+            elif fun_type == "BR":
+                next_response_gp_cold = mod_branin(next_point_gp_cold)
+            elif fun_type == "NEEDLE":
+                next_response_gp_cold = needle_func(next_point_gp_cold, shift=needle_shift)
+
             write_exp_result(file_2_gp_cold, next_response_gp_cold, next_point_gp_cold)
 
             # Method 2: STBO mothod based on EI from our paper
@@ -188,7 +241,13 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
             next_point_stbo, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=lr2,
                                                                       num_step=num_steps_opt2, kessi=kessi_2)
 
-            next_response_stbo = exp_mu(next_point_stbo, mu2, theta)
+            if fun_type == "EXP":
+                next_response_stbo = exp_mu(next_point_stbo, mu2, theta)
+            elif fun_type == "BR":
+                next_response_stbo = mod_branin(next_point_stbo)
+            elif fun_type == "NEEDLE":
+                next_response_stbo = needle_func(next_point_stbo, shift=needle_shift)
+
             write_exp_result(file_2_stbo, next_response_stbo, next_point_stbo)        
 
             # Method 3: BCBO method based on EI from some other paper
@@ -205,137 +264,14 @@ def main_exp(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=
             next_point_bcbo, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=lr2,
                                                                      num_step=num_steps_opt2, kessi=kessi_2)
 
-            next_response_bcbo = exp_mu(next_point_bcbo, mu2, theta)
+            if fun_type == "EXP":
+                next_response_bcbo = exp_mu(next_point_bcbo, mu2, theta)
+            elif fun_type == "BR":
+                next_response_bcbo = mod_branin(next_point_bcbo)
+            elif fun_type == "NEEDLE":
+                next_response_bcbo = needle_func(next_point_bcbo, shift=needle_shift)
+
             write_exp_result(file_2_bcbo, next_response_bcbo, next_point_bcbo)        
-
-    return 0
-
-def main_br(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, file_1_gp="f1_gp.tsv",
-            rand_file_1="rf1.tsv", num_start_opt2=5, low_opt2=-5, high_opt2=5, lr2=0.5, num_steps_opt2=500, kessi_2=0.0, 
-            file_2_gp="f2_gp.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv"):
-    """
-    simulation main function of Brainn target function type:
-    num_exp[1 | 2]: number of experiments in task [1 | 2]
-    num_start_opt[1 | 2]: number of start points in optimizing AC function in task [1 | 2]
-    lr[1 | 2]: learning rate used in optimizing AC function in task [1 | 2]
-    num_steps_opt[1 | 2]: number of steps in optimizing AC function in task [1 | 2]
-    kessi_[1 | 2]: kessi value used in AC function in task [1 | 2]
-    file_[1 | 2]_gp: file of experiment points choosen by zeroGP in task [1 | 2]
-    rand_file_1: file of experiemnt points choosen by random search in task 1
-    file_2_stbo: file of experiment points choosen by our STBO in task 2
-    file_2_bcbo: file of experiment points choosen by BCBO (bias corrected bayesian optimization) method
-    start_from_exp1: True | False, consider False if skip experiment 1 
-    """
-
-    start_from_exp1 = int(parser.from_task1)
-    dim = 2
-
-    # Step 1: experiment 1, branin (skip if start_from_exp1 is False)
-    if start_from_exp1:
-        # write header & init_point to file: file_1 (ZeroGP) & rand_file_1 (random search)
-        with open(file_1_gp, "w", encoding="utf-8") as f1:
-            header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
-            f1.writelines(header_line)
-
-        with open(rand_file_1, "w", encoding="utf-8") as f1:
-            header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
-            f1.writelines(header_line)
-
-        # random initialization in exp 1
-        init_point_1 = np.random.uniform(low_opt1, high_opt1, size = dim)
-        init_res_1 = branin(init_point_1)
-        write_exp_result(file_1_gp, init_res_1, init_point_1)
-        write_exp_result(rand_file_1, init_res_1, init_point_1)
-
-        # run num_exp1 times on EXP 1 by random search (rand_file_1) & ZeroGP (file_1)
-        if num_exp1 > 1:
-            for round_k in range(num_exp1 - 1):
-                # uniform randomly pick next point
-                next_point_rand = np.random.uniform(low_opt1, high_opt1, size = dim)
-                next_response_rand = branin(next_point_rand)
-                write_exp_result(rand_file_1, next_response_rand, next_point_rand)
-
-                # ZeroGProcess model with EI
-                EI = ExpectedImprovement()
-                EI.get_data_from_file(file_1_gp)
-
-                start_points = [np.random.uniform(low_opt1, high_opt1, size=dim).tolist() for i in range(num_start_opt1)]
-
-                next_point, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)
-                next_response = branin(next_point)
-                write_exp_result(file_1_gp,  next_response, next_point)
-
-    # Step 2: Optimization on Experiemnt 2 (mod_branin)
-    # get best point from exp1 file and get value of exp2 on best point
-    if task2_from_gp:
-        best_point_exp1 = get_best_point(file_1_gp)
-    else:
-        best_point_exp1 = get_best_point(rand_file_1)
-
-    res2_point_exp1 = mod_branin(best_point_exp1)
-
-    # write header and init point for GP method
-    with open(file_2_gp, "w", encoding="utf-8") as f2:
-        header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
-        f2.writelines(header_line)
-
-    with open(file_2_stbo, "w", encoding="utf-8") as f2:
-        header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
-        f2.writelines(header_line)
-
-    with open(file_2_bcbo, "w", encoding="utf-8") as f2:
-        header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
-        f2.writelines(header_line)    
-
-    write_exp_result(file_2_gp, res2_point_exp1, best_point_exp1)
-    write_exp_result(file_2_stbo, res2_point_exp1, best_point_exp1)
-    write_exp_result(file_2_bcbo, res2_point_exp1, best_point_exp1)
-
-    if num_exp2 > 1:
-        for round_k in range(num_exp2-1):
-            # same start points are used in all AC optimization
-            start_points = [np.random.uniform(low_opt2, high_opt2, size=dim).tolist() for i in range(num_start_opt2)]
-
-            # Method 1: ZeroGProcess model based on EI
-            EI = ExpectedImprovement()
-            EI.get_data_from_file(file_2_gp)
-
-            next_point_gp, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
-                                                                   num_step=num_steps_opt2, kessi=kessi_2)
-            next_response_gp = mod_branin(next_point_gp)
-            write_exp_result(file_2_gp, next_response_gp, next_point_gp)
-
-            # Method 2: STBO mothod based on EI from our paper
-            STBO = ShapeTransferBO()
-            STBO.get_data_from_file(file_2_stbo)
-
-            if task2_from_gp:
-                STBO.build_task1_gp(file_1_gp)
-            else:
-                STBO.build_task1_gp(rand_file_1)
-
-            STBO.build_diff_gp()
-
-            next_point_stbo, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
-                                                                     num_step=num_steps_opt2, kessi=kessi_2)                 
-            next_response_stbo = mod_branin(next_point_stbo)
-            write_exp_result(file_2_stbo, next_response_stbo, next_point_stbo)        
-
-            # Method 3: BCBO method based on EI from some other paper
-            BCBO = BiasCorrectedBO()
-            BCBO.get_data_from_file(file_2_bcbo)
-
-            if task2_from_gp:
-                BCBO.build_task1_gp(file_1_gp)
-            else:
-                BCBO.build_task1_gp(rand_file_1)
-
-            BCBO.build_diff_gp()
-
-            next_point_bcbo, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
-                                                                     num_step=num_steps_opt2, kessi=kessi_2)                 
-            next_response_bcbo = mod_branin(next_point_bcbo)
-            write_exp_result(file_2_bcbo, next_response_bcbo, next_point_bcbo)
 
     return 0
 
@@ -370,14 +306,16 @@ if __name__ == "__main__":
         low_opt2 = -5
         high_opt2 = 7
 
-        main_exp(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
-                 low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
+        main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
+                fun_type="EXP", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
+                file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
     elif fun_type == "BR":
         f1_gp = os.path.join(out_dir, "simBr_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simBr_points_task1_rand.tsv")
 
         f2_gp = os.path.join(out_dir, "simBr_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
+        f2_gp_cold = os.path.join(out_dir, "simExp_points_task2_gp" + "_from_cold" + ".tsv")
         f2_stbo = os.path.join(out_dir, "simBr_points_task2_stbo" + "_from_" + task2_start_from + ".tsv")
         f2_bcbo = os.path.join(out_dir, "simBr_points_task2_bcbo" + "_from_" + task2_start_from + ".tsv")
 
@@ -386,6 +324,25 @@ if __name__ == "__main__":
         low_opt2 = -5
         high_opt2 = 5
 
-        main_br(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
-                low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
+        main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
+                fun_type="BR", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
+                file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
+
+    elif fun_type == "NEEDLE":
+        f1_gp = os.path.join(out_dir, "simNeedle_points_task1_gp.tsv")
+        f1_rand = os.path.join(out_dir, "simNeedle_points_task1_rand.tsv")
+
+        f2_gp = os.path.join(out_dir, "simNeedle_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
+        f2_gp_cold = os.path.join(out_dir, "simExp_points_task2_gp" + "_from_cold" + ".tsv")
+        f2_stbo = os.path.join(out_dir, "simNeedle_points_task2_stbo" + "_from_" + task2_start_from + ".tsv")
+        f2_bcbo = os.path.join(out_dir, "simNeedle_points_task2_bcbo" + "_from_" + task2_start_from + ".tsv")
+
+        low_opt1 = -5
+        high_opt1 = 5
+        low_opt2 = -5
+        high_opt2 = 5
+
+        main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, rand_file_1=f1_rand, 
+                fun_type="NEEDLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
+                file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 

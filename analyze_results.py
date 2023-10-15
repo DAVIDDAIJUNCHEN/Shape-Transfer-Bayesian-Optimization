@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env /mnt/users/daijun_chen/tools/miniconda3.10/install/envs/python3_huggingface/bin/python3
 import argparse, os, random
 import numpy as np
 import matplotlib.pyplot as plt
