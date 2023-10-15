@@ -40,8 +40,8 @@ if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then
             out_dir=$path_data/EXP_mu2_${mu_2}_theta_$theta/$i
 
             job_name=EXP_mu2_${mu_2}_theta_$theta_$i
-            sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from --out_dir $out_dir  --type EXP   \
-                                        --mu1 $mu_1  --mu2 $mu_2  --theta $theta --from_task1 $from_task1
+            sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
+                                            --type EXP  --mu1 $mu_1  --mu2 $mu_2  --theta $theta  --from_task1 $from_task1
             echo "Submitted $i-th EXP simulation by Slurm" 
         done
     done
@@ -84,8 +84,8 @@ if [ $stage -eq 0 ] || [ $stage -eq 3 ]; then
             out_dir=$path_data/Needle_shift_${shift}/$i
 
             job_name=Needle_shift_${shift}_$i
-            sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir  --type NEEDLE   \
-                                --needle_shift ${shift} --from_task1 $from_task1
+            sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
+                                            --type NEEDLE  --needle_shift ${shift}  --from_task1 $from_task1
             echo "Submitted $i-th Needle simulation by Slurm"
         done
     done
