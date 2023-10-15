@@ -23,9 +23,9 @@ fi
 if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then 
     echo "Simulation 1: Transfer Bayesian Optimization on Exponential target function"
 
-    Thetas="1.414"
+    Thetas="1"
     mu_1="0_0"
-    mu_2="0.707_0.707"
+    mu_2="1.0_1.0"
 
     T1=20
     T2=20
@@ -36,10 +36,10 @@ if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then
         echo "Task 1: mean=$mu_1, theta=$theta; Taks 2: mean=$mu_2, theta=$theta, starts from best point in $task2_start_from" 
         for i in $(seq 1 $num_rep); do
             echo "Running $i-th simulation"
-            mkdir -p $path_data/EXP_mu2_${mu_2}_theta_$theta/$i
-            out_dir=$path_data/EXP_mu2_${mu_2}_theta_$theta/$i
+            mkdir -p $path_data/EXP_mu2_${mu_2}_theta_${theta}/$i
+            out_dir=$path_data/EXP_mu2_${mu_2}_theta_${theta}/$i
 
-            job_name=EXP_mu2_${mu_2}_theta_$theta_$i
+            job_name=EXP_mu2_${mu_2}_theta_${theta}_${task2_start_from}_$i
             sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
                                             --type EXP  --mu1 $mu_1  --mu2 $mu_2  --theta $theta  --from_task1 $from_task1
             echo "Submitted $i-th EXP simulation by Slurm" 
@@ -71,7 +71,7 @@ fi
 if [ $stage -eq 0 ] || [ $stage -eq 3 ]; then
     echo "Simulation 3:  Transfer Bayesian Optimization on Needle function"
 
-    shift_task2="0.01 0.05 0.3 1"
+    shift_task2="0.05 0.1 0.3 0.52 1"
     T1=20
     T2=20
 
