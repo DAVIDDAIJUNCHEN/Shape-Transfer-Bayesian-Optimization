@@ -138,8 +138,14 @@ def needle_func(input=[1.0], shift=0):
         return 0.5*np.exp(x)
     elif x>2 and x<= 2.5:
         return -100*(x - 2.25)**2 + 6.25 + 0.5*np.exp(2)
-    else:
+    elif x>2.5 and x <= 5:
         return np.sin(2*x) + 2*np.log(x) + 0.5*np.exp(2) - 2*np.log(2.5) - np.sin(5)
+    else:
+        v_5 = np.sin(2*5) + 2*np.log(5) + 0.5*np.exp(2) - 2*np.log(2.5) - np.sin(5)
+        value = np.exp(-x+5) - 1 + v_5 
+        
+        return value
+
 
 def show_needle(x_low, x_high, shift=0):
     "plot needle function above"
