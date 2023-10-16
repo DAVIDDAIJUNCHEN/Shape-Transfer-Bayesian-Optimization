@@ -29,7 +29,7 @@ if __name__ == "__main__":
         start_points = [[12], [1], [13], [11]]
         kessi = 0
 
-        next_point, next_point_aux = EI_task1.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=800)
+        next_point, next_point_aux = EI_task1.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=800, kessi=kessi)
         # EI.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
         print("GP next point in task1: ", next_point)
     elif task == 2:
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         start_points = [[12], [1], [13], [11]]
         kessi = 0
 
-        next_point, next_point_aux = EI_task2.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=800)
+        next_point, next_point_aux = EI_task2.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=800, kessi=kessi)
         # EI.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
         print("GP next point in task2: ", next_point)        
 
@@ -59,15 +59,10 @@ if __name__ == "__main__":
         STBO.build_task1_gp("./data/experiment_points_task1_gp.tsv")
         STBO.build_diff_gp()
 
-        # 3.2 AC optimization
-        # dim = STBO.dim
-        # low_opt2 = 0, high_opt2 = 1000
-        # num_start_opt2 = 15
-        # start_points = [np.random.uniform(low_opt2, high_opt2, size=dim).tolist() for i in range(num_start_opt2)]
-        start_points = [[0], [13], [15], [20]]
+        # 3.2 AC optimization (shared the same start points as in gp)
         kessi = 0
 
-        next_point, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=800)    
+        next_point, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=800, kessi=kessi)    
         # STBO.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
         print("STBO next point in task2: ", next_point)
 
@@ -87,10 +82,10 @@ if __name__ == "__main__":
         print(BCBO.X)
         print(BCBO.Y)
 
-        # 4.2 AC optimization
+        # 4.2 AC optimization (shared the same start points as in gp)
         kessi = 0
 
-        next_point, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=500)    
+        next_point, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=500, kessi=kessi)    
         # BCBO.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
         print("BCBO next point in task2: ", next_point)
     else:
