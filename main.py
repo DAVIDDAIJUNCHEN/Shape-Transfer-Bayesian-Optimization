@@ -10,6 +10,7 @@ from optimization import BiasCorrectedBO
 
 
 if __name__ == "__main__":
+    """" Run Real experiment """
     task = 1
 
     if task == 1:
@@ -20,7 +21,7 @@ if __name__ == "__main__":
         print(EI_task1.X)
         print(EI_task1.Y)
 
-        # 1.1 AC optimization 
+        # 1.2 AC optimization 
         # dim = EI.dim
         # low_opt1 = 0, high_opt1 = 1000
         # num_start_opt1 = 15
@@ -49,16 +50,16 @@ if __name__ == "__main__":
 
         next_point, next_point_aux = EI_task2.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=800)
         # EI.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
-        print("GP next point in task1: ", next_point)        
+        print("GP next point in task2: ", next_point)        
 
-        # Part 2: STBO on Experiments 2
-        # 2.1 STBO EI initialization
+        # Part 3: STBO on Experiments 2
+        # 3.1 STBO EI initialization
         STBO = ShapeTransferBO()
         STBO.get_data_from_file("./data/experiment_points_task2_STBO.tsv")
         STBO.build_task1_gp("./data/experiment_points_task1_gp.tsv")
         STBO.build_diff_gp()
 
-        # 2.2 AC optimization
+        # 3.2 AC optimization
         # dim = STBO.dim
         # low_opt2 = 0, high_opt2 = 1000
         # num_start_opt2 = 15
@@ -70,8 +71,8 @@ if __name__ == "__main__":
         # STBO.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
         print("STBO next point in task2: ", next_point)
 
-        # Part 3: BCBO on Experiment 2
-        # 3.1 BCBO EI initialization
+        # Part 4: BCBO on Experiment 2
+        # 4.1 BCBO EI initialization
         BCBO = BiasCorrectedBO()
         BCBO.get_data_from_file("data/experiment_points_task2_BCBO.tsv")
 
@@ -86,9 +87,12 @@ if __name__ == "__main__":
         print(BCBO.X)
         print(BCBO.Y)
 
-        # 3.2 AC optimization
+        # 4.2 AC optimization
         kessi = 0
 
         next_point, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=500)    
         # BCBO.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
         print("BCBO next point in task2: ", next_point)
+    else:
+        raise(ValueError)
+
