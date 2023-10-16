@@ -60,7 +60,7 @@ if [ $stage -eq 0 ] || [ $stage -eq 2 ]; then
         mkdir -p $path_data/Branin/$i
         out_dir=$path_data/Branin/$i
 
-        job_name=Branin_$i
+        job_name=Branin_${task2_start_from}_$i
         sbatch --job-name=$job_name ./main_simulation.py --T1 $T1  --T2 $T2 --task2_start_from $task2_start_from --out_dir $out_dir \
                                         --type BR --from_task1 $from_task1
         echo "Submitted $i-th BR simulation by Slurm"
@@ -84,7 +84,7 @@ if [ $stage -eq 0 ] || [ $stage -eq 3 ]; then
             mkdir -p $path_data/Needle_shift_${shift}/$i 
             out_dir=$path_data/Needle_shift_${shift}/$i
 
-            job_name=Needle_shift_${shift}_$i
+            job_name=Needle_shift_${shift}_${task2_start_from}_$i
             sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
                                             --type NEEDLE  --needle_shift ${shift}  --from_task1 $from_task1
             echo "Submitted $i-th Needle simulation by Slurm"

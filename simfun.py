@@ -155,7 +155,7 @@ def show_needle(x_low, x_high, shift=0):
     diff_y2_y1 = [ele2 - ele1 for ele1, ele2 in zip(y1, y2)]
 
     fig, ax = plt.subplots(1, 1)
-    ax.set_title("Needle function")
+    ax.set_title("Needle functions shift="+str(shift))
 
     ax.plot(x_draw, y1, label="task1")
     ax.plot(x_draw, y2, label="task2")
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     show_branin()
     size = 6
     show_exp(mu2=[2, 2], theta=1, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
-    show_needle(0, 10, shift=0.3)
+    show_needle(0, 10, shift=1)
 
     print(diff_mu1_mu2(mu1=[0, 0], mu2=[0.707, 0.707], theta=1.414))
 
