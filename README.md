@@ -6,7 +6,21 @@ To apply STBO method in real tasks, you can easily run `./main.py` script to fin
 
 ### task 1:
 
+In task 1, you can use EI (Expected Improvement) method based on GP (Gaussian Process) Model,
 
+* step 1: add initial experiment points
+
+  Before start the EI method, you need to prepare some initial experiment points and get the responses by running task 1 on them. after that, add these initialization points to a file by following the header below, e.g., `./data/experiment_points_task1_gp.tsv`.
+
+  ```
+  response#dim1#dim2#dim3
+  0.4#3#4#5
+  0.5#4#5#6
+  ```
+
+
+
+### task 2:
 
 ## Simulation Instruction
 
