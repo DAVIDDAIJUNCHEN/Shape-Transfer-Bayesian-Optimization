@@ -1,8 +1,16 @@
 # Shape-Transfer-Bayesian-Optimization
 
+## Usage
+
+To apply STBO method in real tasks, you can easily run `./main.py` script to find next point for your tasks. Assume you have two tasks to optimize their hyperparameters, and these two tasks have the same hyperparameters.
+
+### task 1:
+
+
+
 ## Simulation Instruction
 
-We have two types of simulation experiments. The first type takes exponential functions as target functions in task 1 and 2. The second type takes Branin function as target function of task 1, and modified Branin function as target function of task 2.
+We have three types of simulation experiments. The first type takes exponential functions as target functions in task 1 and 2. The second type takes Branin function as target function of task 1, and modified Branin function as target function of task 2.
 
 ### type 1:
 

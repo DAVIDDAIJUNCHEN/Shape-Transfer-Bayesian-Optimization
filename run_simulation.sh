@@ -69,16 +69,16 @@ fi
 
 
 if [ $stage -eq 0 ] || [ $stage -eq 3 ]; then
-    echo "Simulation 3:  Transfer Bayesian Optimization on Needle function"
+    echo "Simulation 3: Transfer Bayesian Optimization on Needle function"
 
-    shift_task2="0.05 0.1 0.3 0.52 1"
-    T1=20
+    shift_task2="0.15"
+    T1=40
     T2=20
 
     num_rep=20
 
     for shift in $shift_task2; do
-        echo "Task 1: needle function; Task 2: needle function after shiftting $shift"
+        echo "Task 1: needle function; Task 2: needle function after shifting $shift"
         for i in $(seq 1 $num_rep); do
             echo "Running $i-th simulation"
             mkdir -p $path_data/Needle_shift_${shift}/$i 

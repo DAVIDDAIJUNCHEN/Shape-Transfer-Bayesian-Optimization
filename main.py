@@ -2,6 +2,7 @@
 
 import os 
 import numpy as np
+
 from gp import ZeroGProcess
 from optimization import UpperConfidenceBound
 from optimization import ExpectedImprovement
@@ -40,7 +41,7 @@ if __name__ == "__main__":
         print(EI_task2.X)
         print(EI_task2.Y)
 
-        # 2.1 AC optimization 
+        # 2.2 AC optimization 
         # dim = EI.dim
         # low_opt1 = 0, high_opt1 = 1000
         # num_start_opt1 = 15
