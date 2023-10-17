@@ -10,17 +10,24 @@ In task 1, you can use EI (Expected Improvement) method based on GP (Gaussian Pr
 
 * step 1: add initial experiment points
 
-  Before start the EI method, you need to prepare some initial experiment points and get the responses by running task 1 on them. after that, add these initialization points to a file by following the header below, e.g., `./data/experiment_points_task1_gp.tsv`.
+  Before start the EI method, you need to prepare some initial experiment points and get the responses by running task 1 on them. after that, add these initialization points to a file by following the header below, e.g. , `./data/experiment_points_task1_gp.tsv`.
 
   ```
   response#dim1#dim2#dim3
   0.4#3#4#5
   0.5#4#5#6
   ```
+* step 2: run `./main.py` with `task=1`
 
+  Let variable `task = 1` in `./main.py` script, then you can get the next experiment point for your task 1 after run `./main.py` .
+* step 3: run task 1
 
+  Get the task 1 response of new experiment point from step 2, and add the new experiment point and its response into file created in step 1, e.g. , `./data/experiment_points_task1_gp.tsv`.
+
+Iteratively execute step 2 and step 3, you can do as many task 1 experiments as you can afford. At the same time, the best point (with largest response value) can be selected from task 1 experiment file, e.g. , `./data/experiment_points_task1_gp.tsv`.
 
 ### task 2:
+
 
 ## Simulation Instruction
 
