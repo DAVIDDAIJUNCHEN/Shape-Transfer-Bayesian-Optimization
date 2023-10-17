@@ -1,5 +1,10 @@
 # Shape-Transfer-Bayesian-Optimization
 
+
+<p align="center"><a href="https://arxiv.org/pdf/2305.13304.pdf">[📄 Paper]</a> | <a href="https://www.aiwaves.org/recurrentgpt">[🤗 Demo - STBO]</a> |  <a href="https://www.youtube.com/watch?v=rMnw3ljCibc">[📺 Video]</a> | <a href="https://discord.gg/aNznfrYPeR">[🔥 Discord]</a> </p>
+<hr>
+
+
 ## Usage
 
 To apply STBO method in real tasks, you can easily run `./main.py` script to find next point for your tasks. Assume you have two tasks to optimize their hyperparameters, and these two tasks have the same hyperparameters.
