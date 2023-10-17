@@ -1,5 +1,7 @@
 # Shape-Transfer-Bayesian-Optimization
 
+
+
 ## Usage
 
 To apply STBO method in real tasks, you can easily run `./main.py` script to find next point for your tasks. Assume you have two tasks to optimize their hyperparameters, and these two tasks have the same hyperparameters.
@@ -27,6 +29,25 @@ In task 1, you can use EI (Expected Improvement) method based on GP (Gaussian Pr
 Iteratively execute step 2 and step 3, you can do as many task 1 experiments as you can afford. At the same time, the best point (with largest response value) can be selected from task 1 experiment file, e.g. , `./data/experiment_points_task1_gp.tsv`.
 
 ### task 2:
+
+In task 2, three optimizing hyper parameter methods have been prepared, STBO (Shape Transfer Bayesian Optimization), BCBO (Biases  Corrected Bayesian Optimization) and EI from best point. Among these three methods, EI from best point is exactly the same as EI used in task 1, only the initial points differ (EI in task 2 starts from best point selected in task 1). In addition, not only STBO and BCBO start from best point in task 1, these two methods transfer surrogate model knowledge from task 1 to task 2.
+
+* step 1: add initial experiment points
+
+  Although any initial experiment points can be used in task 2, it is recommended that starts from best point in task 1. Add the intial experiment points and corresponding responses into task 2 files, e.g., `./experiment_points_task2_STBO.tsv`, `./experiment_points_task2_BCBO.tsv` and `./experiment_points_task2_gp.tsv` . The format should be exactly the same as in task 1 file.
+* step 2: run `./main.py` with `task=2`
+
+  Let variable `task = 2` in `./main.py` script, then you can get the next experiment point for your task 2 after run `./main.py`. Note that, different method is going to give different next point for your task 2 experiment.
+* step 3: run task 2
+
+  For each next experiment point selected by these 3 methods, get the task 2 response, add the new experiment points and their responses into corresponding files created in step 1, e.g. , `./experiment_points_task2_STBO.tsv`, `./experiment_points_task2_BCBO.tsv` and `./experiment_points_task2_gp.tsv` .
+
+Iteratively execute step 2 and step 3, you can run as many task 2 experiments as you can afford. Finally, the best point (with largest response value) can be selected from task 2 experiment files, which should be your optimized hyperparameters in task 2.
+
+### Less task 2 experiment
+
+In the above task 2 section, three transfer Bayesian optimization methods have been utilized. If you only want to use some of the three methods, just run task 2 on the next point selected by this method and only update the corresponding task 2 file.
+
 
 
 ## Simulation Instruction
