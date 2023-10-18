@@ -1,4 +1,4 @@
-# Shape-Transfer-Bayesian-Optimization
+# Shape Transfer Bayesian Optimization
 
 <p align="center"><a href="https://arxiv.org/pdf/2305.13304.pdf">[📄 Paper]</a> | <a href="https://www.aiwaves.org/recurrentgpt">[🤗 Demo - STBO]</a> |  <a href="https://www.youtube.com/watch?v=rMnw3ljCibc">[📺 Video]</a> | <a href="https://discord.gg/aNznfrYPeR">[🔥 Discord]</a> </p>
 <hr>
@@ -10,7 +10,6 @@ If you are going to optimize hyperparameters in two similar tasks, and these two
 There are 2 types of transfer learning in Bayesian Optimization. The first type is the same as task 1, but initialized at the best hyperparameter selected in task 1, for example, EI method starts from best hyperparameter of task 1. The second type transfers not only knowledge of best hyperparameter, but also transfers knowledge of previous experiment results to new task (i.e., task 2).
 
 In this project, we implement EI to optimize hyperparameters of task 1. For other methods, like grid search and rand search, since they are straight forward, so you can use them by writting several lines codes. Besides, in task 2, we implement three methods of transfer learning in Bayesian Optimizaton, EI starting from best hyperparameter of task 1, BCBO (Biases Corrected Bayesian Optimization) and STBO (Shape Transfer Bayesian Optimization) proposed in above our paper.
-
 
 ## Usage
 
@@ -57,7 +56,6 @@ Iteratively execute step 2 and step 3, you can run as many task 2 experiments as
 ### Less task 2 experiment
 
 In the above task 2 section, three transfer Bayesian optimization methods have been utilized. If you only want to use some of the three methods, just run task 2 on the next point selected by this method and only update the corresponding task 2 file.
-
 
 ## Simulation Instruction
 
@@ -123,8 +121,6 @@ where `input_dir` is the output dir after run simulation, `out_dir` is the analy
 ```
 python3 ./analyze_results.py  ./data/EXP_mu2_1.0_1.0_theta_0.5 ./simulation_results/EXP_theta_0.5 from_rand
 ```
-
-
 
 ## Citation
 
