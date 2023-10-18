@@ -11,6 +11,7 @@ There are 2 types of transfer learning in Bayesian Optimization. The first type 
 
 In this project, we implement EI to optimize hyperparameters of task 1. For other methods, like grid search and rand search, since they are straight forward, so you can use them by writting several lines codes. Besides, in task 2, we implement three methods of transfer learning in Bayesian Optimizaton, EI starting from best hyperparameter of task 1, BCBO (Biases Corrected Bayesian Optimization) and STBO (Shape Transfer Bayesian Optimization) proposed in above our paper.
 
+
 ## Usage
 
 To apply STBO method in real tasks, you can easily run `./main.py` script to find next point for your tasks.
@@ -56,6 +57,7 @@ Iteratively execute step 2 and step 3, you can run as many task 2 experiments as
 ### Less task 2 experiment
 
 In the above task 2 section, three transfer Bayesian optimization methods have been utilized. If you only want to use some of the three methods, just run task 2 on the next point selected by this method and only update the corresponding task 2 file.
+
 
 ## Simulation Instruction
 
@@ -120,4 +122,19 @@ where `input_dir` is the output dir after run simulation, `out_dir` is the analy
 
 ```
 python3 ./analyze_results.py  ./data/EXP_mu2_1.0_1.0_theta_0.5 ./simulation_results/EXP_theta_0.5 from_rand
+```
+
+
+
+## Citation
+
+```angular2
+@misc{2024stbo,
+      title={Shape Transfer Bayesian Optimization}, 
+      author={Yang Li, Daijun Chen, Shifeng Xiong, Yuanzhi Zhao},
+      year={2024},
+      eprint={},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
 ```
