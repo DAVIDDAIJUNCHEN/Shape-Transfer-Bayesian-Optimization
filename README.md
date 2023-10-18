@@ -53,11 +53,16 @@ In task 2, three optimizing hyper parameter methods have been prepared, STBO (Sh
 
 Iteratively execute step 2 and step 3, you can run as many task 2 experiments as you can afford. Finally, the best point (with largest response value) can be selected from task 2 experiment files, which should be your optimized hyperparameters in task 2.
 
-### Less task 2 experiment
+### Less task 2 experiments
 
 In the above task 2 section, three transfer Bayesian optimization methods have been utilized. If you only want to use some of the three methods, just run task 2 on the next point selected by this method and only update the corresponding task 2 file.
 
-## Simulation Instruction
+
+
+## Showcases 
+
+
+## Simulation
 
 We have three types of simulation experiments. The first type takes exponential functions as target functions in task 1 and 2. The second type takes Branin function as target function of task 1, and modified Branin function as target function of task 2.
 
