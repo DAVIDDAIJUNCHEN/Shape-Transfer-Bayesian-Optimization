@@ -5,7 +5,7 @@
 
 ## Introduction
 
-Assume you are going to optimize hyperparameters in two similar tasks, and these two tasks have the same hyperparameters space. In task 1, you can use random/grid search, or EI (Expected Improvement) method based on GP (Gaussian Process) model to optimize the hyperparameters. In task 2, based on the optimized hyperparameters and experiment results in task 1, optimizing hyperparameters can be more efficient by transfering knowledge from task 1.
+If you are going to optimize hyperparameters in two similar tasks, and these two tasks have the same hyperparameters space. In task 1, you can use random/grid search, or EI (Expected Improvement) method based on GP (Gaussian Process) model to optimize the hyperparameters. In task 2, based on the optimized hyperparameters and experiment results in task 1, optimizing hyperparameters can be more efficient by transfering knowledge from task 1.
 
 There are 2 types of transfer learning in Bayesian Optimization. The first type is the same as task 1, but initialized at the best hyperparameter selected in task 1, for example, EI method starts from best hyperparameter of task 1. The second type transfers not only knowledge of best hyperparameter, but also transfers knowledge of previous experiment results to new task (i.e., task 2).
 
