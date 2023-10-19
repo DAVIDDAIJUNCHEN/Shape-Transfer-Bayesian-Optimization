@@ -128,36 +128,39 @@ where `input_dir` is the output dir after run simulation, `out_dir` is the analy
   python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 task1 
   ```
 
-  Two images `EXP_mu2_0.1_0.1_theta_0.5_task1_mean.png` and `EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png` can be found in `./simulation_results/EXP_theta_0.5` . The following image is the `EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png` , which shows the results of rand search and EI (gp) in task 1. 
+  Two images `EXP_mu2_0.1_0.1_theta_0.5_task1_mean.png` and `EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png` can be found in `./simulation_results/EXP_theta_0.5` . The following image is the `EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png` , which shows the results of rand search and EI (gp) in task 1.
 
 <div align=center>
 <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png" width = "640" alt="struct" align=center />
 </div>
 
 * Visulize task 2 results
+  The following command is running to analyze task 2 results for comparision between transfer and non-transfer methods, i.e., gp (EI from cold start) and STBO (from random search results in task 1).
 
   ```
-  python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 from_rand
+  python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 from_cold
   ```
+
+  The following images can be found in the same dir, EXP_mu2_0.1_0.1_theta_0.5_from_cold_mean.png    &    EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png
 
 <div align=center>
-<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png" width = "640" alt="struct" align=center />
+<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png" width = "640" alt="struct" align=center />
 </div>
 
-e.g. the following command is running to analyze task2 results starting from random search results of task1.
+    The following commands are running to analyze task2 results starting from random search/EI results of task1 respectively,
 
 ```
 python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 from_rand
+python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 from_gp
 ```
 
 Then you can find the following images in dir `./simulation_results/EXP_theta_0.5/`,
 
-1. ./EXP_mu2_0.1_0.1_theta_0.5_from_cold_mean.png     &  ./EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png
+1. ./EXP_mu2_0.1_0.1_theta_0.5_from_rand_mean.png     &  ./EXP_mu2_0.1_0.1_theta_0.5_from_rand_medium.png
 2. ./EXP_mu2_0.1_0.1_theta_0.5_from_gp_mean.png     &  ./EXP_mu2_0.1_0.1_theta_0.5_from_gp_medium.png
-3. ./EXP_mu2_0.1_0.1_theta_0.5_from_rand_mean.png     &  ./EXP_mu2_0.1_0.1_theta_0.5_from_rand_medium.png
 
 <div align=center>
-<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png" width = "640" alt="struct" align=center />
+<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_comparision_medium.png" width = "640" alt="struct" align=center />
 </div>
 
 ## Citation
