@@ -146,7 +146,6 @@ def needle_func(input=[1.0], shift=0):
         
         return value
 
-
 def show_needle(x_low, x_high, shift=0):
     "plot needle function above"
     x_draw = np.linspace(x_low, x_high, 100)
@@ -181,9 +180,9 @@ def show_triple_peak():
 if __name__ == "__main__":
     plot_rkhs_norm()
     show_branin()
-    size = 6
-    show_exp(mu2=[2, 2], theta=1, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
-    show_needle(0, 10, shift=0.3)
+    size = 4
+    show_exp(mu2=[1, 1], theta=1, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
+    show_needle(0, 10, shift=0.1)
 
     print(diff_mu1_mu2(mu1=[0, 0], mu2=[0.707, 0.707], theta=1.414))
 
