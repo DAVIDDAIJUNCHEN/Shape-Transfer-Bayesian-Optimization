@@ -17,7 +17,7 @@ To apply STBO method in real tasks, you can easily run `./main.py` script to fin
 
 ### task 1:
 
-In task 1, you can use EI (Expected Improvement) method based on GP (Gaussian Process) Model,
+In task 1, you can use EI method by following below steps,
 
 * step 1: add initial experiment points
 
@@ -33,13 +33,13 @@ In task 1, you can use EI (Expected Improvement) method based on GP (Gaussian Pr
   Let variable `task = 1` in `./main.py` script, then you can get the next experiment point for your task 1 after run `./main.py` .
 * step 3: run task 1
 
-  Get the task 1 response of new experiment point from step 2, and add the new experiment point and its response into file created in step 1, e.g. , `./data/experiment_points_task1_gp.tsv`.
+  Get the task 1 response of new experiment point from step 2, and add the new experiment point as well as its response into file created in step 1, e.g. , `./data/experiment_points_task1_gp.tsv`.
 
 Iteratively execute step 2 and step 3, you can do as many task 1 experiments as you can afford. At the same time, the best point (with largest response value) can be selected from task 1 experiment file, e.g. , `./data/experiment_points_task1_gp.tsv`.
 
 ### task 2:
 
-In task 2, three optimizing hyper parameter methods have been prepared, STBO (Shape Transfer Bayesian Optimization), BCBO (Biases  Corrected Bayesian Optimization) and EI from best point. Among these three methods, EI from best point is exactly the same as EI used in task 1, only the initial points differ (EI in task 2 starts from best point selected in task 1). In addition, not only STBO and BCBO start from best point in task 1, these two methods transfer surrogate model knowledge from task 1 to task 2.
+In task 2, three optimizing hyper parameter methods have been implemented, STBO (Shape Transfer Bayesian Optimization), BCBO (Biases  Corrected Bayesian Optimization) and EI from best point. Among these three methods, EI from best point is exactly the same as EI used in task 1, only the initial points are different (EI in task 2 starts from best point selected in task 1). In addition, not only STBO and BCBO start from best point in task 1, these two methods transfer experiment  knowledge of task 1 to task 2. Specifically, STBO transfers surrogate model knowledge of task 1 to task 2, while BCBO only transfers experiment points from task 1 to task 2.
 
 * step 1: add initial experiment points
 
@@ -57,10 +57,7 @@ Iteratively execute step 2 and step 3, you can run as many task 2 experiments as
 
 In the above task 2 section, three transfer Bayesian optimization methods have been utilized. If you only want to use some of the three methods, just run task 2 on the next point selected by this method and only update the corresponding task 2 file.
 
-
-
-## Showcases 
-
+## Showcases
 
 ## Simulation
 
@@ -105,13 +102,13 @@ where both exponential and Branin types simulations will be run if `stage-number
 
 When the task1 experiments have been done,  task1 result files can be found in ./data dir. If you want to skip task1 experiments, please set `start_from_task1` 0.
 
-In task1, normal Gaussian process model and random search have been applied. Therefore, you can start task2 experiments based on Gaussian process or random search results in task1. If `task2_start_from` is `gp`, then task2 starts from Gaussian process results in task1; if `task2_start_from` is `rand`, then task2 starts from random search results in task1. e.g.
+In task1, EI and random search have been applied. Therefore, you can start task2 experiments based on EI or random search results in task1. If `task2_start_from` is `gp`, then task2 starts from EI ( based on Gaussian process) results in task1; if `task2_start_from` is `rand`, then task2 starts from random search results in task1. e.g.
 
 ```
 ./run_simulation.sh  1   1   rand
 ```
 
-the above command execute to run exponential simulation only from task1, and run task2 based on  task 1 random search results.
+the above command executes to run exponential simulation in task1, and run task2 based on task 1 random search results.
 
 #### analyze results
 
@@ -121,11 +118,47 @@ After simulation jobs are finished, both task1 and 2 results can be found in `EX
 python3 ./analyze_results.py  <input_dir>  <out_dir>  <topic>
 ```
 
-where `input_dir` is the output dir after run simulation, `out_dir` is the analyzing output dir, and topic decides what files to analyze, possible candidates (`task1`,  `from_gp`, `from_rand`). e.g. the following command is running to analyze task2 results starting from random search (task1).
+where `input_dir` is the output dir after run simulation, `out_dir` is the analyzing output dir, and topic decides what files to analyze, possible candidates (`task1`, `from_cold`, `from_gp`, `from_rand`).
+
+* Visulize task 1 results
+
+  The following command is running to analyze task 1 results,
+
+  ```
+  python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 task1 
+  ```
+
+  Two images `EXP_mu2_0.1_0.1_theta_0.5_task1_mean.png` and `EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png` can be found in `./simulation_results/EXP_theta_0.5` . The following image is the `EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png` , which shows the results of rand search and EI (gp) in task 1. 
+
+<div align=center>
+<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png" width = "640" alt="struct" align=center />
+</div>
+
+* Visulize task 2 results
+
+  ```
+  python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 from_rand
+  ```
+
+<div align=center>
+<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png" width = "640" alt="struct" align=center />
+</div>
+
+e.g. the following command is running to analyze task2 results starting from random search results of task1.
 
 ```
-python3 ./analyze_results.py  ./data/EXP_mu2_1.0_1.0_theta_0.5 ./simulation_results/EXP_theta_0.5 from_rand
+python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 from_rand
 ```
+
+Then you can find the following images in dir `./simulation_results/EXP_theta_0.5/`,
+
+1. ./EXP_mu2_0.1_0.1_theta_0.5_from_cold_mean.png     &  ./EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png
+2. ./EXP_mu2_0.1_0.1_theta_0.5_from_gp_mean.png     &  ./EXP_mu2_0.1_0.1_theta_0.5_from_gp_medium.png
+3. ./EXP_mu2_0.1_0.1_theta_0.5_from_rand_mean.png     &  ./EXP_mu2_0.1_0.1_theta_0.5_from_rand_medium.png
+
+<div align=center>
+<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png" width = "640" alt="struct" align=center />
+</div>
 
 ## Citation
 
