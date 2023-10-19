@@ -3,6 +3,8 @@
 <p align="center"><a href="https://arxiv.org/pdf/2305.13304.pdf">[📄 Paper]</a> | <a href="https://www.aiwaves.org/recurrentgpt">[🤗 Demo - STBO]</a> |  <a href="https://www.youtube.com/watch?v=rMnw3ljCibc">[📺 Video]</a> | <a href="https://discord.gg/aNznfrYPeR">[🔥 Discord]</a> </p>
 <hr>
 
+
+
 ## Introduction
 
 If you are going to optimize hyperparameters in two similar tasks, and these two tasks have the same hyperparameters space. In task 1, you can use random/grid search, or EI (Expected Improvement) method based on GP (Gaussian Process) model to optimize the hyperparameters. In task 2, based on the optimized hyperparameters and experiment results in task 1, optimizing hyperparameters can be more efficient by transfering knowledge from task 1.
@@ -11,9 +13,12 @@ There are 2 types of transfer learning in Bayesian Optimization. The first type 
 
 In this project, we implement EI to optimize hyperparameters of task 1. For other methods, like grid search and rand search, since they are straight forward, so you can use them by writting several lines codes. Besides, in task 2, we implement three methods of transfer learning in Bayesian Optimizaton, EI starting from best hyperparameter of task 1, BCBO (Biases Corrected Bayesian Optimization) and STBO (Shape Transfer Bayesian Optimization) proposed in above our paper.
 
+
+
 ## Usage
 
 To apply STBO method in real tasks, you can easily run `./main.py` script to find next point for your tasks.
+
 
 ### task 1:
 
@@ -37,6 +42,7 @@ In task 1, you can use EI method by following below steps,
 
 Iteratively execute step 2 and step 3, you can do as many task 1 experiments as you can afford. At the same time, the best point (with largest response value) can be selected from task 1 experiment file, e.g. , `./data/experiment_points_task1_gp.tsv`.
 
+
 ### task 2:
 
 In task 2, three optimizing hyper parameter methods have been implemented, STBO (Shape Transfer Bayesian Optimization), BCBO (Biases  Corrected Bayesian Optimization) and EI from best point. Among these three methods, EI from best point is exactly the same as EI used in task 1, only the initial points are different (EI in task 2 starts from best point selected in task 1). In addition, not only STBO and BCBO start from best point in task 1, these two methods transfer experiment  knowledge of task 1 to task 2. Specifically, STBO transfers surrogate model knowledge of task 1 to task 2, while BCBO only transfers experiment points from task 1 to task 2.
@@ -53,15 +59,25 @@ In task 2, three optimizing hyper parameter methods have been implemented, STBO 
 
 Iteratively execute step 2 and step 3, you can run as many task 2 experiments as you can afford. Finally, the best point (with largest response value) can be selected from task 2 experiment files, which should be your optimized hyperparameters in task 2.
 
-### Less task 2 experiments
+
+### Less methods in task 2
 
 In the above task 2 section, three transfer Bayesian optimization methods have been utilized. If you only want to use some of the three methods, just run task 2 on the next point selected by this method and only update the corresponding task 2 file.
 
+
+
+
+
 ## Showcases
+
+
+
+
 
 ## Simulation
 
 We have three types of simulation experiments. The first type takes exponential functions as target functions in task 1 and 2. The second type takes Branin function as target function of task 1, and modified Branin function as target function of task 2.
+
 
 ### type 1:
 
@@ -72,6 +88,8 @@ $$
 $$
 f_2(x) = \exp\{-\frac{1}{2\theta^2}\|x-\mu_2\|^2\}
 $$
+
+
 
 #### configuration
 
@@ -110,6 +128,7 @@ In task1, EI and random search have been applied. Therefore, you can start task2
 
 the above command executes to run exponential simulation in task1, and run task2 based on task 1 random search results.
 
+
 #### analyze results
 
 After simulation jobs are finished, both task1 and 2 results can be found in `EXP_mu2_x_x_theta_x` subdir dir under `./data` , e.g. `./data/EXP_mu2_1.0_1.0_theta_0.5` . In this dir, `num_rep` subdirs can be found and each subdir contains simulations results. To analyze these simulation results, `./analyze_results.py` tool generate some plots.
@@ -141,13 +160,13 @@ where `input_dir` is the output dir after run simulation, `out_dir` is the analy
   python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 from_cold
   ```
 
-  The following images can be found in the same dir, EXP_mu2_0.1_0.1_theta_0.5_from_cold_mean.png    &    EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png
+  The following images can be found in the same dir, EXP_mu2_0.1_0.1_theta_0.5_from_cold_mean.png & EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png
 
 <div align=center>
 <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png" width = "640" alt="struct" align=center />
 </div>
 
-    The following commands are running to analyze task2 results starting from random search/EI results of task1 respectively,
+The following commands are running to analyze task2 results starting from random search/EI results of task1 respectively,
 
 ```
 python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 from_rand
@@ -156,12 +175,15 @@ python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_resu
 
 Then you can find the following images in dir `./simulation_results/EXP_theta_0.5/`,
 
-1. ./EXP_mu2_0.1_0.1_theta_0.5_from_rand_mean.png     &  ./EXP_mu2_0.1_0.1_theta_0.5_from_rand_medium.png
-2. ./EXP_mu2_0.1_0.1_theta_0.5_from_gp_mean.png     &  ./EXP_mu2_0.1_0.1_theta_0.5_from_gp_medium.png
+1. EXP_mu2_0.1_0.1_theta_0.5_from_rand_mean.png  &  EXP_mu2_0.1_0.1_theta_0.5_from_rand_medium.png
+2. EXP_mu2_0.1_0.1_theta_0.5_from_gp_mean.png  &  EXP_mu2_0.1_0.1_theta_0.5_from_gp_medium.png
 
 <div align=center>
 <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_comparision_medium.png" width = "640" alt="struct" align=center />
 </div>
+
+
+
 
 ## Citation
 
