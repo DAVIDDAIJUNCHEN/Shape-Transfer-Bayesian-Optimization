@@ -167,7 +167,7 @@ Then you can find the following images in dir `./simulation_results/EXP_theta_0.
 2. EXP_mu2_0.1_0.1_theta_0.5_from_gp_mean.png  &  EXP_mu2_0.1_0.1_theta_0.5_from_gp_medium.png
 
 <div align=center>
-<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_rand_medium.png" width = "420" alt="struct" align=center />  <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_gp_medium.png" width = "420" alt="struct" align=center />
+<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_rand_medium.png" width = "390" alt="struct" align=center />  <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_gp_medium.png" width = "390" alt="struct" align=center />
 </div>
 
 
