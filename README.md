@@ -183,8 +183,8 @@ Then you can find the following images in dir `./simulation_results/EXP_theta_0.
       primaryClass={cs.CL}
 }
 
-@InProceedings{pmlr-v54-shilton17a,
-  title = 	 {{Regret Bounds for Transfer Learning in Bayesian Optimisation}},
+@InProceedings{2017bcbo,
+  title = 	 {Regret Bounds for Transfer Learning in Bayesian Optimisation},
   author = 	 {Shilton, Alistair and Gupta, Sunil and Rana, Santu and Venkatesh, Svetha},
   booktitle = 	 {Proceedings of the 20th International Conference on Artificial Intelligence and Statistics},
   pages = 	 {307--315},
@@ -196,7 +196,6 @@ Then you can find the following images in dir `./simulation_results/EXP_theta_0.
   publisher =    {PMLR},
   pdf = 	 {http://proceedings.mlr.press/v54/shilton17a/shilton17a.pdf},
   url = 	 {https://proceedings.mlr.press/v54/shilton17a.html},
-  abstract = 	 {This paper studies the regret bound of two transfer learning algorithms in Bayesian optimisation. The first algorithm models any difference between the source and target functions as a noise process. The second algorithm proposes a new way to model the difference between the source and target as a Gaussian process which is then used to adapt the source data. We show that in both cases the regret bounds are tighter than in the no transfer case. We also experimentally compare the performance of these algorithms relative to no transfer learning and demonstrate benefits of transfer learning.}
 }
 
 ```
