@@ -197,4 +197,11 @@ Then you can find the following images in dir `./simulation_results/EXP_theta_0.
   url = 	 {https://proceedings.mlr.press/v54/shilton17a.html},
 }
 
+@Inproceedings{wilson2018maximizing,
+  title     = {Maximizing acquisition functions for Bayesian optimization},
+  author    = {Wilson, James and Hutter, Frank and Deisenroth, Marc},
+  booktitle = {Advances in neural information processing systems},
+  year      = {2018},
+  volume    = {31}
+}
 ```
