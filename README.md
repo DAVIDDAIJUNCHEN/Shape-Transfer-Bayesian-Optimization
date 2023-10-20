@@ -75,7 +75,6 @@ $$
 
 The following 3D picture illustrates the two task functions where $\theta=1 $, $\mu_1=(0, 0)$ and $\mu_2=(1, 1)$ .
 
-
 <div align=center>
 <img src="./exp_3d.png" width = "640" alt="struct" align=center />
 </div>
@@ -142,6 +141,7 @@ where `input_dir` is the output dir after run simulation, `out_dir` is the analy
 </div>
 
 * Visulize task 2 results
+
   The following command is running to analyze task 2 results for comparision between transfer and non-transfer methods, i.e., gp (EI from cold start) and STBO (from random search results in task 1).
 
   ```
@@ -169,7 +169,6 @@ Then you can find the following images in dir `./simulation_results/EXP_theta_0.
 <div align=center>
 <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_rand_medium.png" width = "390" alt="struct" align=center />  <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_gp_medium.png" width = "390" alt="struct" align=center />
 </div>
-
 
 ## Citation
 
