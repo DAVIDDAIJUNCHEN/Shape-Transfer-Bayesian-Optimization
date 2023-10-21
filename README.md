@@ -96,6 +96,17 @@ num_rep=20     # repetition times
 
 Where Thetas is the list of $\theta$ values seprated by space, `mu_1` and `mu_2` are the $\mu_1$ and $\mu_2$ vectors whose components are separated by underline _ .
 
+
+
+#### type 2:
+
+<div align=center>
+<img src="./needle.png" width = "540" alt="struct" align=center />
+</div>
+
+
+
+
 #### run simulation
 
 Then, run script `run_simulation.sh` with 3 parameters (stage, from_task1, task2_start_from) as follows,
@@ -137,7 +148,7 @@ where `input_dir` is the output dir after run simulation, `out_dir` is the analy
   Two images `EXP_mu2_0.1_0.1_theta_0.5_task1_mean.png` and `EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png` can be found in `./simulation_results/EXP_theta_0.5` . The following image is the `EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png` , which shows the results of rand search and EI (gp) in task 1.
 
 <div align=center>
-<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png" width = "640" alt="struct" align=center />
+<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png" width = "540" alt="struct" align=center />
 </div>
 
 * Visualize task 2 results
@@ -151,7 +162,7 @@ where `input_dir` is the output dir after run simulation, `out_dir` is the analy
   The following images can be found in the same dir, EXP_mu2_0.1_0.1_theta_0.5_from_cold_mean.png & EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png
 
 <div align=center>
-<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png" width = "640" alt="struct" align=center />
+<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png" width = "540" alt="struct" align=center />
 </div>
 
 The following commands are running to analyze task2 results starting from random search/EI results of task1 respectively,
