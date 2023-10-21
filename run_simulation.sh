@@ -71,7 +71,7 @@ fi
 if [ $stage -eq 0 ] || [ $stage -eq 3 ]; then
     echo "Simulation 3: Transfer Bayesian Optimization on Needle function"
 
-    shift_task2="0.15"
+    shift_task2="0.05"
     T1=40
     T2=20
 
