@@ -126,7 +126,7 @@ python3 ./analyze_results.py  <input_dir>  <out_dir>  <topic>
 
 where `input_dir` is the output dir after run simulation, `out_dir` is the analyzing output dir, and topic decides what files to analyze, possible candidates (`task1`, `from_cold`, `from_gp`, `from_rand`).
 
-* Visulize task 1 results
+* Visualize task 1 results
 
   The following command is running to analyze task 1 results,
 
@@ -140,7 +140,7 @@ where `input_dir` is the output dir after run simulation, `out_dir` is the analy
 <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png" width = "640" alt="struct" align=center />
 </div>
 
-* Visulize task 2 results
+* Visualize task 2 results
 
   The following command is running to analyze task 2 results for comparision between transfer and non-transfer methods, i.e., gp (EI from cold start) and STBO (from random search results in task 1).
 
