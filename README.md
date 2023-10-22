@@ -53,7 +53,7 @@ In task 2, three optimizing hyper parameter methods have been implemented, STBO 
 
 Iteratively execute step 2 and step 3, you can run as many task 2 experiments as you can afford. Finally, the best point (with largest response value) can be selected from task 2 experiment files, which should be your optimized hyperparameters in task 2.
 
-### Less methods in task 2
+### less methods in task 2
 
 In the above task 2 section, three transfer Bayesian optimization methods have been utilized. If you only want to use some of the three methods, just run task 2 on the next point selected by this method and only update the corresponding task 2 file.
 
@@ -61,7 +61,7 @@ In the above task 2 section, three transfer Bayesian optimization methods have b
 
 ## Simulation
 
-We have three types of simulation experiments. The first type takes exponential functions as target functions in task 1 and 2. The second type takes Branin function as target function of task 1, and modified Branin function as target function of task 2.
+We have three types of simulation experiments. The first type takes exponential functions as target functions in task 1 and 2. The second type takes Branin function as target function of task 1, and modified Branin function as target function of task 2. The third type uses needle function and its shifted version as target functions of task 1 and 2 respectively.
 
 ### type 1:
 
@@ -76,12 +76,12 @@ $$
 The following 3D picture illustrates the two task functions where $\theta=1 $, $\mu_1=(0, 0)$ and $\mu_2=(1, 1)$ .
 
 <div align=center>
-<img src="./exp_3d.png" width = "740" alt="struct" align=center />
+<img src="./exp_3d.png" width = "780" alt="struct" align=center />
 </div>
 
 #### configuration
 
-To run the type 1 simulation, you can change the configuration given in the ``run_simulation.sh`` script.
+To run the type 1 simulation, you can change the simualtion 1 configuration given in ``run_simulation.sh`` script.
 
 ```bash
 Thetas="1"  
@@ -97,6 +97,34 @@ num_rep=20     # repetition times
 Where Thetas is the list of $\theta$ values seprated by space, `mu_1` and `mu_2` are the $\mu_1$ and $\mu_2$ vectors whose components are separated by underline _ .
 
 ### type 2:
+
+Let $x=(x_1, x_2)\in\mathbb{R}^2$,
+
+$$
+\begin{align}
+   f_1(x) &= \big(x_2 - \frac{5.1}{4\pi^2}x_1^2 + \frac{5}{\pi}x_1 - 6\big)^2 + 10\times(1 - \frac{1}{8\pi})\cos(x_1) + 10  \\
+  f_2(x) &= f_1(x) + 20x_1\cdot\sin(x_2)
+\end{align}
+$$
+
+Below 3D picture depicts the Branin function.
+
+<div align=center>
+<img src="./branin_3d.png" width = "780" alt="struct" align=center />
+</div>
+
+#### configuration
+
+To run type 2 simulation, you should change the simulation 2 configuration in `run_simulation.sh` like below,
+
+```bash
+T1=20          # number of experiment points in task1
+T2=20          # number of experiment points in task2
+
+num_rep=20     # repetition times
+```
+
+### type 3:
 
 $$
 \begin{align}
@@ -114,12 +142,12 @@ $$
 The following picture shows the needle function, $f_1$, in color blue, and the shifted needle function ($s=0.1$), $f_2$, in color orange. Besides, the difference between $f_1$ and $f_2$ , $f_2 - f_1$,  is shown in color green.
 
 <div align=center>
-<img src="./needle.png" width = "540" alt="struct" align=center />
+<img src="./needle.png" width = "640" alt="struct" align=center />
 </div>
 
 #### configuration
 
-To run the type 2 simulation, you can change the configuration given in the ``run_simulation.sh`` script.
+To run the type 3 simulation, you should change the simulation 3 configuration given in ``run_simulation.sh`` script.
 
 ```bash
 shift_task2="0.1"
@@ -139,9 +167,9 @@ Then, run script `run_simulation.sh` with 3 parameters (stage, from_task1, task2
 ./run_simulation.sh  <stage-number>   <start_from_task1>   <task2_start_from>
 ```
 
-where both exponential and Branin types simulations will be run if `stage-number` is 0, only exponential simulation will be executed if `stage-number` is 1, and only Branin simulation will be executed if `stage-number` is 2.
+where all three types of simulations will be executed if `stage-number` is 0, only exponential simulation will be executed if `stage-number` is 1, only Branin simulation will be executed if `stage-number` is 2, and only needle type of simulation will be run if `stage-number` is 3 .
 
-When the task1 experiments have been done,  task1 result files can be found in ./data dir. If you want to skip task1 experiments, please set `start_from_task1` 0.
+When the task1 experiments have been done,  task 1 result files can be found in `./data` dir. If you want to skip task1 experiments, please set `start_from_task1` to 0. Otherwise, simulation starts from scratch and generates task 1 experiment results.
 
 In task1, EI and random search have been applied. Therefore, you can start task2 experiments based on EI or random search results in task1. If `task2_start_from` is `gp`, then task2 starts from EI ( based on Gaussian process) results in task1; if `task2_start_from` is `rand`, then task2 starts from random search results in task1. e.g.
 
@@ -241,4 +269,5 @@ where `input_dir` is the output dir after run simulation, `out_dir` is the analy
   year      = {2018},
   volume    = {31}
 }
+
 ```
