@@ -23,7 +23,7 @@ In task 1, you can use EI method by following below steps,
 
   Before start the EI method, you need to prepare some initial experiment points and get the responses by running task 1 on them. after that, add these initialization points to a file by following the header below, e.g. , `./data/experiment_points_task1_gp.tsv`.
 
-  ```
+  ```plaintext
   response#dim1#dim2#dim3
   0.4#3#4#5
   0.5#4#5#6
@@ -76,14 +76,14 @@ $$
 The following 3D picture illustrates the two task functions where $\theta=1 $, $\mu_1=(0, 0)$ and $\mu_2=(1, 1)$ .
 
 <div align=center>
-<img src="./exp_3d.png" width = "640" alt="struct" align=center />
+<img src="./exp_3d.png" width = "740" alt="struct" align=center />
 </div>
 
 #### configuration
 
 To run the type 1 simulation, you can change the configuration given in the ``run_simulation.sh`` script.
 
-```
+```bash
 Thetas="1"  
 mu_1="0_0"
 mu_2="2_2"
@@ -96,22 +96,46 @@ num_rep=20     # repetition times
 
 Where Thetas is the list of $\theta$ values seprated by space, `mu_1` and `mu_2` are the $\mu_1$ and $\mu_2$ vectors whose components are separated by underline _ .
 
+### type 2:
 
+$$
+\begin{align}
+f_1(x) &= 
+    \begin{cases}{lr}
+       0.5\exp(x), & \text{if ~~~}  x\leq 2   \\
+       -100\times(x-2.25)^2 + 6.25 + 0.5\exp(2), & \text{if~~~ } 2\leq x \leq 2.5 \\
+       \sin(2x)+ 2\log(x) + 0.5\exp(2) - 2\log(2.5) - \sin5, & \text{if ~~~}  2.5\leq x \leq 5 \\
+       \exp(-x + 5) - 1 + f_1(5), & \text{if  ~~~} x > 5
+    \end{cases}  \\ \\
+f_2(x, s) &= f_1(x - s) 
+\end{align}
+$$
 
-#### type 2:
+The following picture shows the needle function, $f_1$, in color blue, and the shifted needle function ($s=0.1$), $f_2$, in color orange. Besides, the difference between $f_1$ and $f_2$ , $f_2 - f_1$,  is shown in color green.
 
 <div align=center>
 <img src="./needle.png" width = "540" alt="struct" align=center />
 </div>
 
+#### configuration
 
+To run the type 2 simulation, you can change the configuration given in the ``run_simulation.sh`` script.
 
+```bash
+shift_task2="0.1"
+T1=40          # number of experiment points in task1 
+T2=20          # number of experiment points in task2
 
-#### run simulation
+num_rep=20
+```
+
+Where  shift_task2 is the value list of $s$ in task2 function $f_2(x, s)$.
+
+### run simulation
 
 Then, run script `run_simulation.sh` with 3 parameters (stage, from_task1, task2_start_from) as follows,
 
-```
+```bash
 ./run_simulation.sh  <stage-number>   <start_from_task1>   <task2_start_from>
 ```
 
@@ -121,61 +145,63 @@ When the task1 experiments have been done,  task1 result files can be found in .
 
 In task1, EI and random search have been applied. Therefore, you can start task2 experiments based on EI or random search results in task1. If `task2_start_from` is `gp`, then task2 starts from EI ( based on Gaussian process) results in task1; if `task2_start_from` is `rand`, then task2 starts from random search results in task1. e.g.
 
-```
+```shell
 ./run_simulation.sh  1   1   rand
 ```
 
 the above command executes to run exponential simulation in task1, and run task2 based on task 1 random search results.
 
-#### analyze results
+### analyze results
 
 After simulation jobs are finished, both task1 and 2 results can be found in `EXP_mu2_x_x_theta_x` subdir dir under `./data` , e.g. `./data/EXP_mu2_1.0_1.0_theta_0.5` . In this dir, `num_rep` subdirs can be found and each subdir contains simulations results. To analyze these simulation results, `./analyze_results.py` tool generate some plots.
 
-```
+```powershell
 python3 ./analyze_results.py  <input_dir>  <out_dir>  <topic>
 ```
 
 where `input_dir` is the output dir after run simulation, `out_dir` is the analyzing output dir, and topic decides what files to analyze, possible candidates (`task1`, `from_cold`, `from_gp`, `from_rand`).
 
-* Visualize task 1 results
+* #### visualize task 1 results
 
   The following command is running to analyze task 1 results,
+
 
   ```
   python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 task1 
   ```
 
-  Two images `EXP_mu2_0.1_0.1_theta_0.5_task1_mean.png` and `EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png` can be found in `./simulation_results/EXP_theta_0.5` . The following image is the `EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png` , which shows the results of rand search and EI (gp) in task 1.
+  Two images `EXP_mu2_0.1_0.1_theta_0.5_task1_mean.png` and `EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png` can be found in the output dir, `./simulation_results/EXP_theta_0.5` . The following image is `EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png` , which shows the results of rand search and EI (gp) in task 1.
 
 <div align=center>
 <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_task1_medium.png" width = "540" alt="struct" align=center />
 </div>
 
-* Visualize task 2 results
+* #### visualize task 2 results
 
   The following command is running to analyze task 2 results for comparision between transfer and non-transfer methods, i.e., gp (EI from cold start) and STBO (from random search results in task 1).
+
 
   ```
   python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 from_cold
   ```
 
-  The following images can be found in the same dir, EXP_mu2_0.1_0.1_theta_0.5_from_cold_mean.png & EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png
+  Two images, `EXP_mu2_0.1_0.1_theta_0.5_from_cold_mean.png` & `EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png` , can be found in the output dir, `./simulation_results/EXP_theta_0.5/`. The following image is `EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png`, which shows the comparison between transfer learning and non-transfer learning in Bayesian optimization. In this image, stbo method optimizes task 2 by transfering task1 knowledge of rand search, while EI (gp) method is exactly the same as in task 1 without any knowledge from task1.
 
-<div align=center>
-<img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png" width = "540" alt="struct" align=center />
-</div>
+  <div align=center>
+  <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_cold_medium.png" width = "540" alt="struct" align=center />
+  </div>
 
-The following commands are running to analyze task2 results starting from random search/EI results of task1 respectively,
+  The following commands are running to analyze task 2 results starting from random search and EI results of task1 respectively,
 
-```
-python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 from_rand
-python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 from_gp
-```
+  ```
+  python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 from_rand
+  python3 ./analyze_results.py  ./data/EXP_mu2_0.1_0.1_theta_0.5 ./simulation_results/EXP_theta_0.5 from_gp
+  ```
 
-Then you can find the following images in dir `./simulation_results/EXP_theta_0.5/`,
+  Then you can find the following 4 images in output dir, `./simulation_results/EXP_theta_0.5/`,
 
-1. EXP_mu2_0.1_0.1_theta_0.5_from_rand_mean.png  &  EXP_mu2_0.1_0.1_theta_0.5_from_rand_medium.png
-2. EXP_mu2_0.1_0.1_theta_0.5_from_gp_mean.png  &  EXP_mu2_0.1_0.1_theta_0.5_from_gp_medium.png
+  1. `EXP_mu2_0.1_0.1_theta_0.5_from_rand_mean.png`  &  `EXP_mu2_0.1_0.1_theta_0.5_from_rand_medium.png`
+  2. `EXP_mu2_0.1_0.1_theta_0.5_from_gp_mean.png`  &  `EXP_mu2_0.1_0.1_theta_0.5_from_gp_medium.png`
 
 <div align=center>
 <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_rand_medium.png" width = "390" alt="struct" align=center />  <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_gp_medium.png" width = "390" alt="struct" align=center />
