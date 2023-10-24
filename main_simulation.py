@@ -16,7 +16,7 @@ from simfun import exp_mu, branin, mod_branin, needle_func, mono_func, two_exp_m
 def arg_parser():
     "parse the arguments"
     argparser = argparse.ArgumentParser(description="run simulation to compare 3 methods, ZeroGProcess, BCBO and STBO")
-    argparser.add_argument("--type", default="EXP", choices=["EXP", "BR", "NEEDLE", "MONO2NEEDLE", "MONO2DOUBLE"], help="choose target function type")
+    argparser.add_argument("--type", default="EXP", choices=["EXP", "BR", "NEEDLE", "MONO2NEEDLE", "MONO2DOUBLE", "DOUBLE2DOUBLE"], help="choose target function type")
 
     # arguments for EXP type only
     argparser.add_argument("--theta", default="1.0", help="shape parameter in tyep EXP")
@@ -101,6 +101,11 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
         dim = 1
     elif fun_type == "MONO2DOUBLE":
         dim = 1
+    elif fun_type == "DOUBLE2DOUBLE":
+        dim = 1
+        lambda1 = 1; lambda2 = 1.5
+        mu1 = [0]; mu2 = [5]
+        theta1 = 1; theta2 = 1
     else:
         raise(TypeError)
 
@@ -127,6 +132,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
             init_res_1 = mono_func(init_point_1)
         elif fun_type == "MONO2DOUBLE":
             init_res_1 = exp_mu(init_point_1, [0], 0.5)
+        elif fun_type == "DOUBLE2DOUBLE":
+            init_res_1 = two_exp_mu(init_point_1, lambda1, lambda2, mu1, mu2, theta1, theta2)
         else:
             raise(TypeError)
 
@@ -148,6 +155,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
                     next_response_rand = mono_func(next_point_rand)
                 elif fun_type == "MONO2DOUBLE":
                     next_response_rand = exp_mu(next_point_rand, [0], 0.5)
+                elif fun_type == "DOUBLE2DOUBLE":
+                    next_response_rand = two_exp_mu(next_point_rand, lambda1, lambda2, mu1, mu2, theta1, theta2)
                 else:
                     raise(TypeError)
 
@@ -170,6 +179,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
                     next_response = mono_func(next_point)
                 elif fun_type == "MONO2DOUBLE":
                     next_response = exp_mu(next_point, [0], 0.5)
+                elif fun_type == "DOUBLE2DOUBLE":
+                    next_response = two_exp_mu(next_point, lambda1, lambda2, mu1, mu2, theta1, theta2)
                 else:
                     raise(TypeError)
 
@@ -199,6 +210,9 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
     elif fun_type == "MONO2DOUBLE":
         res2_point_exp1 = two_exp_mu(best_point_exp1, mu1=[0], mu2=[9], theta1=0.5, theta2=2)
         res2_point_cold = two_exp_mu(cold_start_point, mu1=[0], mu2=[9], theta1=0.5, theta2=2)    
+    elif fun_type == "DOUBLE2DOUBLE":
+        res2_point_exp1 = two_exp_mu(best_point_exp1, lambda2, lambda1, mu1, mu2, theta1, theta2)
+        res2_point_cold = two_exp_mu(cold_start_point, lambda2, lambda1, mu1, mu2, theta1, theta2)    
     else:
         raise(TypeError)
 
@@ -249,6 +263,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
                 next_response_gp = needle_func(next_point_gp, shift=needle_shift)
             elif fun_type == "MONO2DOUBLE":
                 next_response_gp = two_exp_mu(next_point_gp, mu1=[0], mu2=[9], theta1=0.5, theta2=2)
+            elif fun_type == "DOUBLE2DOUBLE":
+                next_response_gp = two_exp_mu(next_point_gp, lambda2, lambda1, mu1, mu2, theta1, theta2)
             else:
                 raise(TypeError)
 
@@ -271,6 +287,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
                     next_response_gp_cold = needle_func(next_point_gp_cold, shift=needle_shift)
                 elif fun_type == "MONO2DOUBLE":
                     next_response_gp_cold = two_exp_mu(next_point_gp_cold, mu1=[0], mu2=[9], theta1=0.5, theta2=2)
+                elif fun_type == "DOUBLE2DOUBLE":
+                    next_response_gp_cold = two_exp_mu(next_point_gp_cold, lambda2, lambda1, mu1, mu2, theta1, theta2)
                 else:
                     raise(TypeError)
 
@@ -300,6 +318,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
                 next_response_stbo = needle_func(next_point_stbo, shift=needle_shift)
             elif fun_type == "MONO2DOUBLE":
                 next_response_stbo = two_exp_mu(next_point_stbo, mu1=[0], mu2=[9], theta1=0.5, theta2=2)
+            elif fun_type == "DOUBLE2DOUBLE":
+                next_response_stbo = two_exp_mu(next_point_stbo, lambda2, lambda1, mu1, mu2, theta1, theta2)
             else:
                 raise(TypeError)
 
@@ -329,6 +349,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
                 next_response_bcbo = needle_func(next_point_bcbo, shift=needle_shift)
             elif fun_type == "MONO2DOUBLE":
                 next_response_bcbo = two_exp_mu(next_point_bcbo, mu1=[0], mu2=[9], theta1=0.5, theta2=2)
+            elif fun_type == "DOUBLE2DOUBLE":
+                next_response_bcbo = two_exp_mu(next_point_bcbo, lambda2, lambda1, mu1, mu2, theta1, theta2)
             else:
                 raise(TypeError)
 
@@ -441,5 +463,23 @@ if __name__ == "__main__":
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
                 fun_type="MONO2DOUBLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
+                file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
+
+    elif fun_type == "DOUBLE2DOUBLE":
+        f1_gp = os.path.join(out_dir, "simDouble2Double_points_task1_gp.tsv")
+        f1_rand = os.path.join(out_dir, "simDouble2Double_points_task1_rand.tsv")
+
+        f2_gp = os.path.join(out_dir, "simDouble2Double_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
+        f2_gp_cold = os.path.join(out_dir, "simDouble2Double_points_task2_gp" + "_from_cold" + ".tsv")
+        f2_stbo = os.path.join(out_dir, "simDouble2Double_points_task2_stbo" + "_from_" + task2_start_from + ".tsv")
+        f2_bcbo = os.path.join(out_dir, "simDouble2Double_points_task2_bcbo" + "_from_" + task2_start_from + ".tsv")
+
+        low_opt1 = -5
+        high_opt1 = 10
+        low_opt2 = -5
+        high_opt2 = 10
+
+        main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
+                fun_type="DOUBLE2DOUBLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
