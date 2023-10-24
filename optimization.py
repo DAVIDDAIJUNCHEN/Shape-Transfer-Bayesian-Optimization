@@ -81,7 +81,7 @@ class UpperConfidenceBound(ZeroGProcess):
 
         ax_ac.legend()
         fig.tight_layout()
-        fig.savefig("./example_ac_ucb.png")
+        fig.savefig("./images/example_ac_ucb.png")
 
         return 0
 
@@ -229,7 +229,7 @@ class ExpectedImprovement(ZeroGProcess):
 
         ax_ac.legend()
         fig.tight_layout()
-        fig.savefig("./example_ac_ei.png")
+        fig.savefig("./images/example_ac_ei.png")
 
         return 0
 
@@ -413,7 +413,7 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
 
         ax_ac.legend()
         fig.tight_layout()
-        fig.savefig("./example_stbo_ac_ei.png")
+        fig.savefig("./images/example_stbo_ac_ei.png")
 
         return 0
 
@@ -550,7 +550,7 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
 
         ax_ac.legend()
         fig.tight_layout()
-        fig.savefig("./example_bcbo_ac_ei.png")
+        fig.savefig("./images/example_bcbo_ac_ei.png")
 
         return 0
 
