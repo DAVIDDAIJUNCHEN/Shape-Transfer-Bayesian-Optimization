@@ -14,6 +14,7 @@ if [ -z $1 ] || [ -z $2 ] || [ -z $3 ]; then
     echo "<stage-number>: 1, run EXP only;"
     echo "<stage-number>: 2, run Branin only;"
     echo "<stage-number>: 3, run Needle only;"
+    echo "<stage-number>: 4, run Mono2Needle only;"
     echo "<start_from_task1>: 1, run from task1;"
     echo "<start_from_task1>: 0, skip task1 and run task 2;" 
     echo "<task2_start_from>: gp or rand, run task2 from gp or rand in task1" && exit 0
@@ -89,6 +90,56 @@ if [ $stage -eq 0 ] || [ $stage -eq 3 ]; then
                                             --type NEEDLE  --needle_shift ${shift}  --from_task1 $from_task1
             echo "Submitted $i-th Needle simulation by Slurm"
         done
+    done
+fi
+
+
+if [ $stage -eq 0 ] || [ $stage -eq 4 ]; then
+    echo "Simulation 4: Transfer Bayesian Optimization from Mono to Needle function"
+
+    shift_task2="0.1"
+    T1=20
+    T2=20
+
+    num_rep=20
+
+    for shift in $shift_task2; do
+        echo "Task 1: mono function; Task 2: needle function after shifting $shift"
+        for i in $(seq 1 $num_rep); do
+            echo "Running $i-th simulation"
+            mkdir -p $path_data/Mono2Needle_shift_${shift}/$i 
+            out_dir=$path_data/Mono2Needle_shift_${shift}/$i
+
+            job_name=Mono2Needle_shift_${shift}_${task2_start_from}_$i
+            sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
+                                            --type MONO2NEEDLE  --needle_shift ${shift}  --from_task1 $from_task1
+            echo "Submitted $i-th Mono2Needle simulation by Slurm"
+        done
+    done
+fi
+
+
+if [ $stage -eq 0 ] || [ $stage -eq 5 ]; then
+    echo "Simulation 5: Transfer Bayesian Optimization from Mono to Double exponential function"
+
+    T1=20
+    T2=20
+
+    num_rep=20
+
+    mu2="9"
+    theta1="0.5" 
+    theta2="2"
+
+    echo "Task 1: mono exp function; Task 2: double exp function"
+    for i in $(seq 1 $num_rep); do
+        echo "Running $i-th simulation"
+        mkdir -p $path_data/Mono2Double_mu2_${mu2}_theta2_$theta2/$i 
+        out_dir=$path_data/Mono2Double_mu2_${mu2}_theta2_$theta2/$i
+        job_name=Mono2Double_mu2_${mu2}_${task2_start_from}_$i
+        sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
+                                        --type MONO2DOUBLE  --from_task1 $from_task1
+        echo "Submitted $i-th Mono2Double exponential simulation by Slurm"
     done
 fi
 

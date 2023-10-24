@@ -4,56 +4,6 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import axes3d
 
-def branin(input=[3., 4.]):
-    "Branin function: "
-    assert(len(input) == 2)
-    x1 = input[0]
-    x2 = input[1] 
-    branin1 = x2 - 5.1*(x1**2) / (4*np.pi**2) + 5*x1 / np.pi - 6
-    branin2 = 10*(1 - 1/(8*np.pi))*np.cos(x1)
-    branin = branin1**2 + branin2 + 10
-
-    return branin
-
-def mod_branin(input=[3., 4.]):
-    "Modified Branin function: branin(x1, x2) + 20*x1 - 30*x2"
-    assert(len(input) == 2)
-    x1 = input[0]
-    x2 = input[1]
-
-    #mod_bran = branin(input) + 20*x1 - 30*x2
-    mod_bran = branin(input) + 20*x1*np.sin(x2)
-    
-    return mod_bran
-
-def show_branin(x_low=-1, x_up=1, y_low=-1, y_up=1, x_nums=100, y_nums=100):
-    fig = plt.figure(figsize=plt.figaspect(0.5))
-    ax = fig.add_subplot(1, 2, 1, projection='3d')
-
-    X = np.arange(-5, 10, 0.25)
-    Y = np.arange(0, 15, 0.25)
-    X, Y = np.meshgrid(X, Y)
-
-    branin1 = Y - 5.1*(X**2) / (4*np.pi**2) + 5*X / np.pi - 6
-    branin2 = 10*(1 - 1/(8*np.pi))*np.cos(X)
-    branin = branin1**2 + branin2 + 10
-    Z = branin
-
-    surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm,
-                           linewidth=0, antialiased=False)
-
-    ax.set_zlim(-20, 300)
-    fig.colorbar(surf, shrink=0.5, aspect=10)
-
-    ax = fig.add_subplot(1, 2, 2, projection='3d')
-    ax.plot_wireframe(X, Y, Z, rstride=5, cstride=5)
-    ax.set_zlim(-20, 300)
-
-    plt.show()
-
-    fig.savefig("./branin_3d")
-
-    return 0
 
 def exp_mu(input, mu, theta=1):
     """
@@ -107,7 +57,7 @@ def show_exp(mu2=[1, 1], x_low=-1, x_up=1, y_low=-1, y_up=1, theta=1, x_nums=100
     
     plt.show()
 
-    fig.savefig("./exp_3d")
+    fig.savefig("./images/exp_3d")
 
     return 0
 
@@ -127,9 +77,95 @@ def plot_rkhs_norm(low_diff=0, up_diff=7, theta_lst=[0.25, 0.5, 1, 1.5, 3]):
 
     ax.legend()
     fig.tight_layout()
-    fig.savefig("./rkhs_norm_mu1_mu2")
+    fig.savefig("./images/rkhs_norm_mu1_mu2")
 
     return 0
+
+def branin(input=[3., 4.]):
+    "Branin function: "
+    assert(len(input) == 2)
+    x1 = input[0]
+    x2 = input[1] 
+    branin1 = x2 - 5.1*(x1**2) / (4*np.pi**2) + 5*x1 / np.pi - 6
+    branin2 = 10*(1 - 1/(8*np.pi))*np.cos(x1)
+    branin = branin1**2 + branin2 + 10
+
+    return branin
+
+def mod_branin(input=[3., 4.], shift=[5, 5]):
+    "Modified Branin function: branin(x1, x2) + 20*x1 - 30*x2"
+    assert(len(input) == 2)
+    x1 = input[0] - shift[0]
+    x2 = input[1] - shift[1]
+
+    input = [x1, x2]
+    #mod_bran = branin(input) + 20*x1 - 30*x2
+    mod_bran = branin(input) + 1000*exp_mu(input, mu=[5, 5], theta=1) + 50
+    
+    return mod_bran
+
+def show_branin(shift=[5,5], mu=[5, 5], theta=1, x_low=-1, x_up=1, y_low=-1, y_up=1, x_nums=100, y_nums=100):
+    fig = plt.figure(figsize=plt.figaspect(0.5))
+    
+    fig.suptitle("Branin v.s. modified Branin with mu=("+str(mu[0]) + "," + str(mu[1]) + "), theta="+str(theta),)
+
+    ax = fig.add_subplot(1, 2, 1, projection='3d')
+
+    X = np.arange(-10, 10, 0.25)
+    Y = np.arange(-10, 15, 0.25)
+    X, Y = np.meshgrid(X, Y)
+
+    branin1 = Y - 5.1*(X**2) / (4*np.pi**2) + 5*X / np.pi - 6
+    branin2 = 10*(1 - 1/(8*np.pi))*np.cos(X)
+    branin = branin1**2 + branin2 + 30
+
+    Z_branin = branin
+
+    branin1_shift = (Y-shift[1]) - 5.1*((X-shift[0])**2) / (4*np.pi**2) + 5*(X-shift[0]) / np.pi - 6
+    branin2_shift = 10*(1 - 1/(8*np.pi))*np.cos(X-shift[0])
+    branin_shift = branin1_shift**2 + branin2_shift + 30
+
+    Z_branin = branin    
+
+    exp1_norm2 = (X- mu[0])**2 + (Y - mu[1])**2
+
+    exp1 = np.exp(-0.5 * exp1_norm2 / theta**2)
+    Z_modify = branin_shift + 1000*exp1 + 50
+
+    surf_branin = ax.plot_surface(X, Y, Z_branin, rstride=1, cstride=1, cmap=cm.coolwarm,
+                           linewidth=0, antialiased=False)
+    
+    surf_modify = ax.plot_surface(X, Y, Z_modify, rstride=1, cstride=1, cmap=cm.Blues,
+                           linewidth=0, antialiased=False)
+                           
+    ax.set_zlim(-20, 800)
+    fig.colorbar(surf_modify, shrink=0.5, aspect=10)
+
+    ax = fig.add_subplot(1, 2, 2, projection='3d')
+    ax.plot_wireframe(X, Y, Z_branin, rstride=5, cstride=5, color="red")
+    ax.plot_wireframe(X, Y, Z_modify, rstride=5, cstride=5)
+    ax.set_zlim(-20, 800)
+
+    plt.show()
+
+    fig.savefig("./images/branin_3d")
+
+    return 0
+
+
+def mono_func(input=[1.0]):
+    """"Mono function"""
+    x = input[0]
+ 
+    if x <= 2:
+        return 0.5*np.exp(x) + np.sin(4) + 2*np.log(2) - 2*np.log(2.5) - np.sin(5)
+    elif x>2 and x<= 5:
+        return np.sin(2*x) + 2*np.log(x) + 0.5*np.exp(2) - 2*np.log(2.5) - np.sin(5)
+    else:
+        v_5 = np.sin(2*5) + 2*np.log(5) + 0.5*np.exp(2) - 2*np.log(2.5) - np.sin(5)
+        value = np.exp(-x+5) - 1 + v_5
+
+        return value
 
 def needle_func(input=[1.0], shift=0):
     "Needle function"
@@ -149,8 +185,10 @@ def needle_func(input=[1.0], shift=0):
 def show_needle(x_low, x_high, shift=0):
     "plot needle function above"
     x_draw = np.linspace(x_low, x_high, 100)
+
     y1 = [needle_func([ele]) for ele in x_draw]
     y2 = [needle_func([ele], shift) for ele in x_draw]
+    
     diff_y2_y1 = [ele2 - ele1 for ele1, ele2 in zip(y1, y2)]
 
     fig, ax = plt.subplots(1, 1)
@@ -162,27 +200,110 @@ def show_needle(x_low, x_high, shift=0):
 
     ax.legend()
     fig.tight_layout()
-    fig.savefig("./needle.png")
+    fig.savefig("./images/needle.png")
 
-def triple_peak_func(input=[1.0, 2.0], mu1=[1,1], mu2=[2,2], mu3=[3,3], 
-                     theta1=1, theta2=2, theta3=3):
-    "Triple peaks function"
-    x = input[0]
-    y = input[1]
+def show_mono2needle(x_low, x_high, shift=0):
+    "plot mono func to needle func above"
+    x_draw = np.linspace(x_low, x_high, 100)
 
-    return 0 
+    y1 = [mono_func([ele]) for ele in x_draw]
+    y2 = [needle_func([ele], shift) for ele in x_draw]
+    
+    diff_y2_y1 = [ele2 - ele1 for ele1, ele2 in zip(y1, y2)]
 
-def show_triple_peak():
+    fig, ax = plt.subplots(1, 1)
+    ax.set_title("Mono to Needle (shift="+str(shift)+")")
 
-    return 0
+    ax.plot(x_draw, y1, label="task1")
+    ax.plot(x_draw, y2, label="task2")
+    ax.plot(x_draw, diff_y2_y1, label="task2 - task1")
+
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig("./images/mono2needle.png")
+
+
+def two_exp_mu(input, lambda1, lambda2, mu1, mu2, theta1=1, theta2=2):
+    """
+    Exponential function on ||input - mu||^2,
+    mu and x are lists with same length
+    """
+    assert(len(input) == len(mu1))
+    assert(len(input) == len(mu2))
+
+    add_exp_mu = lambda1*exp_mu(input, mu1, theta1) + lambda2*exp_mu(input, mu2, theta2)
+
+    return add_exp_mu
+
+def show_mono2double_exp_mu(lambda2, mu1, mu2, theta1, theta2, x_low, x_high):
+    "plot: one exp to two exp transfering, where lambda1 = 1"
+    x_draw = np.linspace(x_low, x_high, 100)
+
+    y1 = [exp_mu([ele], mu1, theta1) for ele in x_draw]
+    y2 = [two_exp_mu([ele], 1, lambda2, mu1, mu2, theta1, theta2) for ele in x_draw]
+    
+    diff_y2_y1 = [ele2 - ele1 for ele1, ele2 in zip(y1, y2)]
+
+    fig, ax = plt.subplots(1, 1)
+    ax.set_title("")
+
+    ax.plot(x_draw, y1, label="task1")
+    ax.plot(x_draw, y2, label="task2")
+    #ax.plot(x_draw, diff_y2_y1, label="task2 - task1")
+
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig("./images/mono2double.png")       
+
+
+def show_two_exp_mu(lambda1, lambda2, mu1, mu2, theta1, theta2, x_low, x_high):
+    "plot exp func to two exp func"
+    x_draw = np.linspace(x_low, x_high, 100)
+
+    y1 = [two_exp_mu([ele], lambda1, lambda2, mu1, mu2, theta1, theta2) for ele in x_draw]
+    y2 = [two_exp_mu([ele], lambda2, lambda1, mu1, mu2, theta1, theta2) for ele in x_draw]
+    
+    diff_y2_y1 = [ele2 - ele1 for ele1, ele2 in zip(y1, y2)]
+
+    fig, ax = plt.subplots(1, 1)
+    ax.set_title("")
+
+    ax.plot(x_draw, y1, label="task1")
+    ax.plot(x_draw, y2, label="task2")
+    ax.plot(x_draw, diff_y2_y1, label="task2 - task1")
+
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig("./images/double2double.png")    
 
 
 if __name__ == "__main__":
+    # Exponential family
     plot_rkhs_norm()
-    show_branin()
     size = 4
     show_exp(mu2=[1, 1], theta=1, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
-    show_needle(0, 10, shift=0.1)
+    
+    # Branin
+    show_branin()
+
+    # Needle to Needle 
+    show_needle(0, 10, shift=0.3)
+
+    # Mono to Needle
+    show_mono2needle(0, 10, shift=-0.2)
+
+    # Mono to double exponential 
+    lambda2 = 2
+    mu1 = [0]; mu2 = [9]
+    theta1 = 0.5; theta2 = 2
+    show_mono2double_exp_mu(lambda2, mu1, mu2, theta1, theta2, x_low = -5, x_high=15)
 
     print(diff_mu1_mu2(mu1=[0, 0], mu2=[0.707, 0.707], theta=1.414))
+
+
+    # Double to double exponential
+    lambda1 = 1; lambda2 = 1.5
+    mu1 = [0]; mu2 = [5]
+    theta1 = 1; theta2 = 1
+    show_two_exp_mu(lambda1, lambda2, mu1, mu2, theta1, theta2, x_low=-5, x_high=15)
 
