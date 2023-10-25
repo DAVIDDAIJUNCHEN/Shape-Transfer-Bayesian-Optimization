@@ -556,6 +556,8 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
 
 
 if __name__ == "__main__":
+    "main part: iteratively analyze results by adding points one by one"
+
     file_task1_gp = "data/Double2Double/simDouble2Double_points_task1_gp.tsv"
     file_task1_rand = "data/Double2Double/simDouble2Double_points_task1_rand.tsv"
     
@@ -571,8 +573,6 @@ if __name__ == "__main__":
     # Test UCB 
     UCB = UpperConfidenceBound()
     UCB.get_data_from_file(file_task1_rand)
-    print(UCB.X)
-    print(UCB.Y)
 
     gamma = 0.9
     x1 = [1.5]
@@ -582,11 +582,10 @@ if __name__ == "__main__":
 
     UCB.plot(gammas=[0], exp_ratio=0.2)
 
+
     # Test EI
     EI = ExpectedImprovement()
     EI.get_data_from_file(file_task1_rand)
-    print(EI.X)
-    print(EI.Y)
 
     gamma = 0.9
     x1 = [1.5]
@@ -596,6 +595,7 @@ if __name__ == "__main__":
 
     EI.plot_ei(exp_ratio=0.2)
 
+
     # Test STBO from gp
     STBO = ShapeTransferBO()
     STBO.get_data_from_file(file_task2_stbo_from_gp)
@@ -603,6 +603,7 @@ if __name__ == "__main__":
     STBO.build_diff_gp()
 
     STBO.plot_ei(exp_ratio=0.2)
+
 
     # Test BCBO from gp
     BCBO = BiasCorrectedBO()
@@ -612,6 +613,7 @@ if __name__ == "__main__":
 
     BCBO.plot_ei(exp_ratio=0.2)
 
+
     # Test STBO from rand
     STBO = ShapeTransferBO()
     STBO.get_data_from_file(file_task2_stbo_from_rand)
@@ -619,6 +621,7 @@ if __name__ == "__main__":
     STBO.build_diff_gp()
 
     STBO.plot_ei(exp_ratio=0.2)
+
 
     # Test BCBO from rand
     BCBO = BiasCorrectedBO()
