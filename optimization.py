@@ -556,9 +556,21 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
 
 
 if __name__ == "__main__":
+    file_task1_gp = "data/Double2Double/simDouble2Double_points_task1_gp.tsv"
+    file_task1_rand = "data/Double2Double/simDouble2Double_points_task1_rand.tsv"
+    
+    file_task2_gp_from_gp = "data/Double2Double/simDouble2Double_points_task2_gp_from_gp.tsv" 
+    file_task2_stbo_from_gp = "data/Double2Double/simDouble2Double_points_task2_stbo_from_gp.tsv"
+    file_task2_bcbo_from_gp = "data/Double2Double/simDouble2Double_points_task2_bcbo_from_gp.tsv" 
+
+    file_task2_gp_from_rand = "data/Double2Double/simDouble2Double_points_task2_gp_from_rand.tsv" 
+    file_task2_stbo_from_rand = "data/Double2Double/simDouble2Double_points_task2_stbo_from_rand.tsv"
+    file_task2_bcbo_from_rand = "data/Double2Double/simDouble2Double_points_task2_bcbo_from_rand.tsv" 
+    
+
     # Test UCB 
     UCB = UpperConfidenceBound()
-    UCB.get_data_from_file("data/experiment_points.tsv")
+    UCB.get_data_from_file(file_task1_rand)
     print(UCB.X)
     print(UCB.Y)
 
@@ -568,4 +580,51 @@ if __name__ == "__main__":
     x2 = [10.4]
     print("UCB({:.2f}) = {:.2f}".format(x2[0], UCB.aux_func_ucb(x2, gamma)))
 
-    UCB.plot(gammas=[0.8, 0.9, 1])
+    UCB.plot(gammas=[0], exp_ratio=0.2)
+
+    # Test EI
+    EI = ExpectedImprovement()
+    EI.get_data_from_file(file_task1_rand)
+    print(EI.X)
+    print(EI.Y)
+
+    gamma = 0.9
+    x1 = [1.5]
+    print("EI({:.2f}) = {:.2f}".format(x1[0], EI.aux_func_ei(x1, gamma)))
+    x2 = [10.4]
+    print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func_ei(x2, gamma)))
+
+    EI.plot_ei(exp_ratio=0.2)
+
+    # Test STBO from gp
+    STBO = ShapeTransferBO()
+    STBO.get_data_from_file(file_task2_stbo_from_gp)
+    STBO.build_task1_gp(file_task1_gp)
+    STBO.build_diff_gp()
+
+    STBO.plot_ei(exp_ratio=0.2)
+
+    # Test BCBO from gp
+    BCBO = BiasCorrectedBO()
+    BCBO.get_data_from_file(file_task2_bcbo_from_gp)
+    BCBO.build_task1_gp(file_task1_gp)
+    BCBO.build_diff_gp()
+
+    BCBO.plot_ei(exp_ratio=0.2)
+
+    # Test STBO from rand
+    STBO = ShapeTransferBO()
+    STBO.get_data_from_file(file_task2_stbo_from_rand)
+    STBO.build_task1_gp(file_task1_rand)
+    STBO.build_diff_gp()
+
+    STBO.plot_ei(exp_ratio=0.2)
+
+    # Test BCBO from rand
+    BCBO = BiasCorrectedBO()
+    BCBO.get_data_from_file(file_task2_bcbo_from_rand)
+    BCBO.build_task1_gp(file_task1_rand)
+    BCBO.build_diff_gp()
+
+    BCBO.plot_ei(exp_ratio=0.2)
+
