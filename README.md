@@ -76,7 +76,7 @@ $$
 The following 3D picture illustrates the two task functions where $\theta=1 $, $\mu_1=(0, 0)$ and $\mu_2=(1, 1)$ .
 
 <div align=center>
-<img src="./exp_3d.png" width = "780" alt="struct" align=center />
+<img src="./images/exp_3d.png" width = "780" alt="struct" align=center />
 </div>
 
 #### configuration
@@ -110,7 +110,7 @@ $$
 Below 3D picture depicts the Branin function.
 
 <div align=center>
-<img src="./branin_3d.png" width = "780" alt="struct" align=center />
+<img src="./images/branin_3d.png" width = "780" alt="struct" align=center />
 </div>
 
 #### configuration
@@ -142,7 +142,7 @@ $$
 The following picture shows the needle function, $f_1$, in color blue, and the shifted needle function ($s=0.1$), $f_2$, in color orange. Besides, the difference between $f_1$ and $f_2$ , $f_2 - f_1$,  is shown in color green.
 
 <div align=center>
-<img src="./needle.png" width = "640" alt="struct" align=center />
+<img src="./images/needle.png" width = "640" alt="struct" align=center />
 </div>
 
 #### configuration

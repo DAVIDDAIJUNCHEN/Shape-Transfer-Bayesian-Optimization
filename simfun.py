@@ -235,6 +235,10 @@ def two_exp_mu(input, lambda1, lambda2, mu1, mu2, theta1=1, theta2=2):
 
     return add_exp_mu
 
+def tri_exp_mu():
+    
+
+
 def show_mono2double_exp_mu(lambda2, mu1, mu2, theta1, theta2, x_low, x_high):
     "plot: one exp to two exp transfering, where lambda1 = 1"
     x_draw = np.linspace(x_low, x_high, 100)
@@ -275,6 +279,7 @@ def show_two_exp_mu(lambda1, lambda2, mu1, mu2, theta1, theta2, x_low, x_high):
     ax.legend()
     fig.tight_layout()
     fig.savefig("./images/double2double.png")    
+
 
 
 if __name__ == "__main__":
