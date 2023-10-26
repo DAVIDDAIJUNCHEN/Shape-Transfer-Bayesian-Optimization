@@ -61,7 +61,20 @@ In the above task 2 section, three transfer Bayesian optimization methods have b
 
 ## Simulation
 
-We have three types of simulation experiments. The first type takes exponential functions as target functions in task 1 and 2. The second type takes Branin function as target function of task 1, and modified Branin function as target function of task 2. The third type uses needle function and its shifted version as target functions of task 1 and 2 respectively.
+We have tried **7** types of simulation experiments, which inspired us to figure out the essence of transfer learning in Bayesian Optimization. To unveil the secrets, we need to answer the following questions.
+
+1. What should shapes of task1 1&2 be, if task 2 can be fastly optimized by transfering task 1 knowledge ?
+2. What are key factors in choosing next points by tranfer learning ?
+
+From the results of **7** types of simulation, we can have some valuable conclusions and answers for the above questions. The seven types of simulation include,
+
+1. Exponential target functions in task 1&2 ,
+2. Branin function in task 1 v.s. modified Branin function in task 2 ,
+3. Needle function and its shifted version in task 1&2 respecively ,
+4. Mono modal function in task1, and Needle function in task 2 ,
+5. 
+
+The first type takes exponential functions as target functions in task 1 and 2. The second type takes Branin function as target function of task 1, and modified Branin function as target function of task 2. The third type uses needle function and its shifted version as target functions of task 1 and 2 respectively.
 
 ### type 1:
 
