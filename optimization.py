@@ -558,16 +558,16 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
 if __name__ == "__main__":
     "main part: iteratively analyze results by adding points one by one"
 
-    file_task1_gp = "data/Double2Double/simDouble2Double_points_task1_gp.tsv"
-    file_task1_rand = "data/Double2Double/simDouble2Double_points_task1_rand.tsv"
+    file_task1_gp = "data/Triple2Double/simTriple2Double_points_task1_gp.tsv"
+    file_task1_rand = "data/Triple2Double/simTriple2Double_points_task1_rand.tsv"
     
-    file_task2_gp_from_gp = "data/Double2Double/simDouble2Double_points_task2_gp_from_gp.tsv" 
-    file_task2_stbo_from_gp = "data/Double2Double/simDouble2Double_points_task2_stbo_from_gp.tsv"
-    file_task2_bcbo_from_gp = "data/Double2Double/simDouble2Double_points_task2_bcbo_from_gp.tsv" 
+    file_task2_gp_from_gp = "data/Triple2Double/simTriple2Double_points_task2_gp_from_gp.tsv" 
+    file_task2_stbo_from_gp = "data/Triple2Double/simTriple2Double_points_task2_stbo_from_gp.tsv"
+    file_task2_bcbo_from_gp = "data/Triple2Double/simTriple2Double_points_task2_bcbo_from_gp.tsv" 
 
-    file_task2_gp_from_rand = "data/Double2Double/simDouble2Double_points_task2_gp_from_rand.tsv" 
-    file_task2_stbo_from_rand = "data/Double2Double/simDouble2Double_points_task2_stbo_from_rand.tsv"
-    file_task2_bcbo_from_rand = "data/Double2Double/simDouble2Double_points_task2_bcbo_from_rand.tsv" 
+    file_task2_gp_from_rand = "data/Triple2Double/simTriple2Double_points_task2_gp_from_rand.tsv" 
+    file_task2_stbo_from_rand = "data/Triple2Double/simTriple2Double_points_task2_stbo_from_rand.tsv"
+    file_task2_bcbo_from_rand = "data/Triple2Double/simTriple2Double_points_task2_bcbo_from_rand.tsv" 
     
 
     # Test UCB 

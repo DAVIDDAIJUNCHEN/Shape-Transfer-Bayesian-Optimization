@@ -235,9 +235,15 @@ def two_exp_mu(input, lambda1, lambda2, mu1, mu2, theta1=1, theta2=2):
 
     return add_exp_mu
 
-def tri_exp_mu():
-    
+def tri_exp_mu(input, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1=1, theta2=2, theta3=3):  
+    "addition of triple exponential function"
+    assert(len(input) == len(mu1))
+    assert(len(input) == len(mu2))
+    assert(len(input) == len(mu3))
 
+    add_exp_mu = lambda1*exp_mu(input, mu1, theta1) + lambda2*exp_mu(input, mu2, theta2) + lambda3*exp_mu(input, mu3, theta3)
+
+    return add_exp_mu
 
 def show_mono2double_exp_mu(lambda2, mu1, mu2, theta1, theta2, x_low, x_high):
     "plot: one exp to two exp transfering, where lambda1 = 1"
@@ -281,6 +287,31 @@ def show_two_exp_mu(lambda1, lambda2, mu1, mu2, theta1, theta2, x_low, x_high):
     fig.savefig("./images/double2double.png")    
 
 
+def show_triple_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low, x_high):
+    "plot exp func to two exp func"
+    x_draw = np.linspace(x_low, x_high, 100)
+
+    y1 = [tri_exp_mu([ele], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3) for ele in x_draw]
+    
+    lambda1_t2 = lambda2+0.2; lambda2_t2 = 0; lambda3_t2 = lambda1 - 0.2
+    mu1_t2 = [mu1[0] + 0.2]; mu2_t2 = mu2; mu3_t2 = [mu3[0] - 0.2]
+    
+    y2 = [tri_exp_mu([ele], lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3) for ele in x_draw]
+    
+    diff_y2_y1 = [ele2 - ele1 for ele1, ele2 in zip(y1, y2)]
+
+    fig, ax = plt.subplots(1, 1)
+    ax.set_title("")
+
+    ax.plot(x_draw, y1, label="task1")
+    ax.plot(x_draw, y2, label="task2")
+    ax.plot(x_draw, diff_y2_y1, label="task2 - task1")
+
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig("./images/triple2triple.png")   
+
+
 
 if __name__ == "__main__":
     # Exponential family
@@ -288,6 +319,7 @@ if __name__ == "__main__":
     size = 4
     show_exp(mu2=[1, 1], theta=1, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
     
+    print(diff_mu1_mu2(mu1=[0, 0], mu2=[0.707, 0.707], theta=1.414))
     # Branin
     show_branin()
 
@@ -303,12 +335,14 @@ if __name__ == "__main__":
     theta1 = 0.5; theta2 = 2
     show_mono2double_exp_mu(lambda2, mu1, mu2, theta1, theta2, x_low = -5, x_high=15)
 
-    print(diff_mu1_mu2(mu1=[0, 0], mu2=[0.707, 0.707], theta=1.414))
-
-
     # Double to double exponential
     lambda1 = 1; lambda2 = 1.5
     mu1 = [0]; mu2 = [5]
     theta1 = 1; theta2 = 1
     show_two_exp_mu(lambda1, lambda2, mu1, mu2, theta1, theta2, x_low=-5, x_high=15)
 
+    # Triple to triple exponential 
+    lambda1 = 1; lambda2 = 1.5; lambda3 = 1.25
+    mu1 = [0]; mu2 = [5]; mu3 = [10]
+    theta1 = 1; theta2 = 1; theta3 = 1
+    show_triple_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low=-5, x_high=15)
