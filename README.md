@@ -59,6 +59,50 @@ In the above task 2 section, three transfer Bayesian optimization methods have b
 
 ## Showcases
 
+To visualize the details in choosing next points, you can run script `./optimization` after change the main part of `./optimization.py` to yours .
+
+```
+    file_task1_gp = "data/Triple2Double/simTriple2Double_points_task1_gp.tsv"
+    file_task1_rand = "data/Triple2Double/simTriple2Double_points_task1_rand.tsv"
+  
+    file_task2_gp_from_gp = "data/Triple2Double/simTriple2Double_points_task2_gp_from_gp.tsv" 
+    file_task2_stbo_from_gp = "data/Triple2Double/simTriple2Double_points_task2_stbo_from_gp.tsv"
+    file_task2_bcbo_from_gp = "data/Triple2Double/simTriple2Double_points_task2_bcbo_from_gp.tsv" 
+
+    file_task2_gp_from_rand = "data/Triple2Double/simTriple2Double_points_task2_gp_from_rand.tsv" 
+    file_task2_stbo_from_rand = "data/Triple2Double/simTriple2Double_points_task2_stbo_from_rand.tsv"
+    file_task2_bcbo_from_rand = "data/Triple2Double/simTriple2Double_points_task2_bcbo_from_rand.tsv" 
+  
+```
+
+In this example, we try to optimize task 1&2 described in the following images.
+
+<div align=center>
+<img src="./images/triple2triple.png" width = "640" alt="struct" align=center />
+</div>
+
+Below are images showing the process of choosing next point from best point of task 1 with STBO, GP and BCBO.
+
+* step 1: from best point of task 1
+
+<div align=center>
+<img src="./images/vis_1_point_task2.png" width = "880" alt="struct" align=center />
+</div>
+
+* step 2:
+
+<div align=center>
+<img src="./images/vis_2_point_task2.png" width = "880" alt="struct" align=center />
+</div>
+
+* step 3:
+
+<div align=center>
+<img src="./images/vis_3_point_task2.png" width = "880" alt="struct" align=center />
+</div>
+
+which shows our STBO methods can achieve the best point of task 2 in 3 steps. The reason is that STBO has much higher value of acquisition fucntion around local maximizer before run task2 at such points, and best point of task 2 are close to these local maximizer in task 1.
+
 ## Simulation
 
 We have tried **7** types of simulation experiments, which inspired us to figure out the essence of transfer learning in Bayesian Optimization. To unveil the secrets, we need to answer the following questions.
@@ -71,12 +115,14 @@ From the results of **7** types of simulation, we can have some valuable conclus
 1. Exponential target functions in task 1&2 ,
 2. Branin function in task 1 v.s. modified Branin function in task 2 ,
 3. Needle function and its shifted version in task 1&2 respecively ,
-4. Mono modal function in task1, and Needle function in task 2 ,
-5. 
+4. Mono modal function in task 1, and Needle function in task 2 ,
+5. Mono modal function in task 1, and double modals function in task 2.
+6. Double modals function in task 1 and 2.
+7. Triple modals function in task 1, double modals function in task 2.
 
-The first type takes exponential functions as target functions in task 1 and 2. The second type takes Branin function as target function of task 1, and modified Branin function as target function of task 2. The third type uses needle function and its shifted version as target functions of task 1 and 2 respectively.
+The first type takes exponential functions as target functions in task 1 and 2. The second type takes Branin function as target function of task 1, and modified Branin function as target function of task 2. The third type uses needle function and its shifted version as target functions of task 1 and 2 respectively . Here we just introduce type 1, 3, 6, 7 to indicate some common properties, which is the key to success in tranfering learning of Bayesian optimization. For others, detailed function definitions can be found in `./simfun.py` , and you can run their simulation in `./run_simulation.sh` .
 
-### type 1:
+### type 1: exponential function family
 
 $$
 f_1(x) = \exp\{-\frac{1}{2\theta^2}\|x-\mu_1\|^2\}
@@ -109,35 +155,7 @@ num_rep=20     # repetition times
 
 Where Thetas is the list of $\theta$ values seprated by space, `mu_1` and `mu_2` are the $\mu_1$ and $\mu_2$ vectors whose components are separated by underline _ .
 
-### type 2:
-
-Let $x=(x_1, x_2)\in\mathbb{R}^2$,
-
-$$
-\begin{align}
-   f_1(x) &= \big(x_2 - \frac{5.1}{4\pi^2}x_1^2 + \frac{5}{\pi}x_1 - 6\big)^2 + 10\times(1 - \frac{1}{8\pi})\cos(x_1) + 10  \\
-  f_2(x) &= f_1(x) + 20x_1\cdot\sin(x_2)
-\end{align}
-$$
-
-Below 3D picture depicts the Branin function.
-
-<div align=center>
-<img src="./images/branin_3d.png" width = "780" alt="struct" align=center />
-</div>
-
-#### configuration
-
-To run type 2 simulation, you should change the simulation 2 configuration in `run_simulation.sh` like below,
-
-```bash
-T1=20          # number of experiment points in task1
-T2=20          # number of experiment points in task2
-
-num_rep=20     # repetition times
-```
-
-### type 3:
+### type 3: needle function family
 
 $$
 \begin{align}
@@ -167,10 +185,62 @@ shift_task2="0.1"
 T1=40          # number of experiment points in task1 
 T2=20          # number of experiment points in task2
 
-num_rep=20
+num_rep=20     # repetition times 
 ```
 
 Where  shift_task2 is the value list of $s$ in task2 function $f_2(x, s)$.
+
+### type 6: double modals function
+
+$$
+\begin{align}
+f_1(x)  &= \lambda_1 \exp\{-\frac{1}{2\theta_1^2}\|x-\mu_1\|^2\} + \lambda_2 \exp\{-\frac{1}{2\theta_2^2}\|x-\mu_2\|^2\} \\
+f_2(x)  &= \lambda_2 \exp\{-\frac{1}{2\theta_1^2}\|x-\mu_1\|^2\} + \lambda_1 \exp\{-\frac{1}{2\theta_2^2}\|x-\mu_2\|^2\}
+\end{align}
+$$
+
+The following picture illustrates the double modals functions, where $\lambda_1=1$, $\lambda_2=1.5$ and $\theta_1=\theta_2=1$. The best point in task 1 is at $x=5.0$, where $x=0$ is the best point of task 2.
+
+<div align=center>
+<img src="./images/double2double.png" width = "640" alt="struct" align=center />
+</div>
+
+#### configuration
+
+To run the type 6 simulation, you need to change configuration part given in `run_simulation.sh` .
+
+```
+T1=20          # number of experiment points in task1 
+T2=20          # number of experiment points in task2
+
+num_rep=20     # repetition times 
+```
+
+### type 7: triple modals function
+
+$$
+\begin{align}
+f_1(x)  &= \lambda_1 \exp\{-\frac{1}{2\theta_1^2}\|x-\mu_1\|^2\} + \lambda_2 \exp\{-\frac{1}{2\theta_2^2}\|x-\mu_2\|^2\} + \lambda_3 \exp\{-\frac{1}{2\theta_3^2}\|x-\mu_3\|^2\} \\
+f_2(x)  &= \lambda_1^\prime \exp\{-\frac{1}{2\theta_1^2}\|x-\mu_1 - \epsilon_1\|^2\} + \lambda_2^\prime \exp\{-\frac{1}{2\theta_2^2}\|x-\mu_2-\epsilon_2\|^2\} + \lambda_3^\prime \exp\{-\frac{1}{2\theta_3^2}\|x-\mu_3-\epsilon_3\|^2\}
+\end{align}
+$$
+
+The following image shows a speical case, where $\lambda_2^\prime=0$ , $\epsilon_1=0.2$, and $\epsilon_3=-0.2$.
+
+<div align=center>
+<img src="./images/triple2triple.png" width = "640" alt="struct" align=center />
+</div>
+
+#### configuration
+
+To run the type 7 simulation, you need to change configuration part given in `run_simulation.sh` .
+
+```
+T1=20          # number of experiment points in task1 
+T2=20          # number of experiment points in task2
+
+num_rep=20     # repetition times 
+```
 
 ### run simulation
 
@@ -180,7 +250,7 @@ Then, run script `run_simulation.sh` with 3 parameters (stage, from_task1, task2
 ./run_simulation.sh  <stage-number>   <start_from_task1>   <task2_start_from>
 ```
 
-where all three types of simulations will be executed if `stage-number` is 0, only exponential simulation will be executed if `stage-number` is 1, only Branin simulation will be executed if `stage-number` is 2, and only needle type of simulation will be run if `stage-number` is 3 .
+where all 7 types of simulations will be executed if `stage-number` is $0$, only type $k$ simulation will be executed if `stage-number` equals $k$.
 
 When the task1 experiments have been done,  task 1 result files can be found in `./data` dir. If you want to skip task1 experiments, please set `start_from_task1` to 0. Otherwise, simulation starts from scratch and generates task 1 experiment results.
 
@@ -247,6 +317,8 @@ where `input_dir` is the output dir after run simulation, `out_dir` is the analy
 <div align=center>
 <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_rand_medium.png" width = "390" alt="struct" align=center />  <img src="./simulation_results/EXP_theta_0.5/EXP_mu2_0.1_0.1_theta_0.5_from_gp_medium.png" width = "390" alt="struct" align=center />
 </div>
+
+## Conclusions
 
 ## Citation
 
