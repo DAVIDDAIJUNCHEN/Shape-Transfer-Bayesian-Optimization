@@ -320,6 +320,14 @@ where `input_dir` is the output dir after run simulation, `out_dir` is the analy
 
 ## Conclusions
 
+After we run all these simulations and visualize the process of choosing next points (like in showcases section), some conclusions can be conducted carefully to answer the questions asked in simulation section.
+
+* The best point of task 2 should not be "flat" in task 1.
+  * best point of task 2 should be close to local maximizer of task 1.
+  * if it is "flat" in task 1, then no useful task 2 knowledge were embedded in experiments of task 1 to optimize task 2.
+* STBO firstly search top 1 modal in task 1 GP, secondly search top 2 modal in task 1 GP, and so on.
+* If best point of task 2 is close to top $k$ local maximizer of task 1, then STBO method can find the best point at most $k$ steps.
+
 ## Citation
 
 ```angular2
