@@ -26,6 +26,8 @@ def diff_mu1_mu2(mu1, mu2, theta=1):
 
 def show_exp(mu2=[1, 1], x_low=-1, x_up=1, y_low=-1, y_up=1, theta=1, x_nums=100, y_nums=100):
     fig = plt.figure(figsize=plt.figaspect(0.5))
+    fig.suptitle(r"$\mu_2$"+"=("+str(mu2[0]) +","+str(mu2[1])+"), "+r"$\theta=$"+str(theta))
+
     ax = fig.add_subplot(1, 2, 1, projection='3d')
 
     X = np.arange(x_low, x_up, 0.25)
@@ -41,11 +43,9 @@ def show_exp(mu2=[1, 1], x_low=-1, x_up=1, y_low=-1, y_up=1, theta=1, x_nums=100
     Z2 = exp2
 
     surf1 = ax.plot_surface(X, Y, Z1, rstride=1, cstride=1, cmap=cm.coolwarm,
-                           linewidth=0, antialiased=False)
+                        linewidth=0, antialiased=False)
     surf2 = ax.plot_surface(X, Y, Z2, rstride=1, cstride=1, cmap=cm.Blues,
-                       linewidth=0, antialiased=False)
-
-    ax.set_title("mu2=("+str(mu2[0]) +","+str(mu2[1])+"), theta="+str(theta))
+                        linewidth=0, antialiased=False)
 
     ax.set_zlim(0, 1.4)
     fig.colorbar(surf2, shrink=0.5, aspect=10)
@@ -317,7 +317,7 @@ if __name__ == "__main__":
     # Exponential family
     plot_rkhs_norm()
     size = 4
-    show_exp(mu2=[1, 1], theta=1, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
+    show_exp(mu2=[0.1, 0.1], theta=0.5, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
     
     print(diff_mu1_mu2(mu1=[0, 0], mu2=[0.707, 0.707], theta=1.414))
     # Branin
@@ -346,3 +346,4 @@ if __name__ == "__main__":
     mu1 = [0]; mu2 = [5]; mu3 = [10]
     theta1 = 1; theta2 = 1; theta3 = 1
     show_triple_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low=-5, x_high=15)
+

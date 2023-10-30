@@ -146,6 +146,7 @@ def run_statistics(file_lsts, out_dir, header_name="response"):
                 fout.writelines(line)
 
         fname = os.path.basename(file_lst_k[0])
+
         dct_mean_std[fname] = [(m, s) for m, s in zip(mean_lst, std_lst)]
         dct_medium_perc[fname] = [(p25, p50, p75) for p25, p50, p75 in zip(per25_lst, per50_lst, per75_lst)]
 
