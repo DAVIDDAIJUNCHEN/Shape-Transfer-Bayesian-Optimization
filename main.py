@@ -42,11 +42,12 @@ if __name__ == "__main__":
 
         dim = EI_task1.dim              # dim_task1 = dim_task2
         low_opt2 = 0; high_opt2 = 5000
-        num_start_opt2 = 100
+        num_start_opt2 = 1
         start_points_rand = [np.random.uniform(low_opt2, high_opt2, size=dim).tolist() for i in range(num_start_opt2)]
 
-        start_points = start_points_task1.extend(start_points_rand)
-        print("start points: ", start_points)
+        start_points_task1.extend(start_points_rand)
+        start_points = start_points_task1 
+
         # 2.1 ZeroGP EI initialization
         EI_task2 = ExpectedImprovement()
         EI_task2.get_data_from_file("data/experiment_points_task2_gp.tsv")
@@ -55,7 +56,7 @@ if __name__ == "__main__":
 
         # 2.2 AC optimization 
         kessi = 0
-        next_point, next_point_aux = EI_task2.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=500, kessi=kessi)
+        next_point, next_point_aux = EI_task2.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=300, kessi=kessi)
 
         # EI.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
         print("GP next point in task2: ", next_point, " AC: ", next_point_aux)        
@@ -69,7 +70,7 @@ if __name__ == "__main__":
 
         # 3.2 AC optimization (shared the same start points as in gp)
         kessi = 0
-        next_point, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=500, kessi=kessi)    
+        next_point, next_point_aux = STBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=300, kessi=kessi)    
         # STBO.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
         print("STBO next point in task2: ", next_point, " AC: ", next_point_aux)
 
@@ -91,7 +92,7 @@ if __name__ == "__main__":
 
         # 4.2 AC optimization (shared the same start points as in gp)
         kessi = 0
-        next_point, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=500, kessi=kessi)    
+        next_point, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=300, kessi=kessi)    
         
         # BCBO.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
         print("BCBO next point in task2: ", next_point, " AC: ", next_point_aux)
