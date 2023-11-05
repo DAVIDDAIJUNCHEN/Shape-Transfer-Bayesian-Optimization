@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
         dim = EI_task1.dim              # dim_task1 = dim_task2
         low_opt2 = 0; high_opt2 = 5000
-        num_start_opt2 = 1
+        num_start_opt2 = 10
         start_points_rand = [np.random.uniform(low_opt2, high_opt2, size=dim).tolist() for i in range(num_start_opt2)]
 
         start_points_task1.extend(start_points_rand)
