@@ -226,6 +226,11 @@ class ZeroGProcess:
 
         return lower_bound, upper_bound
 
+    def sample(self, mean, sigma):
+        "sample from a GP with mean and sigma"
+        pass
+        return 0
+
     def plot(self, num_points=100, exp_ratio=1, confidence=0.9):
         """
         draw Gaussian Process mean values and confidence interval
