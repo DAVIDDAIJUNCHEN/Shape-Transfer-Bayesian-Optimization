@@ -228,7 +228,8 @@ class ZeroGProcess:
 
     def sample(self, mean, sigma):
         "sample from a GP with mean and sigma"
-        pass
+        
+        
         return 0
 
     def plot(self, num_points=100, exp_ratio=1, confidence=0.9):
@@ -280,3 +281,4 @@ if __name__ == "__main__":
     print(zeroGP.compute_grad_kernel_vec(zeroGP.X, x))
 
     print(zeroGP.compute_grad_var(x))
+
