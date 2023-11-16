@@ -185,3 +185,24 @@ if [ $stage -eq 0 ] || [ $stage -eq 7 ]; then
     done
 fi
 
+
+if [ $stage -eq 0 ] || [ $stage -eq 8 ]; then
+    echo "Simulation 8: Transfer Bayesian Optimization from Double to Triple exponential function"
+
+    T1=20
+    T2=20
+
+    num_rep=20
+
+    echo "Task 1: double exp function; Task 2: triple exp function"
+    for i in $(seq 1 $num_rep); do
+        echo "Running $i-th simulation"
+        mkdir -p $path_data/Double2Triple/$i 
+        out_dir=$path_data/Double2Triple/$i
+        job_name=Double2Triple_${task2_start_from}_$i
+        sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
+                                        --type DOUBLE2TRIPLE  --from_task1 $from_task1
+        echo "Submitted $i-th Double2Triple exponential simulation by Slurm"
+    done
+fi
+
