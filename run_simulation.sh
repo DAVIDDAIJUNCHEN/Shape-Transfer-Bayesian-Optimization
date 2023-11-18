@@ -1,4 +1,4 @@
- #!/usr/bin/env bash
+#!/usr/bin/env bash
 
 stage=$1       # 0: run both EXP and BR; 1: run EXP only; 2: run BR only
 from_task1=$2  # 1: start from task1, 0: start from task2
@@ -24,9 +24,9 @@ fi
 if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then 
     echo "Simulation 1: Transfer Bayesian Optimization on Exponential target function"
 
-    Thetas="1"
+    Thetas="0.87"
     mu_1="0_0"
-    mu_2="1.0_1.0"
+    mu_2="1.74_1.74"
 
     T1=20
     T2=20

@@ -98,9 +98,10 @@ def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medi
                 color = "red"
 
             ax.errorbar(x_draw, y_medium, yerr=asymmetric_error, label=label, fmt=fmt, color=color)
+            ax.set_xticks(np.arange(0, 21, 5))
+        plt.legend(loc=4)
 
-        plt.legend()
-    
+    plt.gcf().set_size_inches(20, 5)
     plt.show()
     plt.savefig(fig_name)
     
@@ -108,9 +109,63 @@ def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medi
 
 
 # Part 3: EXP function family
+def show_EXP_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name):
+    "plot lines with error bar based on medium and percentile"
 
+    fig = plt.figure(figsize=plt.figaspect(0.3))
+    fig.suptitle(title[0])
 
+    dct_medium_perc = [dct_medium_perc1, dct_medium_perc2, dct_medium_perc3]
 
+    for i in range(3):
+        ax = fig.add_subplot(1, 3, i+1)
+        ax.set_title(title[i+1])
+
+        for item in sorted(dct_medium_perc[i].items()):
+            x_draw = np.arange(len(item[1]))
+            x_draw = [ele + 1 for ele in x_draw]
+            y_medium = [ele[1] for ele in item[1]]
+            y_perc25 = [ele[1] - ele[0] for ele in item[1]]
+            y_perc75 = [ele[2] - ele[1] for ele in item[1]]
+            asymmetric_error = [y_perc25, y_perc75]
+            
+            if "task2_bcbo_from_rand.tsv" in item[0]:
+                label = "Diff-GP from rand"
+                fmt = '-.^'
+                color = "blue"
+            elif "task2_stbo_from_rand.tsv" in item[0]:
+                label = "STBO from rand"
+                fmt = '-o'
+                color = "green"
+            elif "task2_gp_from_rand.tsv" in item[0]:
+                label = "EI from rand"
+                fmt = '--s'
+                color = "red"
+            elif "task2_bcbo_from_gp.tsv" in item[0]:
+                label = "Diff-GP from gp"
+                fmt = '-.^'
+                color = "blue"
+            elif "task2_stbo_from_gp.tsv" in item[0]:
+                label = "STBO from gp"
+                fmt = '-o'
+                color = "green"
+            elif "task2_gp_from_gp.tsv" in item[0]:
+                label = "EI from gp"
+                fmt = '--s'
+                color = "red"
+            elif "task2_gp_from_cold.tsv" in item[0]:
+                label = "EI from cold"
+                fmt = '--s'
+                color = "red"
+
+            ax.errorbar(x_draw, y_medium, yerr=asymmetric_error, label=label, fmt=fmt, color=color)
+
+        plt.legend()
+    
+    plt.show()
+    plt.savefig(fig_name)
+    
+    return 0
 
 
 if __name__ == "__main__":
@@ -186,4 +241,6 @@ if __name__ == "__main__":
     title = ["Simulation 2: from double modals to triple modals", "transfer vs non-transfer", "start from rand", "start from gp"]
     show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
 
+    # EXP 
+    in_dir1 = "./data/"
 
