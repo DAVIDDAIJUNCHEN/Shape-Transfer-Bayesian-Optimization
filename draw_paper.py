@@ -46,6 +46,7 @@ def show_exp(mu1=[0.1, 0.1], mu2=[0.4163, 0.4163], m3=[1.0,1.0], theta=0.5, x_lo
 
     return 0
 
+
 # Part 2: Double2Double
 def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name):
     "plot lines with error bar based on medium and percentile"
@@ -68,21 +69,35 @@ def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medi
             asymmetric_error = [y_perc25, y_perc75]
             
             if "task2_bcbo_from_rand.tsv" in item[0]:
-                label = "BCBO from rand"
+                label = "Diff-GP from rand"
+                fmt = '-.^'
+                color = "blue"
             elif "task2_stbo_from_rand.tsv" in item[0]:
                 label = "STBO from rand"
+                fmt = '-o'
+                color = "green"
             elif "task2_gp_from_rand.tsv" in item[0]:
                 label = "EI from rand"
+                fmt = '--s'
+                color = "red"
             elif "task2_bcbo_from_gp.tsv" in item[0]:
-                label = "BCBO from gp"
+                label = "Diff-GP from gp"
+                fmt = '-.^'
+                color = "blue"
             elif "task2_stbo_from_gp.tsv" in item[0]:
                 label = "STBO from gp"
+                fmt = '-o'
+                color = "green"
             elif "task2_gp_from_gp.tsv" in item[0]:
                 label = "EI from gp"
+                fmt = '--s'
+                color = "red"
             elif "task2_gp_from_cold.tsv" in item[0]:
                 label = "EI from cold"
+                fmt = '--s'
+                color = "red"
 
-            ax.errorbar(x_draw, y_medium, yerr=asymmetric_error, label=label, fmt='-o')
+            ax.errorbar(x_draw, y_medium, yerr=asymmetric_error, label=label, fmt=fmt, color=color)
 
         plt.legend()
     
@@ -92,6 +107,12 @@ def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medi
     return 0
 
 
+# Part 3: EXP function family
+
+
+
+
+
 if __name__ == "__main__":
     # Exponential family
     size = 4
@@ -99,7 +120,29 @@ if __name__ == "__main__":
     theta = 0.5
     show_exp(mu1, mu2, mu3, theta, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
 
-    # Double2Double 
+    # Double2Double
+    in_dir1 = "./data/Double2Double"
+    out_dir1 = "./simulation_results/Double2Double"
+
+    file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
+    file_lsts_cold1 = collect_file(in_dir1, "from_cold")
+    file_lsts_stbo1.extend(file_lsts_cold1)
+    file_lsts_1 = file_lsts_stbo1
+
+    _, dct_medium_perc1 = run_statistics(file_lsts_1, out_dir1)
+
+    file_lsts_2 = collect_file(in_dir1, topic="from_rand")
+    file_lsts_3 = collect_file(in_dir1, topic="from_gp")
+
+    _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
+    _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
+
+    fig_name_medium = "./images/double2double_paper.png"
+
+    title = ["Simulation 1: from double modals to double modals", "transfer vs non-transfer", "start from rand", "start from gp"]
+    show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
+
+    # Triple2Double 
     in_dir1 = "./data/Triple2Double"
     out_dir1 = "./simulation_results/Triple2Double"
 
@@ -118,5 +161,29 @@ if __name__ == "__main__":
 
     fig_name_medium = "./images/triple2double_paper.png"
 
-    title = ["Simulation 3: from triple modals to double modals", "transfer vs non-transfer", "start from rand", "start from gp"]
+    title = ["Simulation 2: from triple modals to double modals", "transfer vs non-transfer", "start from rand", "start from gp"]
     show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
+
+    # Double2Triple
+    in_dir1 = "./data/Double2Triple"
+    out_dir1 = "./simulation_results/Double2Triple"
+
+    file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
+    file_lsts_cold1 = collect_file(in_dir1, "from_cold")
+    file_lsts_stbo1.extend(file_lsts_cold1)
+    file_lsts_1 = file_lsts_stbo1
+
+    _, dct_medium_perc1 = run_statistics(file_lsts_1, out_dir1)
+
+    file_lsts_2 = collect_file(in_dir1, topic="from_rand")
+    file_lsts_3 = collect_file(in_dir1, topic="from_gp")
+
+    _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
+    _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
+
+    fig_name_medium = "./images/double2triple_paper.png"
+
+    title = ["Simulation 2: from double modals to triple modals", "transfer vs non-transfer", "start from rand", "start from gp"]
+    show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
+
+

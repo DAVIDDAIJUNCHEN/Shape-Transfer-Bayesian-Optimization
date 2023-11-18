@@ -119,7 +119,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
         lambda1 = 1.7; lambda2 = 0; lambda3 = 0.8
         mu1 = [0.1]; mu2 = [5]; mu3 = [9.9]
         
-        lambda1_t2 = 1; lambda2_t2 = 1.5; lambda3_t2 = 1.25
+        lambda1_t2 = 1; lambda2_t2 = 1.4; lambda3_t2 = 1.9
         mu1_t2 = [0]; mu2_t2 = [5]; mu3_t2 = [10]
 
         theta1 = 1; theta2 = 1; theta3 = 1
