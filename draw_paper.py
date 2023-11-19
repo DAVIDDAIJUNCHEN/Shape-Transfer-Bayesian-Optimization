@@ -81,15 +81,15 @@ def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medi
                 fmt = '--s'
                 color = "red"
             elif "task2_bcbo_from_gp.tsv" in item[0]:
-                label = "Diff-GP from gp"
+                label = "Diff-GP from EI"
                 fmt = '-.^'
                 color = "blue"
             elif "task2_stbo_from_gp.tsv" in item[0]:
-                label = "STBO from gp"
+                label = "STBO from EI"
                 fmt = '-o'
                 color = "green"
             elif "task2_gp_from_gp.tsv" in item[0]:
-                label = "EI from gp"
+                label = "EI from EI"
                 fmt = '--s'
                 color = "red"
             elif "task2_gp_from_cold.tsv" in item[0]:
@@ -112,56 +112,51 @@ def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medi
 def show_EXP_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name):
     "plot lines with error bar based on medium and percentile"
 
-    fig = plt.figure(figsize=plt.figaspect(0.3))
-    fig.suptitle(title[0])
+    fig = plt.figure(figsize=plt.figaspect(0.7))
 
     dct_medium_perc = [dct_medium_perc1, dct_medium_perc2, dct_medium_perc3]
 
-    for i in range(3):
-        ax = fig.add_subplot(1, 3, i+1)
-        ax.set_title(title[i+1])
+    subfig1, subfig2 = fig.subfigures(2, 1)
 
-        for item in sorted(dct_medium_perc[i].items()):
-            x_draw = np.arange(len(item[1]))
-            x_draw = [ele + 1 for ele in x_draw]
-            y_medium = [ele[1] for ele in item[1]]
-            y_perc25 = [ele[1] - ele[0] for ele in item[1]]
-            y_perc75 = [ele[2] - ele[1] for ele in item[1]]
-            asymmetric_error = [y_perc25, y_perc75]
-            
-            if "task2_bcbo_from_rand.tsv" in item[0]:
-                label = "Diff-GP from rand"
-                fmt = '-.^'
-                color = "blue"
-            elif "task2_stbo_from_rand.tsv" in item[0]:
-                label = "STBO from rand"
-                fmt = '-o'
-                color = "green"
-            elif "task2_gp_from_rand.tsv" in item[0]:
-                label = "EI from rand"
-                fmt = '--s'
-                color = "red"
-            elif "task2_bcbo_from_gp.tsv" in item[0]:
-                label = "Diff-GP from gp"
-                fmt = '-.^'
-                color = "blue"
-            elif "task2_stbo_from_gp.tsv" in item[0]:
-                label = "STBO from gp"
-                fmt = '-o'
-                color = "green"
-            elif "task2_gp_from_gp.tsv" in item[0]:
-                label = "EI from gp"
-                fmt = '--s'
-                color = "red"
-            elif "task2_gp_from_cold.tsv" in item[0]:
-                label = "EI from cold"
-                fmt = '--s'
-                color = "red"
+    subfigs = [subfig1, subfig2]
 
-            ax.errorbar(x_draw, y_medium, yerr=asymmetric_error, label=label, fmt=fmt, color=color)
+    for row in range(2):
+        subfigs[row].suptitle(title[row])
+        for col in range(3):
+            ax = subfigs[row].add_subplot(1, 3, col + 1)
+            ax.set_title("$\mu=$"+title[2 + col])
 
-        plt.legend()
-    
+            for item in sorted(dct_medium_perc[col][row].items()):
+                x_draw = np.arange(len(item[1]))
+                x_draw = [ele + 1 for ele in x_draw]
+                y_medium = [ele[1] for ele in item[1]]
+                y_perc25 = [ele[1] - ele[0] for ele in item[1]]
+                y_perc75 = [ele[2] - ele[1] for ele in item[1]]
+                asymmetric_error = [y_perc25, y_perc75]
+
+                if "task2_bcbo_from_rand.tsv" in item[0]:
+                    label = "Diff-GP"
+                    fmt = '-.^'
+                    color = "blue"
+                elif "task2_stbo_from_rand.tsv" in item[0]:
+                    label = "STBO"
+                    fmt = '-o'
+                    color = "green"
+                elif "task2_gp_from_rand.tsv" in item[0]:
+                    label = "EI from rand"
+                    fmt = '--s'
+                    color = "red"
+                elif "task2_gp_from_cold.tsv" in item[0]:
+                    label = "EI from cold"
+                    fmt = '--s'
+                    color = "red"
+
+                ax.errorbar(x_draw, y_medium, yerr=asymmetric_error, label=label, fmt=fmt, color=color)
+                ax.set_xticks(np.arange(0, 21, 5))
+
+            plt.legend(loc=4)
+
+    plt.gcf().set_size_inches(20, 11)
     plt.show()
     plt.savefig(fig_name)
     
@@ -175,7 +170,7 @@ if __name__ == "__main__":
     theta = 0.5
     show_exp(mu1, mu2, mu3, theta, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
 
-    # Double2Double
+    # simulation 1: Double2Double
     in_dir1 = "./data/Double2Double"
     out_dir1 = "./simulation_results/Double2Double"
 
@@ -192,12 +187,12 @@ if __name__ == "__main__":
     _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
     _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
 
-    fig_name_medium = "./images/double2double_paper.png"
+    fig_name_medium = "./images/double2double_paper.pdf"
 
     title = ["Simulation 1: from double modals to double modals", "transfer vs non-transfer", "start from rand", "start from gp"]
     show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
 
-    # Triple2Double 
+    # simulation 2: Triple2Double 
     in_dir1 = "./data/Triple2Double"
     out_dir1 = "./simulation_results/Triple2Double"
 
@@ -214,12 +209,12 @@ if __name__ == "__main__":
     _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
     _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
 
-    fig_name_medium = "./images/triple2double_paper.png"
+    fig_name_medium = "./images/triple2double_paper.pdf"
 
     title = ["Simulation 2: from triple modals to double modals", "transfer vs non-transfer", "start from rand", "start from gp"]
     show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
 
-    # Double2Triple
+    # simulation 2: Double2Triple
     in_dir1 = "./data/Double2Triple"
     out_dir1 = "./simulation_results/Double2Triple"
 
@@ -236,11 +231,73 @@ if __name__ == "__main__":
     _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
     _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
 
-    fig_name_medium = "./images/double2triple_paper.png"
+    fig_name_medium = "./images/double2triple_paper.pdf"
 
     title = ["Simulation 2: from double modals to triple modals", "transfer vs non-transfer", "start from rand", "start from gp"]
     show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
 
-    # EXP 
-    in_dir1 = "./data/"
+    # simulation 3: EXP 
+    thetas = [0.87, 1, 1.414]
+    means = [(0.74, 0.435, 1.74), (0.5, 0.832555, 2), (0.707, 1.177, 2.828)]
+    #thetas = [0.5, 1, 1.414]
+    #means = [(0.1, 0.4163, 1.0), (0.5, 0.832555, 2), (0.707, 1.177, 2.828)]
 
+    for i in range(3):
+        theta = thetas[i]
+        mean_tuple = means[i]
+        # mean 1
+        in_dir1 = "./data/EXP_mu2_" + str(mean_tuple[0]) + "_" + str(mean_tuple[0]) + "_theta_" + str(theta)
+        out_dir1 = "./simulation_results/EXP_theta_" + str(theta)
+
+        file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
+        file_lsts_cold1 = collect_file(in_dir1, "from_cold")
+        file_lsts_stbo1.extend(file_lsts_cold1)
+
+        file_lsts_1_1 = file_lsts_stbo1
+        _, dct_medium_perc1_1 = run_statistics(file_lsts_1_1, out_dir1)        
+
+        file_lsts_1_2 = collect_file(in_dir1, topic="from_rand")
+        _, dct_medium_perc1_2 = run_statistics(file_lsts_1_2, out_dir1)
+
+        dct_medium_perc1 = [dct_medium_perc1_1, dct_medium_perc1_2]
+
+        # mean 2
+        in_dir2 = "./data/EXP_mu2_" + str(mean_tuple[1]) + "_" + str(mean_tuple[1]) + "_theta_" + str(theta)
+        out_dir2 = "./simulation_results/EXP_theta_" + str(theta)
+
+        file_lsts_stbo2 = collect_file(in_dir2, "stbo_from_rand")
+        file_lsts_cold2 = collect_file(in_dir2, "from_cold")
+        file_lsts_stbo2.extend(file_lsts_cold2)
+
+        file_lsts_2_1 = file_lsts_stbo2
+        _, dct_medium_perc2_1 = run_statistics(file_lsts_2_1, out_dir2)        
+
+        file_lsts_2_2 = collect_file(in_dir2, topic="from_rand")
+        _, dct_medium_perc2_2 = run_statistics(file_lsts_2_2, out_dir2)     
+
+        dct_medium_perc2 = [dct_medium_perc2_1, dct_medium_perc2_2]
+
+        # mean 3
+        in_dir3 = "./data/EXP_mu2_" + str(mean_tuple[2]) + "_" + str(mean_tuple[2]) + "_theta_" + str(theta)
+        out_dir3 = "./simulation_results/EXP_theta_" + str(theta)
+
+        file_lsts_stbo3 = collect_file(in_dir3, "stbo_from_rand")
+        file_lsts_cold3 = collect_file(in_dir3, "from_cold")
+        file_lsts_stbo3.extend(file_lsts_cold3)
+
+        file_lsts_3_1 = file_lsts_stbo3
+        _, dct_medium_perc3_1 = run_statistics(file_lsts_3_1, out_dir3)        
+
+        file_lsts_3_2 = collect_file(in_dir3, topic="from_rand")
+        _, dct_medium_perc3_2 = run_statistics(file_lsts_3_2, out_dir3)  
+
+        dct_medium_perc3 = [dct_medium_perc3_1, dct_medium_perc3_2]
+
+        fig_name_medium = "./images/simEXP_theta_" + str(theta) + ".pdf"
+
+        t0 = "(" + str(mean_tuple[0]) + ", " + str(mean_tuple[0]) + ")"
+        t1 = "(" + str(mean_tuple[1]) + ", " + str(mean_tuple[1]) + ")"
+        t2 = "(" + str(mean_tuple[2]) + ", " + str(mean_tuple[2]) + ")"
+        title = ["transfer vs. non-transfer methods", "transfer methods", t0, t1, t2]
+
+        show_EXP_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)

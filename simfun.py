@@ -278,16 +278,40 @@ def show_two_exp_mu(lambda1, lambda2, mu1, mu2, theta1, theta2, x_low, x_high):
     fig, ax = plt.subplots(1, 1)
     ax.set_title("")
 
-    ax.plot(x_draw, y1, label="task1")
-    ax.plot(x_draw, y2, label="task2")
-    ax.plot(x_draw, diff_y2_y1, label="task2 - task1")
+    ax.plot(x_draw, y1, '--', label="task1")
+    ax.plot(x_draw, y2, '-', label="task2")
+    ax.plot(x_draw, diff_y2_y1, '-.', label="task2 - task1")
+
+    ax.legend(loc=4)
+    fig.tight_layout()
+    fig.savefig("./images/double2double.pdf")    
+
+def show_double2triple_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low, x_high):
+    "plot exp func to two exp func"
+    x_draw = np.linspace(x_low, x_high, 100)
+
+    y1 = [tri_exp_mu([ele], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3) for ele in x_draw]
+    
+    lambda1_t2 = 1; lambda2_t2 = 1.4; lambda3_t2 = 1.9
+    mu1_t2 = [0]; mu2_t2 = [5]; mu3_t2 = [10]
+    
+    y2 = [tri_exp_mu([ele], lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3) for ele in x_draw]
+    
+    diff_y2_y1 = [ele2 - ele1 for ele1, ele2 in zip(y1, y2)]
+
+    fig, ax = plt.subplots(1, 1)
+    ax.set_title("")
+
+    ax.plot(x_draw, y1, '--', label="task1")
+    ax.plot(x_draw, y2, '-', label="task2")
+    ax.plot(x_draw, diff_y2_y1, '-.', label="task2 - task1")
 
     ax.legend()
     fig.tight_layout()
-    fig.savefig("./images/double2double.png")    
+    fig.savefig("./images/double2triple.pdf")   
 
 
-def show_triple_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low, x_high):
+def show_triple2double_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low, x_high):
     "plot exp func to two exp func"
     x_draw = np.linspace(x_low, x_high, 100)
 
@@ -303,13 +327,13 @@ def show_triple_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2,
     fig, ax = plt.subplots(1, 1)
     ax.set_title("")
 
-    ax.plot(x_draw, y1, label="task1")
-    ax.plot(x_draw, y2, label="task2")
-    ax.plot(x_draw, diff_y2_y1, label="task2 - task1")
+    ax.plot(x_draw, y1, '--', label="task1")
+    ax.plot(x_draw, y2, '-', label="task2")
+    ax.plot(x_draw, diff_y2_y1, '-.', label="task2 - task1")
 
     ax.legend()
     fig.tight_layout()
-    fig.savefig("./images/triple2triple.png")   
+    fig.savefig("./images/triple2triple.pdf")   
 
 
 
@@ -341,9 +365,14 @@ if __name__ == "__main__":
     theta1 = 1; theta2 = 1
     show_two_exp_mu(lambda1, lambda2, mu1, mu2, theta1, theta2, x_low=-5, x_high=15)
 
+    # Double to Triple exponential 
+    lambda1 = 1.7; lambda2 = 0; lambda3 = 0.8
+    mu1 = [0.1]; mu2 = [5]; mu3 = [9.9]
+    theta1 = 1; theta2 = 1; theta3 = 1
+    show_double2triple_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low=-5, x_high=15)    
+
     # Triple to triple exponential 
     lambda1 = 1; lambda2 = 1.5; lambda3 = 1.25
     mu1 = [0]; mu2 = [5]; mu3 = [10]
     theta1 = 1; theta2 = 1; theta3 = 1
-    show_triple_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low=-5, x_high=15)
-
+    show_triple2double_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low=-5, x_high=15)
