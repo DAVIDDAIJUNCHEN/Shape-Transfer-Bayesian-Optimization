@@ -186,21 +186,22 @@ def show_needle(x_low, x_high, shift=0):
     "plot needle function above"
     x_draw = np.linspace(x_low, x_high, 100)
 
-    y1 = [needle_func([ele]) for ele in x_draw]
-    y2 = [needle_func([ele], shift) for ele in x_draw]
+    y1 = [0.2*needle_func([ele]) for ele in x_draw]
+    #y2 = [needle_func([ele], shift) for ele in x_draw]
     
-    diff_y2_y1 = [ele2 - ele1 for ele1, ele2 in zip(y1, y2)]
+    #diff_y2_y1 = [ele2 - ele1 for ele1, ele2 in zip(y1, y2)]
 
     fig, ax = plt.subplots(1, 1)
-    ax.set_title("Needle functions shift="+str(shift))
+    #ax.set_title("Needle functions shift="+str(shift))
 
-    ax.plot(x_draw, y1, label="task1")
-    ax.plot(x_draw, y2, label="task2")
-    ax.plot(x_draw, diff_y2_y1, label="task2 - task1")
+    ax.plot(x_draw, y1)#, label="task1")
+    #ax.plot(x_draw, y2, label="task2")
+    #ax.plot(x_draw, diff_y2_y1, label="task2 - task1")
 
-    ax.legend()
+    #ax.legend()
+
     fig.tight_layout()
-    fig.savefig("./images/needle.png")
+    fig.savefig("./images/needle.pdf")
 
 def show_mono2needle(x_low, x_high, shift=0):
     "plot mono func to needle func above"
@@ -348,7 +349,7 @@ if __name__ == "__main__":
     show_branin()
 
     # Needle to Needle 
-    show_needle(0, 10, shift=0.3)
+    show_needle(0, 6, shift=0.0)
 
     # Mono to Needle
     show_mono2needle(0, 10, shift=-0.2)
