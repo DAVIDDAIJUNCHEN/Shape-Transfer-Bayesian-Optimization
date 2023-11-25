@@ -3,7 +3,8 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import norm
+from scipy.stats import norm, qmc
+import random as rand
 
 
 class ZeroGProcess:
@@ -226,10 +227,43 @@ class ZeroGProcess:
 
         return lower_bound, upper_bound
 
-    def sample(self, mean, sigma):
-        "sample from a GP with mean and sigma"
+    def sample(self, num, mean, sigma, l_bounds, u_bounds, out_file="./data/sample_points_task1_gp.tsv"):
+        "sample num points from a GP with initial mean and sigma on a LHD"
+        sampler = qmc.LatinHypercube(self.dim, centered=False, scramble=True, strength=1, optimization=None, seed=None)
+        sample_01 = sampler.random(n=num)
+        sample_scaled = qmc.scale(sample_01, l_bounds, u_bounds)
+
+        feat_tag = ["#dim"+str(i+1) for i in range(self.dim)]
+        first_line = "response"
+
+        for i in range(self.dim):
+            first_line = first_line + feat_tag[i]
+            
+        with open(out_file, "w", encoding="utf-8") as f_out:
+            f_out.writelines(first_line+'\n')
+
         
-        
+        for i in range(num):
+            sample_x = sample_scaled[i]
+            sample_x_str = ''
+            for j in range(self.dim):
+                sample_x_str = sample_x_str + '\t' + str(sample_x[j])
+            
+            if i == 0:
+                sample_str = str(mean) + sample_x_str
+            else:
+                zeroGP = ZeroGProcess(sigma_square=sigma**2)
+                zeroGP.get_data_from_file(out_file)
+                mean_x_i = zeroGP.compute_mean(sample_scaled[i])
+                var_x_i = zeroGP.compute_var(sample_scaled[i])
+
+                sample_response = np.random.normal(mean_x_i, var_x_i)
+
+                sample_str = str(sample_response) + sample_x_str
+
+            with open(out_file, "a", encoding="utf-8") as f_out:
+                f_out.writelines(sample_str + '\n')
+            
         return 0
 
     def plot(self, num_points=100, exp_ratio=1, confidence=0.9):
@@ -264,12 +298,20 @@ class ZeroGProcess:
 
 
 if __name__ == "__main__":
+
+    # construct instance 
     zeroGP = ZeroGProcess()
-    zeroGP.get_data_from_file("data/experiment_points.tsv")
+    zeroGP.get_data_from_file("data/experiment_points_task1_gp.tsv")
     
     print(zeroGP.X)
     print(zeroGP.Y)
     
+    # sample from GP
+    lower_bound = [0, 1, 3, 4]
+    upper_bound = [1, 2, 4, 5]
+    zeroGP.sample(num=100, mean=0.5, sigma=1, l_bounds=lower_bound, u_bounds=upper_bound)
+
+    # verify functions
     x = [9, 10]
 
     print(zeroGP.compute_mean(x))
@@ -281,4 +323,3 @@ if __name__ == "__main__":
     print(zeroGP.compute_grad_kernel_vec(zeroGP.X, x))
 
     print(zeroGP.compute_grad_var(x))
-
