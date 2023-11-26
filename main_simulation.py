@@ -143,13 +143,15 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
 
         with open(file_1_sample_stbo, "w", encoding="utf-8") as f1:
             header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
-            f2.writelines(header_line)
+            f1.writelines(header_line)
 
         # Method 3 in task 1: GP-based Sampling STBO
         # stage 1: sampling from Gaussian Process
         zeroGP = ZeroGProcess()
-        num_sample = 100
-        mean_sample = 0.5
+        zeroGP.get_data_from_file(file_1_sample_stbo)
+
+        num_sample = 40
+        mean_sample = 0.75
         sigma_sample = 1
         
         lower_bound = [low_opt1 for i in range(dim)]
@@ -250,6 +252,10 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
                 write_exp_result(file_1_rand, next_response_rand, next_point_rand)
                 write_exp_result(file_1_gp,  next_response_ei, next_point_ei)
                 write_exp_result(file_1_sample_stbo,  next_response_stbo1, next_point_stbo1)
+    
+    # Skip experiment 2 if start_from_exp1 = 2
+    if start_from_exp1 == 2:
+        return 0
 
     # Step 2: Optimization on Experiemnt 2 
     # get best point from exp1 file and get value of exp2 on best point
@@ -465,6 +471,8 @@ if __name__ == "__main__":
     if fun_type == "EXP":
         f1_gp = os.path.join(out_dir, "simExp_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simExp_points_task1_rand.tsv")
+        f1_sample = os.path.join(out_dir, "simExp_points_task1_sample.tsv")
+        f1_sample_stbo = os.path.join(out_dir, "simExp_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simExp_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simExp_points_task2_gp" + "_from_cold" + ".tsv")
@@ -477,12 +485,15 @@ if __name__ == "__main__":
         high_opt2 = 7
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
+                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
                 fun_type="EXP", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
     elif fun_type == "BR":
         f1_gp = os.path.join(out_dir, "simBr_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simBr_points_task1_rand.tsv")
+        f1_sample = os.path.join(out_dir, "simBr_points_task1_sample.tsv")
+        f1_sample_stbo = os.path.join(out_dir, "simBr_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simBr_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simBr_points_task2_gp" + "_from_cold" + ".tsv")
@@ -495,12 +506,15 @@ if __name__ == "__main__":
         high_opt2 = 10
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
+                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
                 fun_type="BR", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
     elif fun_type == "NEEDLE":
         f1_gp = os.path.join(out_dir, "simNeedle_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simNeedle_points_task1_rand.tsv")
+        f1_sample = os.path.join(out_dir, "simNeedle_points_task1_sample.tsv")
+        f1_sample_stbo = os.path.join(out_dir, "simNeedle_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simNeedle_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simNeedle_points_task2_gp" + "_from_cold" + ".tsv")
@@ -513,12 +527,15 @@ if __name__ == "__main__":
         high_opt2 = 10
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
+                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
                 fun_type="NEEDLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
     elif fun_type == "MONO2NEEDLE":
         f1_gp = os.path.join(out_dir, "simMono2Needle_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simMono2Needle_points_task1_rand.tsv")
+        f1_sample = os.path.join(out_dir, "simMono2Needle_points_task1_sample.tsv")
+        f1_sample_stbo = os.path.join(out_dir, "simMono2Needle_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simMono2Needle_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simMono2Needle_points_task2_gp" + "_from_cold" + ".tsv")
@@ -531,12 +548,15 @@ if __name__ == "__main__":
         high_opt2 = 10
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
+                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
                 fun_type="MONO2NEEDLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
     elif fun_type == "MONO2DOUBLE":
         f1_gp = os.path.join(out_dir, "simMono2Double_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simMono2Double_points_task1_rand.tsv")
+        f1_sample = os.path.join(out_dir, "simMono2Double_points_task1_sample.tsv")
+        f1_sample_stbo = os.path.join(out_dir, "simMono2Double_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simMono2Double_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simMono2Double_points_task2_gp" + "_from_cold" + ".tsv")
@@ -549,12 +569,15 @@ if __name__ == "__main__":
         high_opt2 = 15
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
+                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
                 fun_type="MONO2DOUBLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
     elif fun_type == "DOUBLE2DOUBLE":
         f1_gp = os.path.join(out_dir, "simDouble2Double_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simDouble2Double_points_task1_rand.tsv")
+        f1_sample = os.path.join(out_dir, "simDouble2Double_points_task1_sample.tsv")
+        f1_sample_stbo = os.path.join(out_dir, "simDouble2Double_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simDouble2Double_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simDouble2Double_points_task2_gp" + "_from_cold" + ".tsv")
@@ -567,12 +590,15 @@ if __name__ == "__main__":
         high_opt2 = 10
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
+                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
                 fun_type="DOUBLE2DOUBLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
     elif fun_type == "TRIPLE2DOUBLE":
         f1_gp = os.path.join(out_dir, "simTriple2Double_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simTriple2Double_points_task1_rand.tsv")
+        f1_sample = os.path.join(out_dir, "simTriple2Double_points_task1_sample.tsv")
+        f1_sample_stbo = os.path.join(out_dir, "simTriple2Double_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simTriple2Double_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simTriple2Double_points_task2_gp" + "_from_cold" + ".tsv")
@@ -585,12 +611,15 @@ if __name__ == "__main__":
         high_opt2 = 15
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
+                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
                 fun_type="TRIPLE2DOUBLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
     elif fun_type == "DOUBLE2TRIPLE":
         f1_gp = os.path.join(out_dir, "simDouble2Triple_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simDouble2Triple_points_task1_rand.tsv")
+        f1_sample = os.path.join(out_dir, "simDouble2Triple_points_task1_sample.tsv")
+        f1_sample_stbo = os.path.join(out_dir, "simDouble2Triple_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simDouble2Triple_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simDouble2Triple_points_task2_gp" + "_from_cold" + ".tsv")
@@ -603,6 +632,7 @@ if __name__ == "__main__":
         high_opt2 = 15
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
+                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
                 fun_type="DOUBLE2TRIPLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 

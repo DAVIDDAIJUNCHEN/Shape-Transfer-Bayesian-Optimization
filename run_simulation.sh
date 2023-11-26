@@ -15,7 +15,10 @@ if [ -z $1 ] || [ -z $2 ] || [ -z $3 ]; then
     echo "<stage-number>: 2, run Branin only;"
     echo "<stage-number>: 3, run Needle only;"
     echo "<stage-number>: 4, run Mono2Needle only;"
-    
+    echo "<stage-number>: 5, run Mono2Double only;"
+    echo "<stage-number>: 6, run Double2Double only;"
+    echo "<stage-number>: 7, run Triple2Double only;"
+    echo "<stage-number>: 8, run Double2Triple only;"    
     echo "<start_from_task1>: 0, skip task1 and run task 2;"
     echo "<start_from_task1>: 1, run from task1;" 
     echo "<start_from_task1>: 2, run task1 only"
@@ -157,8 +160,8 @@ if [ $stage -eq 0 ] || [ $stage -eq 6 ]; then
     echo "Task 1: double exp function; Task 2: double exp function"
     for i in $(seq 1 $num_rep); do
         echo "Running $i-th simulation"
-        mkdir -p $path_data/Double2Double/$i 
-        out_dir=$path_data/Double2Double/$i
+        mkdir -p $path_data/Double2Double_sample/$i 
+        out_dir=$path_data/Double2Double_sample/$i
         job_name=Double2Double_$i
         sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
                                         --type DOUBLE2DOUBLE  --from_task1 $from_task1

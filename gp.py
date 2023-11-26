@@ -250,18 +250,20 @@ class ZeroGProcess:
             if i == 0:
                 sample_str = str(mean) + sample_x_str
             else:
-                zeroGP = ZeroGProcess(sigma_square=sigma**2)
-                zeroGP.get_data_from_file(out_file)
-                mean_x_i = zeroGP.compute_mean(sample_scaled[i])
-                var_x_i = zeroGP.compute_var(sample_scaled[i])
+                zeroGP1 = ZeroGProcess(sigma_square=sigma**2)
+                zeroGP1.get_data_from_file(out_file)
+                mean_x_i = zeroGP1.compute_mean(sample_scaled[i])
+                var_x_i = zeroGP1.compute_var(sample_scaled[i])
+                print("mean_x_i: ", mean_x_i)
+                print("var_x_i: ", var_x_i)
 
-                sample_response = np.random.normal(mean_x_i, var_x_i)
+                sample_response = np.random.normal(mean_x_i, np.sqrt(var_x_i))
 
                 sample_str = str(sample_response) + sample_x_str
 
             with open(out_file, "a", encoding="utf-8") as f_out:
                 f_out.writelines(sample_str + '\n')
-            
+
         return 0
 
     def plot(self, num_points=100, exp_ratio=1, confidence=0.9):
@@ -299,15 +301,18 @@ if __name__ == "__main__":
 
     # construct instance 
     zeroGP = ZeroGProcess()
-    zeroGP.get_data_from_file("data/experiment_points_task1_gp.tsv")
-    
+    #zeroGP.get_data_from_file("data/experiment_points_task1_gp.tsv")
+    zeroGP.get_data_from_file("data/simDouble2Double_points_task1_sample.tsv")
+
     print(zeroGP.X)
     print(zeroGP.Y)
     
     # sample from GP
-    lower_bound = [0, 1, 3, 4]
-    upper_bound = [1, 2, 4, 5]
-    zeroGP.sample(num=100, mean=0.5, sigma=1, l_bounds=lower_bound, u_bounds=upper_bound)
+    # lower_bound = [0, 1, 3, 4]
+    # upper_bound = [1, 2, 4, 5]
+    lower_bound = [-5]
+    upper_bound = [10]
+    zeroGP.sample(num=50, mean=0.5, sigma=1, l_bounds=lower_bound, u_bounds=upper_bound)
 
     # verify functions
     x = [9, 10]
