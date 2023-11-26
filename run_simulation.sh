@@ -15,8 +15,10 @@ if [ -z $1 ] || [ -z $2 ] || [ -z $3 ]; then
     echo "<stage-number>: 2, run Branin only;"
     echo "<stage-number>: 3, run Needle only;"
     echo "<stage-number>: 4, run Mono2Needle only;"
-    echo "<start_from_task1>: 1, run from task1;"
-    echo "<start_from_task1>: 0, skip task1 and run task 2;" 
+    
+    echo "<start_from_task1>: 0, skip task1 and run task 2;"
+    echo "<start_from_task1>: 1, run from task1;" 
+    echo "<start_from_task1>: 2, run task1 only"
     echo "<task2_start_from>: gp or rand, run task2 from gp or rand in task1" && exit 0
 fi
 

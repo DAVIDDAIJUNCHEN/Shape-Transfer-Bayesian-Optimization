@@ -4,7 +4,6 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm, qmc
-import random as rand
 
 
 class ZeroGProcess:
@@ -242,7 +241,6 @@ class ZeroGProcess:
         with open(out_file, "w", encoding="utf-8") as f_out:
             f_out.writelines(first_line+'\n')
 
-        
         for i in range(num):
             sample_x = sample_scaled[i]
             sample_x_str = ''

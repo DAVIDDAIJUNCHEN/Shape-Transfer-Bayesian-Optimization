@@ -5,7 +5,6 @@ import numpy as np
 
 sys.path.append(os.getcwd())
 
-from gp import ZeroGProcess
 from optimization import UpperConfidenceBound
 from optimization import ExpectedImprovement
 from optimization import BiasCorrectedBO
@@ -31,7 +30,7 @@ def arg_parser():
     argparser.add_argument("--T1", default="10", help="number of experiments in target function 1")
     argparser.add_argument("--T2", default="4",  help="number of experiemnts in target function 2")
     argparser.add_argument("--task2_start_from", default="gp", choices=["gp", "rand"], help="task2 from best point of GP/Rand task1")
-    argparser.add_argument("--from_task1", default=True, choices=['0', '1', '2'], help="start simulation from task1 (use existing task1 results, or run task1 only)")
+    argparser.add_argument("--from_task1", default=True, choices=['0', '1'], help="start simulation from task1 (use existing task1 results)")
     argparser.add_argument("--out_dir", default="./data", help="output dir")
 
     parser = argparser.parse_args()
@@ -63,8 +62,7 @@ def get_best_point(file, response_col=0):
     return best_point
 
 def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, 
-             file_1_gp="f1_gp.tsv", file_1_rand="f1_rand.tsv", file_1_sample="f1_sample.tsv", file_1_sample_stbo="f1_sample_stbo.tsv", 
-             num_start_opt2=25, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=200, kessi_2=0.0, 
+             file_1_gp="f1_gp.tsv", file_1_rand="f1_rand.tsv", num_start_opt2=25, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=200, kessi_2=0.0, 
              file_2_gp="f2_gp.tsv", file_2_gp_cold="f2_gp_cold.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv", fun_type="EXP"):
     """
     simulation main function:
@@ -76,8 +74,6 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
     file_[1 | 2]_gp: file of experiment points choosen by zeroGP in task [1 | 2]
     file_2_gp_cold: file of experiment points choosen by zeroGP from cold start in task 2
     file_1_rand: file of experiemnt points choosen by random search in task 1
-    file_1_sample: file of experiment points sampled from Gaussian process
-    file_1_sample_stbo: file of experiment points choosen by STBO (on file_1_sample) in task 1
     file_2_stbo: file of experiment points choosen by our STBO in task 2
     file_2_bcbo: file of experiment points choosen by BCBO (bias corrected bayesian optimization) method
     start_from_exp1: True | False, consider False if skip experiment 1 
@@ -132,7 +128,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
 
     # Step 1: experiment 1 (skip if start_from_exp1 is 0, run if start_from_exp1 is 1 or 2)
     if start_from_exp1:
-        # write header & init_point to file: file_1 (ZeroGP) & rand_file_1 (random search) & file_1_sample_stbo
+        # write header & init_point to file: file_1 (ZeroGP) & rand_file_1 (random search)
         with open(file_1_gp, "w", encoding="utf-8") as f1:
             header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
             f1.writelines(header_line)
@@ -141,115 +137,83 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
             header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
             f1.writelines(header_line)
 
-        with open(file_1_sample_stbo, "w", encoding="utf-8") as f1:
-            header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
-            f2.writelines(header_line)
-
-        # Method 3 in task 1: GP-based Sampling STBO
-        # stage 1: sampling from Gaussian Process
-        zeroGP = ZeroGProcess()
-        num_sample = 100
-        mean_sample = 0.5
-        sigma_sample = 1
-        
-        lower_bound = [low_opt1 for i in range(dim)]
-        upper_bound = [high_opt1 for i in range(dim)]
-        zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, out_file=file_1_sample)
-        best_point_exp0 = get_best_point(file_1_sample)
-
-        # Task 1: random initialization & best point initialization from GP sample
-        init_point_1 = np.random.uniform(low_opt1, high_opt1, size=dim)
-
+        # random initialization in exp 1
+        init_point_1 = np.random.uniform(low_opt1, high_opt1, size = dim)
         if fun_type == "EXP":
             init_res_1 = exp_mu(init_point_1, mu1, theta)
-            res1_point_exp0 = exp_mu(best_point_exp0, mu1, theta)
         elif fun_type == "BR":
             init_res_1 = branin(init_point_1)
-            res1_point_exp0 = branin(best_point_exp0)
         elif fun_type == "NEEDLE":
             init_res_1 = needle_func(init_point_1, shift=0)
-            res1_point_exp0 = needle_func(best_point_exp0, shift=0)
         elif fun_type == "MONO2NEEDLE":
             init_res_1 = mono_func(init_point_1)
-            res1_point_exp0 = mono_func(best_point_exp0)
         elif fun_type == "MONO2DOUBLE":
             init_res_1 = exp_mu(init_point_1, [0], 0.5)
-            res1_point_exp0 = exp_mu(best_point_exp0, [0], 0.5)  
         elif fun_type == "DOUBLE2DOUBLE":
             init_res_1 = two_exp_mu(init_point_1, lambda1, lambda2, mu1, mu2, theta1, theta2)
-            res1_point_exp0 = two_exp_mu(best_point_exp0, lambda1, lambda2, mu1, mu2, theta1, theta2)
         elif fun_type == "TRIPLE2DOUBLE":
             init_res_1 = tri_exp_mu(init_point_1, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
-            res1_point_exp0 = tri_exp_mu(best_point_exp0, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)   
         elif fun_type == "DOUBLE2TRIPLE":
             init_res_1 = tri_exp_mu(init_point_1, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
-            res1_point_exp0 = tri_exp_mu(best_point_exp0, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
         else:
             raise(TypeError)
 
         write_exp_result(file_1_gp, init_res_1, init_point_1)
         write_exp_result(file_1_rand, init_res_1, init_point_1)
-        write_exp_result(file_1_sample_stbo, res1_point_exp0, best_point_exp0)
 
         # run num_exp1 times on EXP 1 by random search (rand_file_1) & ZeroGP (file_1)
         if num_exp1 > 1:
             for round_k in range(num_exp1-1):
-                # Method 1: uniformly randomly pick next point
+                # uniformly randomly pick next point
                 next_point_rand = np.random.uniform(low_opt1, high_opt1, size=dim)
+                if fun_type == "EXP":
+                    next_response_rand = exp_mu(next_point_rand, mu1, theta)
+                elif fun_type == "BR":
+                    next_response_rand = branin(next_point_rand)
+                elif fun_type == "NEEDLE":
+                    next_response_rand = needle_func(next_point_rand, shift=0)
+                elif fun_type == "MONO2NEEDLE":
+                    next_response_rand = mono_func(next_point_rand)
+                elif fun_type == "MONO2DOUBLE":
+                    next_response_rand = exp_mu(next_point_rand, [0], 0.5)
+                elif fun_type == "DOUBLE2DOUBLE":
+                    next_response_rand = two_exp_mu(next_point_rand, lambda1, lambda2, mu1, mu2, theta1, theta2)
+                elif fun_type == "TRIPLE2DOUBLE":
+                    next_response_rand = tri_exp_mu(next_point_rand, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+                elif fun_type == "DOUBLE2TRIPLE":
+                    next_response_rand = tri_exp_mu(next_point_rand, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+                else:
+                    raise(TypeError)
 
-                start_points = [np.random.uniform(low_opt1, high_opt1, size=dim).tolist() for i in range(num_start_opt1)]
-                # Method 2: ZeroGProcess model with EI
+                write_exp_result(file_1_rand, next_response_rand, next_point_rand)
+
+                # ZeroGProcess model with EI 
                 EI = ExpectedImprovement()
                 EI.get_data_from_file(file_1_gp)
 
-                next_point_ei, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)
-                                
-                # Method 3: GP-based Sampling STBO
-                STBO_task1 = ShapeTransferBO()
-                STBO_task1.get_data_from_file(file_1_sample_stbo)
-                STBO_task1.build_task1_gp(file_1_sample)
-                STBO_task1.build_diff_gp()
+                start_points = [np.random.uniform(low_opt1, high_opt1, size=dim).tolist() for i in range(num_start_opt1)]
 
-                next_point_stbo1, next_point_aux = STBO_task1.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
-                                                                            num_step=num_steps_opt2, kessi=kessi_2)
+                next_point, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)
                 if fun_type == "EXP":
-                    next_response_rand  = exp_mu(next_point_rand, mu1, theta)
-                    next_response_ei    = exp_mu(next_point_ei, mu1, theta)
-                    next_response_stbo1 = exp_mu(next_point_stbo1, mu1, theta)
+                    next_response = exp_mu(next_point, mu1, theta)
                 elif fun_type == "BR":
-                    next_response_rand  = branin(next_point_rand)
-                    next_response_ei    = branin(next_point_ei)
-                    next_response_stbo1 = branin(next_point_stbo1)                    
+                    next_response = branin(next_point)
                 elif fun_type == "NEEDLE":
-                    next_response_rand   = needle_func(next_point_rand, shift=0)
-                    next_response_ei     = needle_func(next_point_ei, shift=0)
-                    next_response_stbo1  = needle_func(next_point_stbo1, shift=0)
+                    next_response = needle_func(next_point, shift=0)
                 elif fun_type == "MONO2NEEDLE":
-                    next_response_rand   = mono_func(next_point_rand)
-                    next_response_ei     = mono_func(next_point_ei)
-                    next_response_stbo1  = mono_func(next_point_stbo1)
+                    next_response = mono_func(next_point)
                 elif fun_type == "MONO2DOUBLE":
-                    next_response_rand   = exp_mu(next_point_rand, [0], 0.5)
-                    next_response_ei     = exp_mu(next_point_ei, [0], 0.5)
-                    next_response_stbo1  = exp_mu(next_point_stbo1, [0], 0.5)
+                    next_response = exp_mu(next_point, [0], 0.5)
                 elif fun_type == "DOUBLE2DOUBLE":
-                    next_response_rand   = two_exp_mu(next_point_rand, lambda1, lambda2, mu1, mu2, theta1, theta2)
-                    next_response_ei     = two_exp_mu(next_point_ei, lambda1, lambda2, mu1, mu2, theta1, theta2)
-                    next_response_stbo1  = two_exp_mu(next_point_stbo1, lambda1, lambda2, mu1, mu2, theta1, theta2)
+                    next_response = two_exp_mu(next_point, lambda1, lambda2, mu1, mu2, theta1, theta2)
                 elif fun_type == "TRIPLE2DOUBLE":
-                    next_response_rand   = tri_exp_mu(next_point_rand, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
-                    next_response_ei     = tri_exp_mu(next_point_ei, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
-                    next_response_stbo1  = tri_exp_mu(next_point_stbo1, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+                    next_response = tri_exp_mu(next_point, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
                 elif fun_type == "DOUBLE2TRIPLE":
-                    next_response_rand   = tri_exp_mu(next_point_rand, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
-                    next_response_ei     = tri_exp_mu(next_point_ei, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
-                    next_response_stbo1  = tri_exp_mu(next_point_stbo1, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+                    next_response = tri_exp_mu(next_point, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
                 else:
                     raise(TypeError)
-                
-                write_exp_result(file_1_rand, next_response_rand, next_point_rand)
-                write_exp_result(file_1_gp,  next_response_ei, next_point_ei)
-                write_exp_result(file_1_sample_stbo,  next_response_stbo1, next_point_stbo1)
+
+                write_exp_result(file_1_gp,  next_response, next_point)
 
     # Step 2: Optimization on Experiemnt 2 
     # get best point from exp1 file and get value of exp2 on best point
