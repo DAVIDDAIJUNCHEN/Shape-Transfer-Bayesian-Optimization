@@ -471,7 +471,7 @@ if __name__ == "__main__":
     if fun_type == "EXP":
         f1_gp = os.path.join(out_dir, "simExp_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simExp_points_task1_rand.tsv")
-        f1_sample = os.path.join(out_dir, "simExp_points_task1_sample.tsv")
+        f1_sample = os.path.join(out_dir, "simExp_points_task0_sample.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simExp_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simExp_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
@@ -492,7 +492,7 @@ if __name__ == "__main__":
     elif fun_type == "BR":
         f1_gp = os.path.join(out_dir, "simBr_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simBr_points_task1_rand.tsv")
-        f1_sample = os.path.join(out_dir, "simBr_points_task1_sample.tsv")
+        f1_sample = os.path.join(out_dir, "simBr_points_task0_sample.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simBr_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simBr_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
@@ -513,7 +513,7 @@ if __name__ == "__main__":
     elif fun_type == "NEEDLE":
         f1_gp = os.path.join(out_dir, "simNeedle_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simNeedle_points_task1_rand.tsv")
-        f1_sample = os.path.join(out_dir, "simNeedle_points_task1_sample.tsv")
+        f1_sample = os.path.join(out_dir, "simNeedle_points_task0_sample.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simNeedle_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simNeedle_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
@@ -534,7 +534,7 @@ if __name__ == "__main__":
     elif fun_type == "MONO2NEEDLE":
         f1_gp = os.path.join(out_dir, "simMono2Needle_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simMono2Needle_points_task1_rand.tsv")
-        f1_sample = os.path.join(out_dir, "simMono2Needle_points_task1_sample.tsv")
+        f1_sample = os.path.join(out_dir, "simMono2Needle_points_task0_sample.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simMono2Needle_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simMono2Needle_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
@@ -555,7 +555,7 @@ if __name__ == "__main__":
     elif fun_type == "MONO2DOUBLE":
         f1_gp = os.path.join(out_dir, "simMono2Double_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simMono2Double_points_task1_rand.tsv")
-        f1_sample = os.path.join(out_dir, "simMono2Double_points_task1_sample.tsv")
+        f1_sample = os.path.join(out_dir, "simMono2Double_points_task0_sample.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simMono2Double_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simMono2Double_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
@@ -576,7 +576,7 @@ if __name__ == "__main__":
     elif fun_type == "DOUBLE2DOUBLE":
         f1_gp = os.path.join(out_dir, "simDouble2Double_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simDouble2Double_points_task1_rand.tsv")
-        f1_sample = os.path.join(out_dir, "simDouble2Double_points_task1_sample.tsv")
+        f1_sample = os.path.join(out_dir, "simDouble2Double_points_task0_sample.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simDouble2Double_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simDouble2Double_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
@@ -597,7 +597,7 @@ if __name__ == "__main__":
     elif fun_type == "TRIPLE2DOUBLE":
         f1_gp = os.path.join(out_dir, "simTriple2Double_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simTriple2Double_points_task1_rand.tsv")
-        f1_sample = os.path.join(out_dir, "simTriple2Double_points_task1_sample.tsv")
+        f1_sample = os.path.join(out_dir, "simTriple2Double_points_task0_sample.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simTriple2Double_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simTriple2Double_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
@@ -618,7 +618,7 @@ if __name__ == "__main__":
     elif fun_type == "DOUBLE2TRIPLE":
         f1_gp = os.path.join(out_dir, "simDouble2Triple_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simDouble2Triple_points_task1_rand.tsv")
-        f1_sample = os.path.join(out_dir, "simDouble2Triple_points_task1_sample.tsv")
+        f1_sample = os.path.join(out_dir, "simDouble2Triple_points_task0_sample.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simDouble2Triple_points_task1_sample_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simDouble2Triple_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
