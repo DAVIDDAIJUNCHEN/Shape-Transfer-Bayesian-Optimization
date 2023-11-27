@@ -62,7 +62,7 @@ def get_best_point(file, response_col=0):
 
     return best_point
 
-def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=500, kessi_1=0.0, 
+def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=25, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=200, kessi_1=0.0, 
              file_1_gp="f1_gp.tsv", file_1_rand="f1_rand.tsv", file_1_sample="f1_sample.tsv", file_1_sample_stbo="f1_sample_stbo.tsv", 
              num_start_opt2=25, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=200, kessi_2=0.0, 
              file_2_gp="f2_gp.tsv", file_2_gp_cold="f2_gp_cold.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv", fun_type="EXP"):
