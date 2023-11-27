@@ -150,9 +150,9 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=5, lo
         zeroGP = ZeroGProcess()
         zeroGP.get_data_from_file(file_1_sample_stbo)
 
-        num_sample = 40
+        num_sample = 20
         mean_sample = 0.75
-        sigma_sample = 1
+        sigma_sample = 0.5
         
         lower_bound = [low_opt1 for i in range(dim)]
         upper_bound = [high_opt1 for i in range(dim)]
