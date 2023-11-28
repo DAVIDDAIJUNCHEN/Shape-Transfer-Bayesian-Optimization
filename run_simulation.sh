@@ -42,8 +42,8 @@ if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then
         echo "Task 1: mean=$mu_1, theta=$theta; Taks 2: mean=$mu_2, theta=$theta, starts from best point in $task2_start_from" 
         for i in $(seq 1 $num_rep); do
             echo "Running $i-th simulation"
-            mkdir -p $path_data/EXP_mu2_${mu_2}_theta_${theta}/$i
-            out_dir=$path_data/EXP_mu2_${mu_2}_theta_${theta}/$i
+            mkdir -p $path_data/EXP_mu2_${mu_2}_theta_${theta}_sample/$i
+            out_dir=$path_data/EXP_mu2_${mu_2}_theta_${theta}_sample/$i
 
             job_name=EXP_mu2_${mu_2}_theta_${theta}_${task2_start_from}_$i
             sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
@@ -181,8 +181,8 @@ if [ $stage -eq 0 ] || [ $stage -eq 7 ]; then
     echo "Task 1: triple exp function; Task 2: double exp function"
     for i in $(seq 1 $num_rep); do
         echo "Running $i-th simulation"
-        mkdir -p $path_data/Triple2Double/$i 
-        out_dir=$path_data/Triple2Double/$i
+        mkdir -p $path_data/Triple2Double_sample/$i 
+        out_dir=$path_data/Triple2Double_sample/$i
         job_name=Triple2Double_${task2_start_from}_$i
         sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
                                         --type TRIPLE2DOUBLE  --from_task1 $from_task1
