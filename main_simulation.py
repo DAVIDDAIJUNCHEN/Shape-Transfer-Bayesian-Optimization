@@ -500,7 +500,7 @@ if __name__ == "__main__":
     T2 = int(parser.T2)
     
     task2_start_from = parser.task2_start_from
-
+    
     if task2_start_from == "gp":
         task2_from_gp = True
     elif task2_start_from == "rand":
