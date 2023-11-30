@@ -226,7 +226,7 @@ class ZeroGProcess:
 
         return lower_bound, upper_bound
 
-    def sample(self, num, mean, sigma, l_bounds, u_bounds, out_file="./data/sample_points_task1_gp.tsv"):
+    def sample(self, num, mean, sigma, l_bounds, u_bounds, mean_fix=True, out_file="./data/sample_points_task1_gp.tsv"):
         "sample num points from a GP with initial mean and sigma on a LHD"
         sampler = qmc.LatinHypercube(self.dim, centered=False, scramble=True, strength=1, optimization=None, seed=None)
         sample_01 = sampler.random(n=num)
@@ -250,14 +250,15 @@ class ZeroGProcess:
             if i == 0:
                 sample_str = str(mean) + sample_x_str
             else:
-                zeroGP1 = ZeroGProcess(sigma_square=sigma**2)
-                zeroGP1.get_data_from_file(out_file)
-                mean_x_i = zeroGP1.compute_mean(sample_scaled[i])
-                var_x_i = zeroGP1.compute_var(sample_scaled[i])
-                print("mean_x_i: ", mean_x_i)
-                print("var_x_i: ", var_x_i)
+                if mean_fix:
+                    sample_response = mean
+                else:
+                    zeroGP1 = ZeroGProcess(sigma_square=sigma**2)
+                    zeroGP1.get_data_from_file(out_file)
+                    mean_x_i = zeroGP1.compute_mean(sample_scaled[i])
+                    var_x_i = zeroGP1.compute_var(sample_scaled[i])
 
-                sample_response = np.random.normal(mean_x_i, np.sqrt(var_x_i))
+                    sample_response = np.random.normal(mean_x_i, np.sqrt(var_x_i))
 
                 sample_str = str(sample_response) + sample_x_str
 
@@ -312,7 +313,7 @@ if __name__ == "__main__":
     # upper_bound = [1, 2, 4, 5]
     lower_bound = [-5]
     upper_bound = [10]
-    zeroGP.sample(num=50, mean=0.5, sigma=1, l_bounds=lower_bound, u_bounds=upper_bound)
+    zeroGP.sample(num=50, mean=0.5, sigma=0.5, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=True)
 
     # verify functions
     x = [9, 10]

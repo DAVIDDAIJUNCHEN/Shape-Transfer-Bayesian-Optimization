@@ -29,9 +29,9 @@ fi
 if [ $stage -eq 0 ] || [ $stage -eq 1 ]; then 
     echo "Simulation 1: Transfer Bayesian Optimization on Exponential target function"
 
-    Thetas="1.414"
+    Thetas="0.87"
     mu_1="0_0"
-    mu_2="1.177_1.177"
+    mu_2="0.435_0.435"
 
     T1=20
     T2=20

@@ -558,7 +558,7 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
 if __name__ == "__main__":
     "Main part: iteratively analyze results by adding points one by one"
     EXP = "Double2Double"  # "Double2Double" | "Double2Triple" | "EXP" 
-    from_task1 = "sample"      # "rand" | "gp" | "sample" 
+    from_task1 = "mean"      # "rand" | "gp" | "sample" | "mean"
 
     if EXP == "Triple2Double":
         file_task1_gp = "data/Triple2Double/simTriple2Double_points_task1_gp.tsv"
@@ -586,6 +586,8 @@ if __name__ == "__main__":
         file_task1_rand = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_rand.tsv"
         file_task0_sample = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task0_sample.tsv"
         file_task1_sample_stbo = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_sample_stbo.tsv"
+        file_task0_mean = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task0_mean.tsv"
+        file_task1_mean_stbo = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_mean_stbo.tsv"
 
         file_task2_gp_from_gp = "data/Double2Double_sample/simDouble2Double_points_task2_gp_from_gp.tsv" 
         file_task2_stbo_from_gp = "data/Double2Double_sample/simDouble2Double_points_task2_stbo_from_gp.tsv"
@@ -680,6 +682,26 @@ if __name__ == "__main__":
         STBO = ShapeTransferBO()
         STBO.get_data_from_file(file_task1_sample_stbo)
         STBO.build_task1_gp(file_task0_sample)
+        STBO.build_diff_gp()
+
+        STBO.plot_ei(exp_ratio=0.0)
+    elif from_task1 == "mean":
+        # Test EI with rand
+        EI = ExpectedImprovement()
+        EI.get_data_from_file(file_task0_mean)
+    
+        gamma = 0.9
+        x1 = [1.5]
+        print("EI({:.2f}) = {:.2f}".format(x1[0], EI.aux_func_ei(x1, gamma)))
+        x2 = [10.4]
+        print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func_ei(x2, gamma)))
+    
+        EI.plot_ei(exp_ratio=0.0)
+
+        # Test STBO from rand
+        STBO = ShapeTransferBO()
+        STBO.get_data_from_file(file_task1_mean_stbo)
+        STBO.build_task1_gp(file_task0_mean)
         STBO.build_diff_gp()
 
         STBO.plot_ei(exp_ratio=0.0)

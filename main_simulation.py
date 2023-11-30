@@ -63,7 +63,8 @@ def get_best_point(file, response_col=0):
     return best_point
 
 def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=25, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=200, kessi_1=0.0, 
-             file_1_gp="f1_gp.tsv", file_1_rand="f1_rand.tsv", file_1_sample="f1_sample.tsv", file_1_sample_stbo="f1_sample_stbo.tsv", 
+             file_1_gp="f1_gp.tsv", file_1_rand="f1_rand.tsv", file_1_sample="f1_sample.tsv", file_1_mean="f1_mean.tsv", 
+             file_1_sample_stbo="f1_sample_stbo.tsv", file_1_mean_stbo="f1_mean_stbo.tsv",  
              num_start_opt2=25, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=200, kessi_2=0.0, 
              file_2_gp="f2_gp.tsv", file_2_gp_cold="f2_gp_cold.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv", fun_type="EXP"):
     """
@@ -144,6 +145,10 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=25, l
         with open(file_1_sample_stbo, "w", encoding="utf-8") as f1:
             header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
             f1.writelines(header_line)
+        
+        with open(file_1_mean_stbo, "w", encoding="utf-8") as f1:
+            header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
+            f1.writelines(header_line)        
 
         # Method 3 in task 1: GP-based Sampling STBO
         # stage 1: sampling from Gaussian Process
@@ -156,42 +161,56 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=25, l
         
         lower_bound = [low_opt1 for i in range(dim)]
         upper_bound = [high_opt1 for i in range(dim)]
-        zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, out_file=file_1_sample)
-        best_point_exp0 = get_best_point(file_1_sample)
+        zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False, out_file=file_1_sample)
+        best_point_exp0_sample = get_best_point(file_1_sample)
+
+        # Method 4 in task 1: mean reduction STBO
+        zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=True, out_file=file_1_mean)
+        best_point_exp0_mean = get_best_point(file_1_mean)
+        
 
         # Task 1: random initialization & best point initialization from GP sample
         init_point_1 = np.random.uniform(low_opt1, high_opt1, size=dim)
 
         if fun_type == "EXP":
             init_res_1 = exp_mu(init_point_1, mu1, theta)
-            res1_point_exp0 = exp_mu(best_point_exp0, mu1, theta)
+            res1_point_exp0_sample = exp_mu(best_point_exp0_sample, mu1, theta)
+            res1_point_exp0_mean = exp_mu(best_point_exp0_mean, mu1, theta)
         elif fun_type == "BR":
             init_res_1 = branin(init_point_1)
-            res1_point_exp0 = branin(best_point_exp0)
+            res1_point_exp0_sample = branin(best_point_exp0_sample)
+            res1_point_exp0_mean = branin(best_point_exp0_mean)
         elif fun_type == "NEEDLE":
             init_res_1 = needle_func(init_point_1, shift=0)
-            res1_point_exp0 = needle_func(best_point_exp0, shift=0)
+            res1_point_exp0_sample = needle_func(best_point_exp0_sample, shift=0)
+            res1_point_exp0_mean = needle_func(best_point_exp0_mean, shift=0)
         elif fun_type == "MONO2NEEDLE":
             init_res_1 = mono_func(init_point_1)
-            res1_point_exp0 = mono_func(best_point_exp0)
+            res1_point_exp0_sample = mono_func(best_point_exp0_sample)
+            res1_point_exp0_mean = mono_func(best_point_exp0_mean)
         elif fun_type == "MONO2DOUBLE":
             init_res_1 = exp_mu(init_point_1, [0], 0.5)
-            res1_point_exp0 = exp_mu(best_point_exp0, [0], 0.5)  
+            res1_point_exp0_sample = exp_mu(best_point_exp0_sample, [0], 0.5)  
+            res1_point_exp0_mean = exp_mu(best_point_exp0_mean, [0], 0.5)  
         elif fun_type == "DOUBLE2DOUBLE":
             init_res_1 = two_exp_mu(init_point_1, lambda1, lambda2, mu1, mu2, theta1, theta2)
-            res1_point_exp0 = two_exp_mu(best_point_exp0, lambda1, lambda2, mu1, mu2, theta1, theta2)
+            res1_point_exp0_sample = two_exp_mu(best_point_exp0_sample, lambda1, lambda2, mu1, mu2, theta1, theta2)
+            res1_point_exp0_mean = two_exp_mu(best_point_exp0_mean, lambda1, lambda2, mu1, mu2, theta1, theta2)
         elif fun_type == "TRIPLE2DOUBLE":
             init_res_1 = tri_exp_mu(init_point_1, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
-            res1_point_exp0 = tri_exp_mu(best_point_exp0, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)   
+            res1_point_exp0_sample = tri_exp_mu(best_point_exp0_sample, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)   
+            res1_point_exp0_mean = tri_exp_mu(best_point_exp0_mean, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
         elif fun_type == "DOUBLE2TRIPLE":
             init_res_1 = tri_exp_mu(init_point_1, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
-            res1_point_exp0 = tri_exp_mu(best_point_exp0, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+            res1_point_exp0_sample = tri_exp_mu(best_point_exp0_sample, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+            res1_point_exp0_mean = tri_exp_mu(best_point_exp0_mean, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
         else:
             raise(TypeError)
 
         write_exp_result(file_1_gp, init_res_1, init_point_1)
         write_exp_result(file_1_rand, init_res_1, init_point_1)
-        write_exp_result(file_1_sample_stbo, res1_point_exp0, best_point_exp0)
+        write_exp_result(file_1_sample_stbo, res1_point_exp0_sample, best_point_exp0_sample)
+        write_exp_result(file_1_mean_stbo, res1_point_exp0_mean, best_point_exp0_mean)
 
         # run num_exp1 times on EXP 1 by random search (rand_file_1) & ZeroGP (file_1)
         if num_exp1 > 1:
@@ -207,51 +226,70 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=25, l
                 next_point_ei, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)
                                 
                 # Method 3: GP-based Sampling STBO
-                STBO_task1 = ShapeTransferBO()
-                STBO_task1.get_data_from_file(file_1_sample_stbo)
-                STBO_task1.build_task1_gp(file_1_sample)
-                STBO_task1.build_diff_gp()
+                STBO_task1_sample = ShapeTransferBO()
+                STBO_task1_sample.get_data_from_file(file_1_sample_stbo)
+                STBO_task1_sample.build_task1_gp(file_1_sample)
+                STBO_task1_sample.build_diff_gp()
 
-                next_point_stbo1, next_point_aux = STBO_task1.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
+                next_point_stbo1_sample, next_point_aux = STBO_task1_sample.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
                                                                             num_step=num_steps_opt2, kessi=kessi_2)
+
+                # Method 4: mean reduction STBO
+                STBO_task1_mean = ShapeTransferBO()
+                STBO_task1_mean.get_data_from_file(file_1_mean_stbo)
+                STBO_task1_mean.build_task1_gp(file_1_mean)
+                STBO_task1_mean.build_diff_gp()
+
+                next_point_stbo1_mean, next_point_aux = STBO_task1_mean.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
+                                                                            num_step=num_steps_opt2, kessi=kessi_2)                
+
                 if fun_type == "EXP":
                     next_response_rand  = exp_mu(next_point_rand, mu1, theta)
                     next_response_ei    = exp_mu(next_point_ei, mu1, theta)
-                    next_response_stbo1 = exp_mu(next_point_stbo1, mu1, theta)
+                    next_response_stbo1_sample = exp_mu(next_point_stbo1_sample, mu1, theta)
+                    next_response_stbo1_mean = exp_mu(next_point_stbo1_mean, mu1, theta)
                 elif fun_type == "BR":
                     next_response_rand  = branin(next_point_rand)
                     next_response_ei    = branin(next_point_ei)
-                    next_response_stbo1 = branin(next_point_stbo1)                    
+                    next_response_stbo1_sample = branin(next_point_stbo1_sample)
+                    next_response_stbo1_mean = branin(next_point_stbo1_mean)
                 elif fun_type == "NEEDLE":
                     next_response_rand   = needle_func(next_point_rand, shift=0)
                     next_response_ei     = needle_func(next_point_ei, shift=0)
-                    next_response_stbo1  = needle_func(next_point_stbo1, shift=0)
+                    next_response_stbo1_sample  = needle_func(next_point_stbo1_sample, shift=0)
+                    next_response_stbo1_mean  = needle_func(next_point_stbo1_mean, shift=0)
                 elif fun_type == "MONO2NEEDLE":
                     next_response_rand   = mono_func(next_point_rand)
                     next_response_ei     = mono_func(next_point_ei)
-                    next_response_stbo1  = mono_func(next_point_stbo1)
+                    next_response_stbo1_sample  = mono_func(next_point_stbo1_sample)
+                    next_response_stbo1_mean  = mono_func(next_point_stbo1_mean)
                 elif fun_type == "MONO2DOUBLE":
                     next_response_rand   = exp_mu(next_point_rand, [0], 0.5)
                     next_response_ei     = exp_mu(next_point_ei, [0], 0.5)
-                    next_response_stbo1  = exp_mu(next_point_stbo1, [0], 0.5)
+                    next_response_stbo1_sample  = exp_mu(next_point_stbo1_sample, [0], 0.5)
+                    next_response_stbo1_mean  = exp_mu(next_point_stbo1_mean, [0], 0.5)
                 elif fun_type == "DOUBLE2DOUBLE":
                     next_response_rand   = two_exp_mu(next_point_rand, lambda1, lambda2, mu1, mu2, theta1, theta2)
                     next_response_ei     = two_exp_mu(next_point_ei, lambda1, lambda2, mu1, mu2, theta1, theta2)
-                    next_response_stbo1  = two_exp_mu(next_point_stbo1, lambda1, lambda2, mu1, mu2, theta1, theta2)
+                    next_response_stbo1_sample  = two_exp_mu(next_point_stbo1_sample, lambda1, lambda2, mu1, mu2, theta1, theta2)
+                    next_response_stbo1_mean  = two_exp_mu(next_point_stbo1_mean, lambda1, lambda2, mu1, mu2, theta1, theta2)
                 elif fun_type == "TRIPLE2DOUBLE":
                     next_response_rand   = tri_exp_mu(next_point_rand, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
                     next_response_ei     = tri_exp_mu(next_point_ei, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
-                    next_response_stbo1  = tri_exp_mu(next_point_stbo1, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+                    next_response_stbo1_sample  = tri_exp_mu(next_point_stbo1_sample, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+                    next_response_stbo1_mean  = tri_exp_mu(next_point_stbo1_mean, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
                 elif fun_type == "DOUBLE2TRIPLE":
                     next_response_rand   = tri_exp_mu(next_point_rand, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
                     next_response_ei     = tri_exp_mu(next_point_ei, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
-                    next_response_stbo1  = tri_exp_mu(next_point_stbo1, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+                    next_response_stbo1_sample  = tri_exp_mu(next_point_stbo1_sample, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+                    next_response_stbo1_mean  = tri_exp_mu(next_point_stbo1_mean, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
                 else:
                     raise(TypeError)
                 
                 write_exp_result(file_1_rand, next_response_rand, next_point_rand)
                 write_exp_result(file_1_gp,  next_response_ei, next_point_ei)
-                write_exp_result(file_1_sample_stbo,  next_response_stbo1, next_point_stbo1)
+                write_exp_result(file_1_sample_stbo,  next_response_stbo1_sample, next_point_stbo1_sample)
+                write_exp_result(file_1_mean_stbo,  next_response_stbo1_mean, next_point_stbo1_mean)
     
     # Skip experiment 2 if start_from_exp1 = 2
     if start_from_exp1 == 2:
@@ -472,7 +510,9 @@ if __name__ == "__main__":
         f1_gp = os.path.join(out_dir, "simExp_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simExp_points_task1_rand.tsv")
         f1_sample = os.path.join(out_dir, "simExp_points_task0_sample.tsv")
+        f1_mean = os.path.join(out_dir, "simExp_points_task0_mean.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simExp_points_task1_sample_stbo.tsv")
+        f1_mean_stbo = os.path.join(out_dir, "simExp_points_task1_mean_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simExp_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simExp_points_task2_gp" + "_from_cold" + ".tsv")
@@ -485,7 +525,7 @@ if __name__ == "__main__":
         high_opt2 = 7
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
-                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
+                file_1_sample=f1_sample, file_1_mean=f1_mean, file_1_sample_stbo=f1_sample_stbo, file_1_mean_stbo=f1_mean_stbo, 
                 fun_type="EXP", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
@@ -493,7 +533,9 @@ if __name__ == "__main__":
         f1_gp = os.path.join(out_dir, "simBr_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simBr_points_task1_rand.tsv")
         f1_sample = os.path.join(out_dir, "simBr_points_task0_sample.tsv")
+        f1_mean = os.path.join(out_dir, "simBr_points_task0_mean.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simBr_points_task1_sample_stbo.tsv")
+        f1_mean_stbo = os.path.join(out_dir, "simBr_points_task1_mean_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simBr_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simBr_points_task2_gp" + "_from_cold" + ".tsv")
@@ -506,7 +548,7 @@ if __name__ == "__main__":
         high_opt2 = 10
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
-                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
+                file_1_sample=f1_sample, file_1_mean=f1_mean, file_1_sample_stbo=f1_sample_stbo, file_1_mean_stbo=f1_mean_stbo,
                 fun_type="BR", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
@@ -514,7 +556,9 @@ if __name__ == "__main__":
         f1_gp = os.path.join(out_dir, "simNeedle_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simNeedle_points_task1_rand.tsv")
         f1_sample = os.path.join(out_dir, "simNeedle_points_task0_sample.tsv")
+        f1_mean = os.path.join(out_dir, "simNeedle_points_task0_mean.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simNeedle_points_task1_sample_stbo.tsv")
+        f1_mean_stbo = os.path.join(out_dir, "simNeedle_points_task1_mean_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simNeedle_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simNeedle_points_task2_gp" + "_from_cold" + ".tsv")
@@ -527,7 +571,7 @@ if __name__ == "__main__":
         high_opt2 = 10
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
-                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
+                file_1_sample=f1_sample, file_1_mean=f1_mean, file_1_sample_stbo=f1_sample_stbo, file_1_mean_stbo=f1_mean_stbo, 
                 fun_type="NEEDLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
@@ -535,7 +579,9 @@ if __name__ == "__main__":
         f1_gp = os.path.join(out_dir, "simMono2Needle_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simMono2Needle_points_task1_rand.tsv")
         f1_sample = os.path.join(out_dir, "simMono2Needle_points_task0_sample.tsv")
+        f1_mean = os.path.join(out_dir, "simMono2Needle_points_task0_mean.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simMono2Needle_points_task1_sample_stbo.tsv")
+        f1_mean_stbo = os.path.join(out_dir, "simMono2Needle_points_task1_mean_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simMono2Needle_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simMono2Needle_points_task2_gp" + "_from_cold" + ".tsv")
@@ -548,7 +594,7 @@ if __name__ == "__main__":
         high_opt2 = 10
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
-                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
+                file_1_sample=f1_sample, file_1_mean=f1_mean, file_1_sample_stbo=f1_sample_stbo, file_1_mean_stbo=f1_mean_stbo,
                 fun_type="MONO2NEEDLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
@@ -556,7 +602,9 @@ if __name__ == "__main__":
         f1_gp = os.path.join(out_dir, "simMono2Double_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simMono2Double_points_task1_rand.tsv")
         f1_sample = os.path.join(out_dir, "simMono2Double_points_task0_sample.tsv")
+        f1_mean = os.path.join(out_dir, "simMono2Double_points_task0_mean.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simMono2Double_points_task1_sample_stbo.tsv")
+        f1_mean_stbo = os.path.join(out_dir, "simMono2Double_points_task1_mean_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simMono2Double_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simMono2Double_points_task2_gp" + "_from_cold" + ".tsv")
@@ -569,7 +617,7 @@ if __name__ == "__main__":
         high_opt2 = 15
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
-                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
+                file_1_sample=f1_sample, file_1_mean=f1_mean, file_1_sample_stbo=f1_sample_stbo, file_1_mean_stbo=f1_mean_stbo,
                 fun_type="MONO2DOUBLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
@@ -577,7 +625,9 @@ if __name__ == "__main__":
         f1_gp = os.path.join(out_dir, "simDouble2Double_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simDouble2Double_points_task1_rand.tsv")
         f1_sample = os.path.join(out_dir, "simDouble2Double_points_task0_sample.tsv")
+        f1_mean = os.path.join(out_dir, "simDouble2Double_points_task0_mean.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simDouble2Double_points_task1_sample_stbo.tsv")
+        f1_mean_stbo = os.path.join(out_dir, "simDouble2Double_points_task1_mean_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simDouble2Double_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simDouble2Double_points_task2_gp" + "_from_cold" + ".tsv")
@@ -590,7 +640,7 @@ if __name__ == "__main__":
         high_opt2 = 10
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
-                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
+                file_1_sample=f1_sample, file_1_mean=f1_mean, file_1_sample_stbo=f1_sample_stbo, file_1_mean_stbo=f1_mean_stbo,
                 fun_type="DOUBLE2DOUBLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
@@ -598,7 +648,9 @@ if __name__ == "__main__":
         f1_gp = os.path.join(out_dir, "simTriple2Double_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simTriple2Double_points_task1_rand.tsv")
         f1_sample = os.path.join(out_dir, "simTriple2Double_points_task0_sample.tsv")
+        f1_mean = os.path.join(out_dir, "simTriple2Double_points_task0_mean.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simTriple2Double_points_task1_sample_stbo.tsv")
+        f1_mean_stbo = os.path.join(out_dir, "simTriple2Double_points_task1_mean_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simTriple2Double_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simTriple2Double_points_task2_gp" + "_from_cold" + ".tsv")
@@ -611,7 +663,7 @@ if __name__ == "__main__":
         high_opt2 = 15
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
-                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
+                file_1_sample=f1_sample, file_1_mean=f1_mean, file_1_sample_stbo=f1_sample_stbo, file_1_mean_stbo=f1_mean_stbo,
                 fun_type="TRIPLE2DOUBLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
@@ -619,7 +671,9 @@ if __name__ == "__main__":
         f1_gp = os.path.join(out_dir, "simDouble2Triple_points_task1_gp.tsv")
         f1_rand = os.path.join(out_dir, "simDouble2Triple_points_task1_rand.tsv")
         f1_sample = os.path.join(out_dir, "simDouble2Triple_points_task0_sample.tsv")
+        f1_mean = os.path.join(out_dir, "simDouble2Triple_points_task0_mean.tsv")
         f1_sample_stbo = os.path.join(out_dir, "simDouble2Triple_points_task1_sample_stbo.tsv")
+        f1_mean_stbo = os.path.join(out_dir, "simDouble2Triple_points_task1_mean_stbo.tsv")
 
         f2_gp = os.path.join(out_dir, "simDouble2Triple_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
         f2_gp_cold = os.path.join(out_dir, "simDouble2Triple_points_task2_gp" + "_from_cold" + ".tsv")
@@ -632,7 +686,7 @@ if __name__ == "__main__":
         high_opt2 = 15
 
         main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
-                file_1_sample=f1_sample, file_1_sample_stbo=f1_sample_stbo,
+                file_1_sample=f1_sample, file_1_mean=f1_mean, file_1_sample_stbo=f1_sample_stbo, file_1_mean_stbo=f1_mean_stbo,
                 fun_type="DOUBLE2TRIPLE", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
