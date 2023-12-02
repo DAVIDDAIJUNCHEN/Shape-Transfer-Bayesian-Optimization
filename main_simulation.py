@@ -62,7 +62,7 @@ def get_best_point(file, response_col=0):
 
     return best_point
 
-def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=25, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=200, kessi_1=0.0, 
+def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=50, kessi_1=0.0, 
              file_1_gp="f1_gp.tsv", file_1_rand="f1_rand.tsv", file_1_sample="f1_sample.tsv", file_1_mean="f1_mean.tsv", 
              file_1_sample_stbo="f1_sample_stbo.tsv", file_1_mean_stbo="f1_mean_stbo.tsv",  
              num_start_opt2=25, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=200, kessi_2=0.0, 
@@ -157,7 +157,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=25, l
 
         num_sample = 20
         mean_sample = 0.75
-        sigma_sample = 0.5
+        sigma_sample = 0.25
         
         lower_bound = [low_opt1 for i in range(dim)]
         upper_bound = [high_opt1 for i in range(dim)]
@@ -231,8 +231,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=25, l
                 STBO_task1_sample.build_task1_gp(file_1_sample)
                 STBO_task1_sample.build_diff_gp()
 
-                next_point_stbo1_sample, next_point_aux = STBO_task1_sample.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
-                                                                            num_step=num_steps_opt2, kessi=kessi_2)
+                next_point_stbo1_sample, next_point_aux = STBO_task1_sample.find_best_NextPoint_ei(start_points, learn_rate=lr1, 
+                                                                            num_step=num_steps_opt1, kessi=kessi_1)
 
                 # Method 4: mean reduction STBO
                 STBO_task1_mean = ShapeTransferBO()
@@ -240,8 +240,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=25, l
                 STBO_task1_mean.build_task1_gp(file_1_mean)
                 STBO_task1_mean.build_diff_gp()
 
-                next_point_stbo1_mean, next_point_aux = STBO_task1_mean.find_best_NextPoint_ei(start_points, learn_rate=lr2, 
-                                                                            num_step=num_steps_opt2, kessi=kessi_2)                
+                next_point_stbo1_mean, next_point_aux = STBO_task1_mean.find_best_NextPoint_ei(start_points, learn_rate=lr1, 
+                                                                            num_step=num_steps_opt1, kessi=kessi_1)                
 
                 if fun_type == "EXP":
                     next_response_rand  = exp_mu(next_point_rand, mu1, theta)
@@ -500,7 +500,7 @@ if __name__ == "__main__":
     T2 = int(parser.T2)
     
     task2_start_from = parser.task2_start_from
-    
+
     if task2_start_from == "gp":
         task2_from_gp = True
     elif task2_start_from == "rand":

@@ -581,7 +581,7 @@ if __name__ == "__main__":
         file_task2_stbo_from_rand = "data/Double2Triple/simDouble2Triple_points_task2_stbo_from_rand.tsv"
         file_task2_bcbo_from_rand = "data/Double2Triple/simDouble2Triple_points_task2_bcbo_from_rand.tsv"     
     elif EXP == "Double2Double":
-        i = 1
+        i = 6
         file_task1_gp = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_gp.tsv"
         file_task1_rand = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_rand.tsv"
         file_task0_sample = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task0_sample.tsv"
