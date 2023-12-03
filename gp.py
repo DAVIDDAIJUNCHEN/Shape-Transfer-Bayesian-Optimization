@@ -228,9 +228,12 @@ class ZeroGProcess:
 
     def sample(self, num, mean, sigma, l_bounds, u_bounds, mean_fix=True, out_file="./data/sample_points_task1_gp.tsv"):
         "sample num points from a GP with initial mean and sigma on a LHD"
+        # construct LHD 
         sampler = qmc.LatinHypercube(self.dim, centered=False, scramble=True, strength=1, optimization=None, seed=None)
         sample_01 = sampler.random(n=num)
         sample_scaled = qmc.scale(sample_01, l_bounds, u_bounds)
+
+        # sort points in LHD by distance from center 
         center = np.array([(l_bound_i + u_bound_i)/2 for l_bound_i, u_bound_i in zip(l_bounds, u_bounds)])
         sample_scaled_sorted = sorted(sample_scaled, key=lambda x:np.linalg.norm(x-center))
         sample_scaled_sorted = [list(arr_i) for arr_i in sample_scaled_sorted]
@@ -251,14 +254,19 @@ class ZeroGProcess:
                 sample_x_str = sample_x_str + '\t' + str(sample_x[j])
             
             if i == 0:
-                sample_str = str(mean) + sample_x_str
+                if mean_fix:
+                    sample_str = str(mean) + sample_x_str
+                else:
+                    sample_str = str(np.random.normal(mean, sigma)) + sample_x_str
             else:
                 if mean_fix:
                     sample_response = mean
                 else:
                     zeroGP1 = ZeroGProcess(sigma_square=sigma**2)
                     zeroGP1.get_data_from_file(out_file)
-                    mean_x_i = zeroGP1.compute_mean(sample_scaled_sorted[i])
+                    zeroGP1.Y = [y - mean for y in zeroGP1.Y]
+
+                    mean_x_i = mean + zeroGP1.compute_mean(sample_scaled_sorted[i])
                     var_x_i = zeroGP1.compute_var(sample_scaled_sorted[i])
 
                     sample_response = np.random.normal(mean_x_i, np.sqrt(var_x_i))
@@ -316,7 +324,7 @@ if __name__ == "__main__":
     # upper_bound = [1, 2, 4, 5]
     lower_bound = [-5]
     upper_bound = [10]
-    zeroGP.sample(num=50, mean=0.5, sigma=0.5, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False)
+    zeroGP.sample(num=30, mean=0.5, sigma=0.1, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False)
 
     # verify functions
     x = [9, 10]
