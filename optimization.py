@@ -557,7 +557,7 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
 
 if __name__ == "__main__":
     "Main part: iteratively analyze results by adding points one by one"
-    EXP = "Triple2Double"  # "EXP" | "Double2Double" | "Double2Triple" | "Triple2Double" 
+    EXP = "Double2Double"  # "EXP" | "Double2Double" | "Double2Triple" | "Triple2Double" 
     from_task1 = "sample"      # "rand" | "gp" | "sample" | "mean"
 
     if EXP == "Triple2Double":
@@ -588,7 +588,7 @@ if __name__ == "__main__":
         file_task2_stbo_from_rand = "data/Double2Triple/simDouble2Triple_points_task2_stbo_from_rand.tsv"
         file_task2_bcbo_from_rand = "data/Double2Triple/simDouble2Triple_points_task2_bcbo_from_rand.tsv"     
     elif EXP == "Double2Double":
-        i = 6
+        i = 1
         file_task1_gp = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_gp.tsv"
         file_task1_rand = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_rand.tsv"
         file_task0_sample = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task0_sample.tsv"
