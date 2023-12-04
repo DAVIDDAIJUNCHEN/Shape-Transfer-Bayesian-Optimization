@@ -557,11 +557,12 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
 
 if __name__ == "__main__":
     "Main part: iteratively analyze results by adding points one by one"
-    EXP = "Double2Double"  # "EXP" | "Double2Double" | "Double2Triple" | "Triple2Double" 
+    EXP = "Double2Double"  # "Double2Double" | "Double2Triple" | "Triple2Double" 
     from_task1 = "sample"      # "rand" | "gp" | "sample" | "mean"
 
+    # visulization only on 1-dimensional examples 
     if EXP == "Triple2Double":
-        i = 1
+        i = 11
         file_task1_gp = "data/Triple2Double_sample/" + str(i) + "/simTriple2Double_points_task1_gp.tsv"
         file_task1_rand = "data/Triple2Double_sample/" + str(i) + "/simTriple2Double_points_task1_rand.tsv"   
         file_task0_sample = "data/Triple2Double_sample/" + str(i) + "/simTriple2Double_points_task0_sample.tsv" 
@@ -588,7 +589,7 @@ if __name__ == "__main__":
         file_task2_stbo_from_rand = "data/Double2Triple/simDouble2Triple_points_task2_stbo_from_rand.tsv"
         file_task2_bcbo_from_rand = "data/Double2Triple/simDouble2Triple_points_task2_bcbo_from_rand.tsv"     
     elif EXP == "Double2Double":
-        i = 1
+        i = 4
         file_task1_gp = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_gp.tsv"
         file_task1_rand = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_rand.tsv"
         file_task0_sample = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task0_sample.tsv"
@@ -627,7 +628,7 @@ if __name__ == "__main__":
         x2 = [10.4]
         print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func_ei(x2, gamma)))
 
-        EI.plot_ei(exp_ratio=0.2)
+        EI.plot_ei(exp_ratio=1)
 
         # Test STBO from gp
         STBO = ShapeTransferBO()
@@ -674,16 +675,16 @@ if __name__ == "__main__":
         BCBO.plot_ei(exp_ratio=0.2)
     elif from_task1 == "sample":
         # Test EI with rand
-        # EI = ExpectedImprovement()
-        # EI.get_data_from_file(file_task0_sample)
+        EI = ExpectedImprovement()
+        EI.get_data_from_file(file_task1_gp)
     
-        # gamma = 0.9
-        # x1 = [1.5]
-        # print("EI({:.2f}) = {:.2f}".format(x1[0], EI.aux_func_ei(x1, gamma)))
-        # x2 = [10.4]
-        # print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func_ei(x2, gamma)))
+        gamma = 0.9
+        x1 = [1.5]
+        print("EI({:.2f}) = {:.2f}".format(x1[0], EI.aux_func_ei(x1, gamma)))
+        x2 = [10.4]
+        print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func_ei(x2, gamma)))
     
-        # EI.plot_ei(exp_ratio=0.0)
+        EI.plot_ei(exp_ratio=0.0)
 
         # Test STBO from rand
         STBO = ShapeTransferBO()
@@ -695,7 +696,7 @@ if __name__ == "__main__":
     elif from_task1 == "mean":
         # Test EI with rand
         EI = ExpectedImprovement()
-        EI.get_data_from_file(file_task0_mean)
+        EI.get_data_from_file(file_task1_gp)
     
         gamma = 0.9
         x1 = [1.5]
