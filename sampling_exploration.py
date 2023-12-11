@@ -44,10 +44,10 @@ def generate_task1_samples(mu, theta, num, low, high, out_file):
 
 if __name__ == "__main__":
     # Part 1: Weak Prior 
-    mu=[2.5]; theta=1; num=30; low=-5; high=15
-    out_file_task1 = "./data/Sample_Exp/f1_mu_2.5_theta_1.tsv"
-    out_file_task2_stbo = "./data/Sample_Exp/f2_stbo_prior_mu_2.5_theta_1.tsv"
-    out_file_task2_gp = "./data/Sample_Exp/f2_gp_prior_mu_2.5_theta_1.tsv"
+    mu=[7.5]; theta=1; num=30; low=-5; high=15
+    out_file_task1 = "./data/Sample_Exp/f1_mu_7.5_theta_1.tsv"
+    out_file_task2_stbo = "./data/Sample_Exp/f2_stbo_prior_mu_7.5_theta_1.tsv"
+    out_file_task2_gp = "./data/Sample_Exp/f2_gp_prior_mu_7.5_theta_1.tsv"
 
     stage = 2
 
