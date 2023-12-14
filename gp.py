@@ -4,6 +4,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm, qmc
+from utils import write_exp_result
 
 
 class ZeroGProcess:
@@ -226,8 +227,12 @@ class ZeroGProcess:
 
         return lower_bound, upper_bound
 
-    def sample(self, num, mean, sigma, l_bounds, u_bounds, mean_fix=True, out_file="./data/sample_points_task1_gp.tsv"):
+    def sample(self, num, mean, sigma, l_bounds, u_bounds, prior_points, mean_fix=True, out_file="./data/sample_points_task1_gp.tsv"):
         "sample num points from a GP with initial mean and sigma on a LHD"
+        # assert dim of prior points == dim 
+        for pnt, rel_qunt in prior_points:
+            assert(len(pnt) == self.dim)
+
         # construct LHD 
         sampler = qmc.LatinHypercube(self.dim, centered=False, scramble=True, strength=1, optimization=None, seed=None)
         sample_01 = sampler.random(n=num)
@@ -238,6 +243,7 @@ class ZeroGProcess:
         sample_scaled_sorted = sorted(sample_scaled, key=lambda x:np.linalg.norm(x-center))
         sample_scaled_sorted = [list(arr_i) for arr_i in sample_scaled_sorted]
 
+        # write header and prior points in out_file
         feat_tag = ["#dim"+str(i+1) for i in range(self.dim)]
         first_line = "response"
 
@@ -245,8 +251,13 @@ class ZeroGProcess:
             first_line = first_line + feat_tag[i]
             
         with open(out_file, "w", encoding="utf-8") as f_out:
-            f_out.writelines(first_line+'\n')
+            f_out.writelines(first_line + '\n')
+        
+        for pnt, rel_qunt in prior_points:
+            res_pnt = rel_qunt*mean
+            write_exp_result(out_file, res_pnt, pnt)
 
+        # sample points based on prior & mean & LHD 
         for i in range(num):
             sample_x = sample_scaled_sorted[i]
             sample_x_str = ''
@@ -313,18 +324,20 @@ if __name__ == "__main__":
 
     # construct instance 
     zeroGP = ZeroGProcess()
-    #zeroGP.get_data_from_file("data/experiment_points_task1_gp.tsv")
-    zeroGP.get_data_from_file("data/simDouble2Double_points_task1_sample.tsv")
+    zeroGP.get_data_from_file("data/experiment_points_task1_gp.tsv")
+    #zeroGP.get_data_from_file("data/simDouble2Double_points_task1_sample.tsv")
 
     print(zeroGP.X)
     print(zeroGP.Y)
     
     # sample from GP
-    # lower_bound = [0, 1, 3, 4]
-    # upper_bound = [1, 2, 4, 5]
-    lower_bound = [-5]
-    upper_bound = [10]
-    zeroGP.sample(num=30, mean=0.5, sigma=0.1, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False)
+    lower_bound = [0, 1, 3, 4]
+    upper_bound = [1, 2, 4, 5]
+    #lower_bound = [-5]
+    #upper_bound = [10]
+
+    prior_pnt = [([0.4, 1.3, 3.3, 4.4], 1.2), ([0.5, 1.4, 3.2, 4.8], 1.5)]
+    zeroGP.sample(num=30, mean=0.5, sigma=0.1, prior_points=prior_pnt, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False)
 
     # verify functions
     x = [9, 10]

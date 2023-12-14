@@ -12,6 +12,7 @@ from optimization import BiasCorrectedBO
 from optimization import ShapeTransferBO
 
 from simfun import exp_mu, branin, mod_branin, needle_func, mono_func, two_exp_mu, tri_exp_mu
+from utils import write_exp_result, get_best_point
 
 
 def arg_parser():
@@ -37,30 +38,6 @@ def arg_parser():
     parser = argparser.parse_args()
     
     return parser
-
-def write_exp_result(file, response, exp_point):
-    "write experiemnt results to file"
-    with open(file, 'a', encoding="utf-8") as fout:
-        exp_line = str(response) + '\t' + '\t'.join([str(ele) for ele in exp_point]) + '\n'
-        fout.writelines(exp_line)
-    
-    return 0
-
-def get_best_point(file, response_col=0):
-    "get the points with largest response"
-    results = []
-    with open(file, 'r', encoding="utf-8") as fin:
-        for line in fin:
-            if '#' not in line:
-                line_split = line.split()
-                point = line_split[:response_col] + line_split[(response_col+1):]
-                results.append([(float(line_split[response_col]), point)])
-
-    best = max(results)[0]
-    best_response = float(best[0])
-    best_point = [float(ele) for ele in best[1]]
-
-    return best_point
 
 def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=50, kessi_1=0.0, 
              file_1_gp="f1_gp.tsv", file_1_rand="f1_rand.tsv", file_1_sample="f1_sample.tsv", file_1_mean="f1_mean.tsv", 
@@ -148,24 +125,31 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
         
         with open(file_1_mean_stbo, "w", encoding="utf-8") as f1:
             header_line = "response" + ''.join(["#dim"+str(i+1) for i in range(dim)]) + '\n'
-            f1.writelines(header_line)        
+            f1.writelines(header_line)
 
         # Method 3 in task 1: GP-based Sampling STBO
         # stage 1: sampling from Gaussian Process
         zeroGP = ZeroGProcess()
         zeroGP.get_data_from_file(file_1_sample_stbo)
 
-        num_sample = 30
+        num_sample = 20
         mean_sample = 0.75
         sigma_sample = 0.1
         
         lower_bound = [low_opt1 for i in range(dim)]
         upper_bound = [high_opt1 for i in range(dim)]
-        zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False, out_file=file_1_sample)
+
+        # give different weak prior information 
+        if fun_type == "DOUBLE2DOUBLE": 
+            prior_pnts = [([0.15], 1.1), ([0.28], 0.9)]
+        elif fun_type == "DOUBLE2TRIPLE":
+            prior_pnts = [([0.15], 1.1), ([0.3], 0.9)]
+
+        zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, prior_points=prior_pnts, mean_fix=False, out_file=file_1_sample)
         best_point_exp0_sample = get_best_point(file_1_sample)
 
         # Method 4 in task 1: mean reduction STBO
-        zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=True, out_file=file_1_mean)
+        zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, prior_points=prior_pnts, mean_fix=True, out_file=file_1_mean)
         best_point_exp0_mean = get_best_point(file_1_mean)
         
 
