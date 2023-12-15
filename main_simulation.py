@@ -132,18 +132,20 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
         zeroGP = ZeroGProcess()
         zeroGP.get_data_from_file(file_1_sample_stbo)
 
-        num_sample = 20
+        num_sample = 10
         mean_sample = 0.75
-        sigma_sample = 0.1
-        
+        sigma_sample = 0.01
+
         lower_bound = [low_opt1 for i in range(dim)]
         upper_bound = [high_opt1 for i in range(dim)]
 
         # give different weak prior information 
-        if fun_type == "DOUBLE2DOUBLE": 
-            prior_pnts = [([0.15], 1.1), ([0.28], 0.9)]
+        if fun_type == "DOUBLE2DOUBLE":
+            prior_pnts = [([0.15], 1.1), ([2.8], 0.5)]
         elif fun_type == "DOUBLE2TRIPLE":
-            prior_pnts = [([0.15], 1.1), ([0.3], 0.9)]
+            prior_pnts = [([0.2], 1.5), ([5.5], 0.5), ([11], 1.5)]
+        elif fun_type == "TRIPLE2DOUBLE":
+            prior_pnts = [([-0.2], 1.1), ([5.5], 1.1), ([7.5], 0.5), ([11], 1.1)]
 
         zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, prior_points=prior_pnts, mean_fix=False, out_file=file_1_sample)
         best_point_exp0_sample = get_best_point(file_1_sample)

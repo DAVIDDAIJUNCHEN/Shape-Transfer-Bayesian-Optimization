@@ -279,6 +279,8 @@ class ZeroGProcess:
 
                     mean_x_i = mean + zeroGP1.compute_mean(sample_scaled_sorted[i])
                     var_x_i = zeroGP1.compute_var(sample_scaled_sorted[i])
+                    print("mean_x_i: ", mean_x_i)
+                    print("var_x_i: ", var_x_i)
 
                     sample_response = np.random.normal(mean_x_i, np.sqrt(var_x_i))
 
@@ -324,20 +326,20 @@ if __name__ == "__main__":
 
     # construct instance 
     zeroGP = ZeroGProcess()
-    zeroGP.get_data_from_file("data/experiment_points_task1_gp.tsv")
-    #zeroGP.get_data_from_file("data/simDouble2Double_points_task1_sample.tsv")
+    #zeroGP.get_data_from_file("data/experiment_points_task1_gp.tsv")
+    zeroGP.get_data_from_file("data/simDouble2Double_points_task1_sample.tsv")
 
     print(zeroGP.X)
     print(zeroGP.Y)
     
     # sample from GP
-    lower_bound = [0, 1, 3, 4]
-    upper_bound = [1, 2, 4, 5]
-    #lower_bound = [-5]
-    #upper_bound = [10]
+    #lower_bound = [0, 1, 3, 4]
+    #upper_bound = [1, 2, 4, 5]
+    lower_bound = [-5]
+    upper_bound = [10]
 
-    prior_pnt = [([0.4, 1.3, 3.3, 4.4], 1.2), ([0.5, 1.4, 3.2, 4.8], 1.5)]
-    zeroGP.sample(num=30, mean=0.5, sigma=0.1, prior_points=prior_pnt, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False)
+    prior_pnt = [([0.4], 1.3), ([2.5], 1.3)]
+    zeroGP.sample(num=30, mean=0.5, sigma=0.01, prior_points=prior_pnt, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False)
 
     # verify functions
     x = [9, 10]
