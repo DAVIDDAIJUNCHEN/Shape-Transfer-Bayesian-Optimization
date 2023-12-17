@@ -195,14 +195,14 @@ class ExpectedImprovement(ZeroGProcess):
         delta = max_point - min_point
 
         x_draw = np.linspace(min_point-exp_ratio*delta, max_point+exp_ratio*delta, num_points)
-
+        print("theta Gp: ", self.theta)
         # subplot 1: GProcess mean & confidence band
         y_mean = [self.compute_mean([ele]) for ele in x_draw]
         y_conf_int = [self.conf_interval([ele], confidence) for ele in x_draw]
         y_lower = [ele[0] for ele in y_conf_int]
         y_upper = [ele[1] for ele in y_conf_int]
 
-        # subplot 2: EI AC function with multiple parameters 
+        # subplot 2: EI AC function with multiple parameters
         ac_values_lst = []
         if isinstance(kessis, list):
             for kessi in kessis:
@@ -214,6 +214,10 @@ class ExpectedImprovement(ZeroGProcess):
             kessis = [kessis]
 
         fig, (ax_gp, ax_ac) = plt.subplots(2, 1, sharex=True)
+
+        print("x: ", self.X[0:3])
+        print("y: ", self.Y[0:3])
+        print("y_pred: ", [self.compute_mean(ele) for ele in self.X[0:3]])
 
         ax_gp.set_title("GProcess Confidence Band")
         ax_gp.plot(x_draw, y_mean)
@@ -557,7 +561,7 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
 if __name__ == "__main__":
     "Main part: iteratively analyze results by adding points one by one"
     EXP = "Double2Triple"      # "Double2Double" | "Double2Triple" | "Triple2Double" 
-    from_task1 = "mean"      # "rand"          | "gp"            | "sample"        | "mean"
+    from_task1 = "sample"      # "rand"          | "gp"            | "sample"        | "mean"
 
     # visulization only on 1-dimensional examples 
     if EXP == "Triple2Double":
@@ -577,7 +581,7 @@ if __name__ == "__main__":
         file_task2_stbo_from_rand = "data/Triple2Double_sample/" + str(i) + "/simTriple2Double_points_task2_stbo_from_rand.tsv"
         file_task2_bcbo_from_rand = "data/Triple2Double_sample/" + str(i) + "/simTriple2Double_points_task2_bcbo_from_rand.tsv" 
     elif EXP == "Double2Triple":
-        i = 2
+        i = 3
         file_task1_gp = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task1_gp.tsv"
         file_task1_rand = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task1_rand.tsv"
         file_task0_sample = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task0_sample.tsv"
@@ -679,16 +683,17 @@ if __name__ == "__main__":
         BCBO.plot_ei(exp_ratio=0.2)
     elif from_task1 == "sample":
         # Test EI with rand
-        # EI = ExpectedImprovement()
-        # EI.get_data_from_file(file_task1_gp)
-    
+        EI = ExpectedImprovement()
+        EI.get_data_from_file(file_task0_sample)
+        EI.theta = 0.7
+
         # gamma = 0.9
         # x1 = [1.5]
         # print("EI({:.2f}) = {:.2f}".format(x1[0], EI.aux_func_ei(x1, gamma)))
         # x2 = [10.4]
         # print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func_ei(x2, gamma)))
     
-        # EI.plot_ei(exp_ratio=0.0)
+        EI.plot_ei(exp_ratio=0.0)
 
         # Test STBO from rand
         STBO = ShapeTransferBO()
@@ -699,16 +704,17 @@ if __name__ == "__main__":
         STBO.plot_ei(exp_ratio=0.0)
     elif from_task1 == "mean":
         # Test EI with rand
-        # EI = ExpectedImprovement()
-        # EI.get_data_from_file(file_task1_gp)
-    
+        EI = ExpectedImprovement()
+        EI.get_data_from_file(file_task0_mean)   # file_task1_gp
+        EI.theta = 0.7
+
         # gamma = 0.9
         # x1 = [1.5]
         # print("EI({:.2f}) = {:.2f}".format(x1[0], EI.aux_func_ei(x1, gamma)))
         # x2 = [10.4]
         # print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func_ei(x2, gamma)))
     
-        # EI.plot_ei(exp_ratio=0.0)
+        EI.plot_ei(exp_ratio=0.0)
 
         # Test STBO from rand
         STBO = ShapeTransferBO()

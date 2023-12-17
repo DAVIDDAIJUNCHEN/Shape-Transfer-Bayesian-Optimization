@@ -153,7 +153,6 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
         # Method 4 in task 1: mean reduction STBO
         zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, prior_points=prior_pnts, mean_fix=True, out_file=file_1_mean)
         best_point_exp0_mean = get_best_point(file_1_mean)
-        
 
         # Task 1: random initialization & best point initialization from GP sample
         init_point_1 = np.random.uniform(low_opt1, high_opt1, size=dim)

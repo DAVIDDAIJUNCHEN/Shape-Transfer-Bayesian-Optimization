@@ -1,4 +1,5 @@
 #!/usr/bin/env python3 
+import numpy as np
 
 def write_exp_result(file, response, exp_point):
     "write experiemnt results to file"
@@ -23,4 +24,11 @@ def get_best_point(file, response_col=0):
     best_point = [float(ele) for ele in best[1]]
 
     return best_point
+
+def dist(pnt_a, pnt_b, l_n=2):
+    "return l_n distance between pnt_a and pnt_b"
+    unnormal_dist = np.sum([(a_i - b_i)**l_n for a_i, b_i in zip(pnt_a, pnt_b)])
+    dist = unnormal_dist**(1/l_n)
+
+    return dist
 

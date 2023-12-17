@@ -4,14 +4,14 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm, qmc
-from utils import write_exp_result
+from utils import write_exp_result, dist
 
 
 class ZeroGProcess:
     """
     Class ZeroGProgress: build zero mean Gaussian Process with known or unknown sigma (vairiance)
     """
-    def __init__(self, sigma_square=None, type_kernel = "gaussian", param_kernel = 1.0) -> None:
+    def __init__(self, sigma_square=None, type_kernel="gaussian", param_kernel=1.0) -> None:
         self.Y = [] 
         self.X = []
         self.dim = None
@@ -103,7 +103,7 @@ class ZeroGProcess:
 
         for i in range(dim):
             x_i = lst_exp_points[i]
-            kernel_Vec[i, 0] = self.kernel(current_point, x_i)
+            kernel_Vec[i, 0] = self.kernel(current_point, x_i, theta)
      
         return kernel_Vec
 
@@ -135,7 +135,6 @@ class ZeroGProcess:
 
     def compute_mean(self, current_point):
         "compute the mean value at current_point"
-        
         kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
         kernel_Vec_mat = self.compute_kernel_vec(self.X, current_point, self.theta)
         inv_kernel_Cov = np.linalg.inv(kernel_Cov_mat)
@@ -228,20 +227,28 @@ class ZeroGProcess:
         return lower_bound, upper_bound
 
     def sample(self, num, mean, sigma, l_bounds, u_bounds, prior_points, mean_fix=True, out_file="./data/sample_points_task1_gp.tsv"):
-        "sample num points from a GP with initial mean and sigma on a LHD"
+        "sample num points from a GP with initial (mean & sigma) and prior points on a LHD"
         # assert dim of prior points == dim 
         for pnt, rel_qunt in prior_points:
             assert(len(pnt) == self.dim)
+        num_prior = len(prior_points)
 
         # construct LHD 
+        num_lhd_sampled = num_prior + num
         sampler = qmc.LatinHypercube(self.dim, centered=False, scramble=True, strength=1, optimization=None, seed=None)
-        sample_01 = sampler.random(n=num)
+        sample_01 = sampler.random(n=num_lhd_sampled)
         sample_scaled = qmc.scale(sample_01, l_bounds, u_bounds)
 
-        # sort points in LHD by distance from center 
+        # sort points in LHD by distance from domain center 
         center = np.array([(l_bound_i + u_bound_i)/2 for l_bound_i, u_bound_i in zip(l_bounds, u_bounds)])
         sample_scaled_sorted = sorted(sample_scaled, key=lambda x:np.linalg.norm(x-center))
         sample_scaled_sorted = [list(arr_i) for arr_i in sample_scaled_sorted]
+
+        # remove LHD points collapsed with prior points
+        for pnt, _ in prior_points:
+            d_pnt_sample = [dist(pnt, pnt_i) for pnt_i in sample_scaled_sorted]
+            min_dist_index = np.where(d_pnt_sample==np.min(d_pnt_sample))[0][0]
+            sample_scaled_sorted.pop(min_dist_index)
 
         # write header and prior points in out_file
         feat_tag = ["#dim"+str(i+1) for i in range(self.dim)]
@@ -258,13 +265,18 @@ class ZeroGProcess:
             write_exp_result(out_file, res_pnt, pnt)
 
         # sample points based on prior & mean & LHD 
+        zeroGP1 = ZeroGProcess(sigma_square=sigma**2)
+        zeroGP1.theta = 20
+        zeroGP1.get_data_from_file(out_file)
+        zeroGP1.Y = [y - mean for y in zeroGP1.Y]
+
         for i in range(num):
             sample_x = sample_scaled_sorted[i]
             sample_x_str = ''
             for j in range(self.dim):
                 sample_x_str = sample_x_str + '\t' + str(sample_x[j])
             
-            if i == 0:
+            if i == 0 and len(prior_points) == 0:
                 if mean_fix:
                     sample_str = str(mean) + sample_x_str
                 else:
@@ -273,10 +285,6 @@ class ZeroGProcess:
                 if mean_fix:
                     sample_response = mean
                 else:
-                    zeroGP1 = ZeroGProcess(sigma_square=sigma**2)
-                    zeroGP1.get_data_from_file(out_file)
-                    zeroGP1.Y = [y - mean for y in zeroGP1.Y]
-
                     mean_x_i = mean + zeroGP1.compute_mean(sample_scaled_sorted[i])
                     var_x_i = zeroGP1.compute_var(sample_scaled_sorted[i])
                     print("mean_x_i: ", mean_x_i)
@@ -305,6 +313,7 @@ class ZeroGProcess:
         x_draw = np.linspace(min_point-exp_ratio*delta, max_point+exp_ratio*delta, num_points)
 
         y_mean = [self.compute_mean([ele]) for ele in x_draw]
+
         y_conf_int = [self.conf_interval([ele], confidence) for ele in x_draw]
         y_lower = [ele[0] for ele in y_conf_int]
         y_upper = [ele[1] for ele in y_conf_int]
@@ -326,6 +335,7 @@ if __name__ == "__main__":
 
     # construct instance 
     zeroGP = ZeroGProcess()
+
     #zeroGP.get_data_from_file("data/experiment_points_task1_gp.tsv")
     zeroGP.get_data_from_file("data/simDouble2Double_points_task1_sample.tsv")
 
@@ -338,7 +348,7 @@ if __name__ == "__main__":
     lower_bound = [-5]
     upper_bound = [10]
 
-    prior_pnt = [([0.4], 1.3), ([2.5], 1.3)]
+    prior_pnt = [([0.4], 1.4), ([2.5], 1.4)]
     zeroGP.sample(num=30, mean=0.5, sigma=0.01, prior_points=prior_pnt, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False)
 
     # verify functions
