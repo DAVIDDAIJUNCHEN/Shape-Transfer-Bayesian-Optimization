@@ -248,10 +248,11 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
         self.zeroGP1 = None
         self.diffGP = None
 
-    def build_task1_gp(self, file_exp_task1):
+    def build_task1_gp(self, file_exp_task1, theta_task1=1.0):
         "build ZeroGProcess for task1 with known experiment points"
         zeroGP1 = ZeroGProcess()
         zeroGP1.get_data_from_file(file_exp_task1)
+        zeroGP1.theta = theta_task1
         assert(len(zeroGP1.X) == len(zeroGP1.Y))
 
         self.zeroGP1 = zeroGP1
@@ -433,10 +434,11 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
         self.zeroGP1 = None
         self.diffGP = None
 
-    def build_task1_gp(self, file_exp_task1):
+    def build_task1_gp(self, file_exp_task1, theta_task1=1.0):
         "build ZeroGProcess for task1 with known experiment points"
         zeroGP1 = ZeroGProcess()
         zeroGP1.get_data_from_file(file_exp_task1)
+        zeroGP1.theta = theta_task1
         assert(len(zeroGP1.X) == len(zeroGP1.Y))
 
         self.zeroGP1 = zeroGP1
@@ -560,8 +562,8 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
 
 if __name__ == "__main__":
     "Main part: iteratively analyze results by adding points one by one"
-    EXP = "Double2Triple"      # "Double2Double" | "Double2Triple" | "Triple2Double" 
-    from_task1 = "sample"      # "rand"          | "gp"            | "sample"        | "mean"
+    EXP = "Triple2Double"      # "Double2Double" | "Double2Triple" | "Triple2Double" 
+    from_task1 = "mean"      # "rand"          | "gp"            | "sample"        | "mean"
 
     # visulization only on 1-dimensional examples 
     if EXP == "Triple2Double":
@@ -581,7 +583,7 @@ if __name__ == "__main__":
         file_task2_stbo_from_rand = "data/Triple2Double_sample/" + str(i) + "/simTriple2Double_points_task2_stbo_from_rand.tsv"
         file_task2_bcbo_from_rand = "data/Triple2Double_sample/" + str(i) + "/simTriple2Double_points_task2_bcbo_from_rand.tsv" 
     elif EXP == "Double2Triple":
-        i = 3
+        i = 1
         file_task1_gp = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task1_gp.tsv"
         file_task1_rand = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task1_rand.tsv"
         file_task0_sample = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task0_sample.tsv"
@@ -641,7 +643,7 @@ if __name__ == "__main__":
         # Test STBO from gp
         STBO = ShapeTransferBO()
         STBO.get_data_from_file(file_task2_stbo_from_gp)
-        STBO.build_task1_gp(file_task1_gp)
+        STBO.build_task1_gp(file_task1_gp, theta_task1=1.0)
         STBO.build_diff_gp()
 
         STBO.plot_ei(exp_ratio=0.2)
@@ -649,7 +651,7 @@ if __name__ == "__main__":
         # Test BCBO from gp
         BCBO = BiasCorrectedBO()
         BCBO.get_data_from_file(file_task2_bcbo_from_gp)
-        BCBO.build_task1_gp(file_task1_gp)
+        BCBO.build_task1_gp(file_task1_gp, theta_task1=1.0)
         BCBO.build_diff_gp()
 
         BCBO.plot_ei(exp_ratio=0.2)
@@ -669,7 +671,7 @@ if __name__ == "__main__":
         # Test STBO from rand
         STBO = ShapeTransferBO()
         STBO.get_data_from_file(file_task2_stbo_from_rand)
-        STBO.build_task1_gp(file_task1_rand)
+        STBO.build_task1_gp(file_task1_rand, theta_task1=1.0)
         STBO.build_diff_gp()
     
         STBO.plot_ei(exp_ratio=0.2)
@@ -677,9 +679,9 @@ if __name__ == "__main__":
         # Test BCBO from rand
         BCBO = BiasCorrectedBO()
         BCBO.get_data_from_file(file_task2_bcbo_from_rand)
-        BCBO.build_task1_gp(file_task1_rand)
+        BCBO.build_task1_gp(file_task1_rand, theta_task1=1.0)
         BCBO.build_diff_gp()
-    
+
         BCBO.plot_ei(exp_ratio=0.2)
     elif from_task1 == "sample":
         # Test EI with rand
@@ -698,7 +700,7 @@ if __name__ == "__main__":
         # Test STBO from rand
         STBO = ShapeTransferBO()
         STBO.get_data_from_file(file_task1_sample_stbo)
-        STBO.build_task1_gp(file_task0_sample)
+        STBO.build_task1_gp(file_task0_sample, theta_task1=0.7)
         STBO.build_diff_gp()
 
         STBO.plot_ei(exp_ratio=0.0)
@@ -719,7 +721,8 @@ if __name__ == "__main__":
         # Test STBO from rand
         STBO = ShapeTransferBO()
         STBO.get_data_from_file(file_task1_mean_stbo)
-        STBO.build_task1_gp(file_task0_mean)
+        STBO.build_task1_gp(file_task0_mean, theta_task1=0.7)
         STBO.build_diff_gp()
 
         STBO.plot_ei(exp_ratio=0.0)
+

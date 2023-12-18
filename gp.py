@@ -266,8 +266,8 @@ class ZeroGProcess:
 
         # sample points based on prior & mean & LHD 
         zeroGP1 = ZeroGProcess(sigma_square=sigma**2)
-        zeroGP1.theta = 20
         zeroGP1.get_data_from_file(out_file)
+        zeroGP1.theta = 0.2
         zeroGP1.Y = [y - mean for y in zeroGP1.Y]
 
         for i in range(num):
@@ -287,8 +287,6 @@ class ZeroGProcess:
                 else:
                     mean_x_i = mean + zeroGP1.compute_mean(sample_scaled_sorted[i])
                     var_x_i = zeroGP1.compute_var(sample_scaled_sorted[i])
-                    print("mean_x_i: ", mean_x_i)
-                    print("var_x_i: ", var_x_i)
 
                     sample_response = np.random.normal(mean_x_i, np.sqrt(var_x_i))
 
@@ -332,7 +330,6 @@ class ZeroGProcess:
 
 
 if __name__ == "__main__":
-
     # construct instance 
     zeroGP = ZeroGProcess()
 
@@ -348,18 +345,19 @@ if __name__ == "__main__":
     lower_bound = [-5]
     upper_bound = [10]
 
-    prior_pnt = [([0.4], 1.4), ([2.5], 1.4)]
+    prior_pnt = [([0.4], 1.2), ([2.5], 1.2)]
     zeroGP.sample(num=30, mean=0.5, sigma=0.01, prior_points=prior_pnt, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False)
 
-    # verify functions
+    # verify functions at x
     x = [9, 10]
 
     print(zeroGP.compute_mean(x))
     print(zeroGP.compute_var(x))
     print(zeroGP.conf_interval(x))
 
-    #zeroGP.plot(num_points=1000, exp_ratio=2, confidence=0.30)
     print(zeroGP.compute_grad_mean(x))
     print(zeroGP.compute_grad_kernel_vec(zeroGP.X, x))
-
     print(zeroGP.compute_grad_var(x))
+
+    # plot images
+    #zeroGP.plot(num_points=100, exp_ratio=0.0, confidence=0.90)
