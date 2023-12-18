@@ -142,16 +142,19 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
         # give different weak prior information 
         if fun_type == "DOUBLE2DOUBLE":
             #prior_pnts = [([0.2], 1.2), ([2.7], 0.8), ([4.8], 1.2)]
+            #prior_pnts = [([0.5], 1.2), ([3.0], 0.8), ([4.5], 1.2)]
+            prior_pnts = [([0.8], 1.2), ([3.3], 0.8), ([4.2], 1.2)]
             #prior_pnts = [([2.7], 1.2)]
-            prior_pnts = [([0.5], 1.2), ([3.0], 0.8), ([4.5], 1.2)]
         elif fun_type == "DOUBLE2TRIPLE":
             #prior_pnts = [([0.2], 1.2), ([5.2], 0.8), ([9.8], 1.2)]
+            #prior_pnts = [([0.5], 1.2), ([5.5], 0.8), ([4.5], 1.2)]
+            prior_pnts = [([0.8], 1.2), ([5.8], 0.8), ([4.2], 1.2)]
             #prior_pnts = [([5.2], 1.2)]
-            prior_pnts = [([0.5], 1.2), ([5.5], 0.8), ([4.5], 1.2)]
         elif fun_type == "TRIPLE2DOUBLE":
             #prior_pnts = [([0.2], 1.2), ([5.2], 1.2), ([7.7], 0.8), ([9.8], 1.2)]
+            #prior_pnts = [([0.5], 1.2), ([5.5], 1.2), ([8.0], 0.8), ([9.5], 1.2)]
+            prior_pnts = [([0.8], 1.2), ([5.8], 1.2), ([8.3], 0.8), ([9.2], 1.2)]
             #prior_pnts = [([2.7], 1.2), ([7.7], 1.2)]
-            prior_pnts = [([0.5], 1.2), ([5.5], 1.2), ([8.0], 0.8), ([9.5], 1.2)]
 
         zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, prior_points=prior_pnts, mean_fix=False, out_file=file_1_sample)
         best_point_exp0_sample = get_best_point(file_1_sample)
