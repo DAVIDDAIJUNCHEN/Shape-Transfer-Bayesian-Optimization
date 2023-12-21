@@ -18,7 +18,8 @@ if [ -z $1 ] || [ -z $2 ] || [ -z $3 ]; then
     echo "<stage-number>: 5, run Mono2Double only;"
     echo "<stage-number>: 6, run Double2Double only;"
     echo "<stage-number>: 7, run Triple2Double only;"
-    echo "<stage-number>: 8, run Double2Triple only;"    
+    echo "<stage-number>: 8, run Double2Triple only;"   
+    echo "<stage-number>: 9, run Triple2Triple 2D only;" 
     echo "<start_from_task1>: 0, skip task1 and run task 2;"
     echo "<start_from_task1>: 1, run from task1;" 
     echo "<start_from_task1>: 2, run task1 only"
@@ -202,11 +203,32 @@ if [ $stage -eq 0 ] || [ $stage -eq 8 ]; then
     echo "Task 1: double exp function; Task 2: triple exp function"
     for i in $(seq 1 $num_rep); do
         echo "Running $i-th simulation"
-        mkdir -p $path_data/Double2Triple_sample_far2_prior/$i 
-        out_dir=$path_data/Double2Triple_sample_far2_prior/$i
-        job_name=Double2Triple_far2_${task2_start_from}_$i
+        mkdir -p $path_data/Double2Triple/$i 
+        out_dir=$path_data/Double2Triple/$i
+        job_name=Double2Triple_${task2_start_from}_$i
         sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
                                         --type DOUBLE2TRIPLE  --from_task1 $from_task1
         echo "Submitted $i-th Double2Triple exponential simulation by Slurm"
+    done
+fi
+
+
+if [ $stage -eq 0 ] || [ $stage -eq 9 ]; then
+    echo "Simulation 9: Transfer Bayesian Optimization from 2D Triple to 2D Triple exponential function"
+
+    T1=20
+    T2=20
+
+    num_rep=20
+
+    echo "Task 1: 2D Triple exp function; Task 2: 2D Triple exp function"
+    for i in $(seq 1 $num_rep); do
+        echo "Running $i-th simulation"
+        mkdir -p $path_data/2D_Triple2Triple/$i
+        out_dir=$path_data/2D_Triple2Triple/$i
+        job_name=Triple2Triple_2D_${task2_start_from}_$i
+        sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
+                                        --type TRIPLE2TRIPLE_2D  --from_task1 $from_task1
+        echo "Submitted $i-th 2D Triple2Triple exponential simulation by slurm"
     done
 fi
