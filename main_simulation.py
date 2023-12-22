@@ -107,7 +107,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
         dim = 2
         lambda1 = 1.7; lambda2 = 1.2; lambda3 = 0.8
         mu1 = [0.5, 0.5]; mu2 = [5.5, 5.5]; mu3 = [9.5, 9.5]
-        lambda2_t2 = 1; lambda2_t2 = 1.4; lambda3_t2 = 1.9
+        lambda1_t2 = 1; lambda2_t2 = 1.4; lambda3_t2 = 1.9
         mu1_t2 = [0, 0]; mu2_t2 = [5, 5]; mu3_t2 = [10, 10]
 
         theta1 = 1; theta2 = 1; theta3 = 1
@@ -162,7 +162,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
             prior_pnts = [([0.8], 1.2), ([5.8], 1.2), ([8.3], 0.8), ([9.2], 1.2)]
             #prior_pnts = [([2.7], 1.2), ([7.7], 1.2)]
         elif fun_type == "TRIPLE2TRIPLE_2D":
-            prior_pnts = [([0.8, 0.8], 1.2), ([5.8, 5.8], 1.2), ([9.5, 9.5], 1.2)]
+            #prior_pnts = [([0.8, 0.8], 1.2), ([5.8, 5.8], 1.2), ([9.5, 9.5], 1.2)]
+            prior_pnts = [([3, 3], 1.2), ([7.5, 7.5], 1.2)]
 
         zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, prior_points=prior_pnts, mean_fix=False, out_file=file_1_sample)
         best_point_exp0_sample = get_best_point(file_1_sample)
