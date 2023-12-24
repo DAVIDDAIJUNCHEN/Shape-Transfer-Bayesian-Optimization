@@ -307,7 +307,7 @@ def show_double2triple_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, 
     ax.plot(x_draw, y2, '-', label="task2")
     ax.plot(x_draw, diff_y2_y1, '-.', label="task2 - task1")
 
-    ax.legend()
+    ax.legend(loc=4)
     fig.tight_layout()
     fig.savefig("./images/double2triple.pdf")   
 
@@ -368,7 +368,7 @@ if __name__ == "__main__":
 
     # Double to Triple exponential 
     lambda1 = 1.7; lambda2 = 0; lambda3 = 0.8
-    mu1 = [0.1]; mu2 = [5]; mu3 = [9.9]
+    mu1 = [0.5]; mu2 = [5]; mu3 = [9.5]
     theta1 = 1; theta2 = 1; theta3 = 1
     show_double2triple_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low=-5, x_high=15)    
 

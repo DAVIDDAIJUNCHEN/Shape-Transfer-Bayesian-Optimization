@@ -215,8 +215,8 @@ if __name__ == "__main__":
     show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
 
     # simulation 2: Double2Triple
-    in_dir1 = "./data/Double2Triple"
-    out_dir1 = "./simulation_results/Double2Triple"
+    in_dir1 = "./data/Double2Triple_0.5"
+    out_dir1 = "./simulation_results/Double2Triple_0.5"
 
     file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
     file_lsts_cold1 = collect_file(in_dir1, "from_cold")
@@ -236,7 +236,31 @@ if __name__ == "__main__":
     title = ["Simulation 2: from double modals to triple modals", "transfer vs non-transfer", "start from rand", "start from gp"]
     show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
 
-    # simulation 3: EXP 
+
+    # simulation 3: 2D Triple2Triple
+    in_dir1 = "./data/2D_Triple2Triple"
+    out_dir1 = "./simulation_results/2D_Triple2Triple"
+
+    file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
+    file_lsts_cold1 = collect_file(in_dir1, "from_cold")
+    file_lsts_stbo1.extend(file_lsts_cold1)
+    file_lsts_1 = file_lsts_stbo1
+
+    _, dct_medium_perc1 = run_statistics(file_lsts_1, out_dir1)
+
+    file_lsts_2 = collect_file(in_dir1, topic="from_rand")
+    file_lsts_3 = collect_file(in_dir1, topic="from_gp")
+
+    _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
+    _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
+
+    fig_name_medium = "./images/2d_triple2triple_paper.pdf"
+
+    title = ["Simulation 3: from 2d triple modals to triple modals", "transfer vs non-transfer", "start from rand", "start from gp"]
+    show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
+
+
+    # simulation 4: EXP 
     thetas = [0.87, 1, 1.414]
     means = [(0.435, 0.74, 1.74), (0.5, 0.832555, 2), (0.707, 1.177, 2.828)]
     #thetas = [0.5, 1, 1.414]

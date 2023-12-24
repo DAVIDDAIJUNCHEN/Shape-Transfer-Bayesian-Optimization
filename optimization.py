@@ -562,8 +562,8 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
 
 if __name__ == "__main__":
     "Main part: iteratively analyze results by adding points one by one"
-    EXP = "Triple2Double"      # "Double2Double" | "Double2Triple" | "Triple2Double" 
-    from_task1 = "mean"      # "rand"          | "gp"            | "sample"        | "mean"
+    EXP = "Double2Triple"    # "Double2Double" | "Double2Triple" | "Triple2Double" 
+    from_task1 = "rand"      # "rand"          | "gp"            | "sample"        | "mean"
 
     # visulization only on 1-dimensional examples 
     if EXP == "Triple2Double":
@@ -584,20 +584,20 @@ if __name__ == "__main__":
         file_task2_bcbo_from_rand = "data/Triple2Double_sample/" + str(i) + "/simTriple2Double_points_task2_bcbo_from_rand.tsv" 
     elif EXP == "Double2Triple":
         i = 1
-        file_task1_gp = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task1_gp.tsv"
-        file_task1_rand = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task1_rand.tsv"
-        file_task0_sample = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task0_sample.tsv"
-        file_task1_sample_stbo = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task1_sample_stbo.tsv"
-        file_task0_mean = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task0_mean.tsv"
-        file_task1_mean_stbo = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task1_mean_stbo.tsv"
+        file_task1_gp = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task1_gp.tsv"
+        file_task1_rand = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task1_rand.tsv"
+        file_task0_sample = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task0_sample.tsv"
+        file_task1_sample_stbo = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task1_sample_stbo.tsv"
+        file_task0_mean = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task0_mean.tsv"
+        file_task1_mean_stbo = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task1_mean_stbo.tsv"
 
-        file_task2_gp_from_gp = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task2_gp_from_gp.tsv" 
-        file_task2_stbo_from_gp = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task2_stbo_from_gp.tsv"
-        file_task2_bcbo_from_gp = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task2_bcbo_from_gp.tsv" 
+        file_task2_gp_from_gp = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task2_gp_from_gp.tsv" 
+        file_task2_stbo_from_gp = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task2_stbo_from_gp.tsv"
+        file_task2_bcbo_from_gp = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task2_bcbo_from_gp.tsv" 
 
-        file_task2_gp_from_rand = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task2_gp_from_rand.tsv" 
-        file_task2_stbo_from_rand = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task2_stbo_from_rand.tsv"
-        file_task2_bcbo_from_rand = "data/Double2Triple_sample/" + str(i) + "/simDouble2Triple_points_task2_bcbo_from_rand.tsv"     
+        file_task2_gp_from_rand = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task2_gp_from_rand.tsv" 
+        file_task2_stbo_from_rand = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task2_stbo_from_rand.tsv"
+        file_task2_bcbo_from_rand = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task2_bcbo_from_rand.tsv"     
     elif EXP == "Double2Double":
         i = 1
         file_task1_gp = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_gp.tsv"
