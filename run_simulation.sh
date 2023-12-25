@@ -224,8 +224,8 @@ if [ $stage -eq 0 ] || [ $stage -eq 9 ]; then
     echo "Task 1: 2D Triple exp function; Task 2: 2D Triple exp function"
     for i in $(seq 1 $num_rep); do
         echo "Running $i-th simulation"
-        mkdir -p $path_data/2D_Triple2Triple_2sample_3bad_prior_scaleTheta/$i
-        out_dir=$path_data/2D_Triple2Triple_2sample_3bad_prior_scaleTheta/$i
+        mkdir -p $path_data/2D_Triple2Triple_10sample_3bad_prior_Theta0.3/$i
+        out_dir=$path_data/2D_Triple2Triple_10sample_3bad_prior_Theta0.3/$i
         job_name=Triple2Triple_2D_${task2_start_from}_$i
         sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
                                         --type TRIPLE2TRIPLE_2D  --from_task1 $from_task1

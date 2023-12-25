@@ -138,7 +138,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
         zeroGP = ZeroGProcess()
         zeroGP.get_data_from_file(file_1_sample_stbo)
 
-        num_sample = 2
+        num_sample = 10
         mean_sample = 0.75
         sigma_sample = 0.01
 
@@ -236,7 +236,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
                 # Method 3: GP-based Sampling STBO
                 STBO_task1_sample = ShapeTransferBO()
                 STBO_task1_sample.get_data_from_file(file_1_sample_stbo)
-                STBO_task1_sample.build_task1_gp(file_1_sample, theta_task1=0.7*1.414)
+                STBO_task1_sample.build_task1_gp(file_1_sample, theta_task1=0.3)  # 0.7
                 STBO_task1_sample.build_diff_gp()
 
                 next_point_stbo1_sample, next_point_aux = STBO_task1_sample.find_best_NextPoint_ei(start_points, learn_rate=lr1, 
@@ -245,7 +245,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
                 # Method 4: mean reduction STBO
                 STBO_task1_mean = ShapeTransferBO()
                 STBO_task1_mean.get_data_from_file(file_1_mean_stbo)
-                STBO_task1_mean.build_task1_gp(file_1_mean, theta_task1=0.7*1.414)
+                STBO_task1_mean.build_task1_gp(file_1_mean, theta_task1=0.3)     # 0.7
                 STBO_task1_mean.build_diff_gp()
 
                 next_point_stbo1_mean, next_point_aux = STBO_task1_mean.find_best_NextPoint_ei(start_points, learn_rate=lr1, 
