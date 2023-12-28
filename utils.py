@@ -1,5 +1,8 @@
 #!/usr/bin/env python3 
 import numpy as np
+import matplotlib.pyplot as plt
+from smt.sampling_methods import LHS
+
 
 def write_exp_result(file, response, exp_point):
     "write experiemnt results to file"
@@ -32,3 +35,50 @@ def dist(pnt_a, pnt_b, l_n=2):
 
     return dist
 
+def draw_2d_lhd(file_sampling):
+    "draw 2D LHD plot from sampling file"
+    lst_v = []
+    lst_x = []
+    lst_y = []
+
+    with open(file_sampling, "r", encoding="utf-8") as fin:
+        for line in fin:
+            if '#' not in line:
+                lst_line = line.split()
+                lst_v.append(lst_line[0])
+                lst_x.append(lst_line[1])
+                lst_y.append(lst_line[2])
+            else:
+                continue
+    lst_x = [round(float(ele), 2) for ele in lst_x]
+    lst_y = [round(float(ele), 2) for ele in lst_y]
+    lst_v = [round(float(ele), 2) for ele in lst_v]
+
+    fig, ax = plt.subplots()
+    ax.scatter(np.array(lst_x), np.array(lst_y), vmin=-5, vmax=15)
+
+    ax.set_title('LHD')
+    
+    ax.grid(True)
+    fig.tight_layout()
+
+    plt.show()
+
+if __name__ == "__main__":
+    file_dir = "./data/2D_Triple2Triple_10sample_3bad_prior_scaleTheta/10"
+    file_name = "simTriple2Triple2D_points_task0_sample.tsv"
+    draw_2d_lhd(file_sampling=file_dir+'/'+file_name)
+
+    # Maxmin LHD     
+    xlimits = np.array([[0.0, 4.0], [0.0, 3.0]])
+    sampling = LHS(xlimits=xlimits, criterion='maximin')
+    
+    num = 10
+    x = sampling(num)
+    
+    print(x.shape)
+    
+    plt.plot(x[:, 0], x[:, 1], "o")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.show()

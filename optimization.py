@@ -248,9 +248,9 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
         self.zeroGP1 = None
         self.diffGP = None
 
-    def build_task1_gp(self, file_exp_task1, theta_task1=1.0):
+    def build_task1_gp(self, file_exp_task1, theta_task1=1.0, prior_mean=None):
         "build ZeroGProcess for task1 with known experiment points"
-        zeroGP1 = ZeroGProcess()
+        zeroGP1 = ZeroGProcess(prior_mean=prior_mean)
         zeroGP1.get_data_from_file(file_exp_task1)
         zeroGP1.theta = theta_task1
         assert(len(zeroGP1.X) == len(zeroGP1.Y))
@@ -387,9 +387,12 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
         ax_gp1_diff.set_title("GProcess Confidence Band")
         ax_gp1_diff.plot(x_draw, y1_mean, label="GP1")
         ax_gp1_diff.fill_between(x_draw, y1_lower, y1_upper, alpha=0.2)
-        ax_gp1_diff.plot(GP1.X, GP1.Y, 'o', color="tab:blue")
+        if GP1.prior_mean == None:
+            ax_gp1_diff.plot(GP1.X, GP1.Y, 'o', color="tab:blue")
+        else:
+            Y = [y + GP1.prior_mean for y in GP1.Y]
+            ax_gp1_diff.plot(GP1.X, Y, 'o', color="tab:blue")
 
-        # 
         ax_gp1_diff.plot(x_draw, yDiff_mean, label="diffGP")
         ax_gp1_diff.fill_between(x_draw, yDiff_lower, yDiff_upper, alpha=0.2)
         ax_gp1_diff.plot(diffGP.X, diffGP.Y, 'o', color="tab:red")
@@ -562,8 +565,8 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
 
 if __name__ == "__main__":
     "Main part: iteratively analyze results by adding points one by one"
-    EXP = "Double2Triple"    # "Double2Double" | "Double2Triple" | "Triple2Double" 
-    from_task1 = "rand"      # "rand"          | "gp"            | "sample"        | "mean"
+    EXP = "Double2Double"    # "Double2Double" | "Double2Triple" | "Triple2Double" 
+    from_task1 = "sample"      # "rand"          | "gp"            | "sample"        | "mean"
 
     # visulization only on 1-dimensional examples 
     if EXP == "Triple2Double":
@@ -600,20 +603,20 @@ if __name__ == "__main__":
         file_task2_bcbo_from_rand = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task2_bcbo_from_rand.tsv"     
     elif EXP == "Double2Double":
         i = 1
-        file_task1_gp = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_gp.tsv"
-        file_task1_rand = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_rand.tsv"
-        file_task0_sample = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task0_sample.tsv"
-        file_task1_sample_stbo = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_sample_stbo.tsv"
-        file_task0_mean = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task0_mean.tsv"
-        file_task1_mean_stbo = "data/Double2Double_sample/" + str(i) + "/simDouble2Double_points_task1_mean_stbo.tsv"
+        file_task1_gp = "data/Double2Double_sample_bad_prior/" + str(i) + "/simDouble2Double_points_task1_gp.tsv"
+        file_task1_rand = "data/Double2Double_sample_bad_prior/" + str(i) + "/simDouble2Double_points_task1_rand.tsv"
+        file_task0_sample = "data/Double2Double_sample_bad_prior/" + str(i) + "/simDouble2Double_points_task0_sample.tsv"
+        file_task1_sample_stbo = "data/Double2Double_sample_bad_prior/" + str(i) + "/simDouble2Double_points_task1_sample_stbo.tsv"
+        file_task0_mean = "data/Double2Double_sample_bad_prior/" + str(i) + "/simDouble2Double_points_task0_mean.tsv"
+        file_task1_mean_stbo = "data/Double2Double_sample_bad_prior/" + str(i) + "/simDouble2Double_points_task1_mean_stbo.tsv"
 
-        file_task2_gp_from_gp = "data/Double2Double_sample/simDouble2Double_points_task2_gp_from_gp.tsv" 
-        file_task2_stbo_from_gp = "data/Double2Double_sample/simDouble2Double_points_task2_stbo_from_gp.tsv"
-        file_task2_bcbo_from_gp = "data/Double2Double_sample/simDouble2Double_points_task2_bcbo_from_gp.tsv" 
+        file_task2_gp_from_gp = "data/Double2Double_sample_bad_prior/simDouble2Double_points_task2_gp_from_gp.tsv" 
+        file_task2_stbo_from_gp = "data/Double2Double_sample_bad_prior/simDouble2Double_points_task2_stbo_from_gp.tsv"
+        file_task2_bcbo_from_gp = "data/Double2Double_sample_bad_prior/simDouble2Double_points_task2_bcbo_from_gp.tsv" 
 
-        file_task2_gp_from_rand = "data/Double2Double_sample/simDouble2Double_points_task2_gp_from_rand.tsv" 
-        file_task2_stbo_from_rand = "data/Double2Double_sample/simDouble2Double_points_task2_stbo_from_rand.tsv"
-        file_task2_bcbo_from_rand = "data/Double2Double_sample/simDouble2Double_points_task2_bcbo_from_rand.tsv"        
+        file_task2_gp_from_rand = "data/Double2Double_sample_bad_prior/simDouble2Double_points_task2_gp_from_rand.tsv" 
+        file_task2_stbo_from_rand = "data/Double2Double_sample_bad_prior/simDouble2Double_points_task2_stbo_from_rand.tsv"
+        file_task2_bcbo_from_rand = "data/Double2Double_sample_bad_prior/simDouble2Double_points_task2_bcbo_from_rand.tsv"        
 
     # Test UCB 
     # UCB = UpperConfidenceBound()
@@ -700,10 +703,10 @@ if __name__ == "__main__":
         # Test STBO from rand
         STBO = ShapeTransferBO()
         STBO.get_data_from_file(file_task1_sample_stbo)
-        STBO.build_task1_gp(file_task0_sample, theta_task1=0.7)
+        STBO.build_task1_gp(file_task0_sample, theta_task1=0.7, prior_mean=0.75)
         STBO.build_diff_gp()
 
-        STBO.plot_ei(exp_ratio=0.0)
+        STBO.plot_ei(exp_ratio=0.3)
     elif from_task1 == "mean":
         # Test EI with rand
         EI = ExpectedImprovement()
@@ -721,8 +724,7 @@ if __name__ == "__main__":
         # Test STBO from rand
         STBO = ShapeTransferBO()
         STBO.get_data_from_file(file_task1_mean_stbo)
-        STBO.build_task1_gp(file_task0_mean, theta_task1=0.7)
+        STBO.build_task1_gp(file_task0_mean, theta_task1=0.7, prior_mean=0.75)
         STBO.build_diff_gp()
 
-        STBO.plot_ei(exp_ratio=0.0)
-
+        STBO.plot_ei(exp_ratio=0.3)

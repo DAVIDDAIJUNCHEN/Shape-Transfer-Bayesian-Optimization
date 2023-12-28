@@ -11,7 +11,7 @@ class ZeroGProcess:
     """
     Class ZeroGProgress: build zero mean Gaussian Process with known or unknown sigma (vairiance)
     """
-    def __init__(self, sigma_square=None, type_kernel="gaussian", param_kernel=1.0) -> None:
+    def __init__(self, sigma_square=None, type_kernel="gaussian", param_kernel=1.0, prior_mean=None) -> None:
         self.Y = [] 
         self.X = []
         self.dim = None
@@ -19,6 +19,7 @@ class ZeroGProcess:
         self.sigma2 = sigma_square          # None => sigam is unknown => MLE
         self.kernel_type = type_kernel
         self.theta = param_kernel
+        self.prior_mean = prior_mean
 
     def get_data_from_file(self, file_exp):
         "get response vec and input from file_in"
@@ -46,7 +47,11 @@ class ZeroGProcess:
                     self.X.append(lst_line[:res_col] + lst_line[(res_col+1):])
                     num_points += 1
 
-        self.num_points = num_points 
+        self.num_points = num_points
+
+        # minus the prior mean if it is not None
+        if self.prior_mean != None:
+            self.Y = [ele - self.prior_mean for ele in self.Y]
 
         return 0
 
@@ -142,7 +147,10 @@ class ZeroGProcess:
         mean_partA = np.matmul(np.transpose(kernel_Vec_mat), inv_kernel_Cov)
         response_vec = np.transpose(np.matrix(self.Y))
         mean = np.matmul(mean_partA, response_vec)
-        
+
+        if self.prior_mean != None:
+            mean[0, 0] = mean[0, 0] + self.prior_mean
+
         return mean[0, 0]
 
     def compute_grad_mean(self, current_point):
@@ -319,7 +327,12 @@ class ZeroGProcess:
         fig, ax = plt.subplots()
         ax.plot(x_draw, y_mean)
         ax.fill_between(x_draw, y_lower, y_upper, alpha=0.2)
-        ax.plot(self.X, self.Y, 'o', color="tab:red")
+        if self.prior_mean == None:
+            ax.plot(self.X, self.Y, 'o', color="tab:red")
+        else:
+            Y = [ele + self.prior_mean for ele in self.Y]
+            ax.plot(self.X, Y, 'o', color="tab:red")
+
         fig.savefig("./example.png")
 
         return 0
@@ -343,10 +356,10 @@ if __name__ == "__main__":
     #lower_bound = [0, 1, 3, 4]
     #upper_bound = [1, 2, 4, 5]
     lower_bound = [-5]
-    upper_bound = [10]
+    upper_bound = [10] 
 
-    prior_pnt = [([0.4], 1.2), ([2.5], 1.2)]
-    zeroGP.sample(num=30, mean=0.5, sigma=0.01, prior_points=prior_pnt, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False)
+    prior_pnt = [([0.4], 1.05), ([2.5], 1.05)]
+    zeroGP.sample(num=2, mean=0.5, sigma=0.01, prior_points=prior_pnt, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False)
 
     # verify functions at x
     x = [9, 10]
@@ -360,4 +373,11 @@ if __name__ == "__main__":
     print(zeroGP.compute_grad_var(x))
 
     # plot images
-    #zeroGP.plot(num_points=100, exp_ratio=0.0, confidence=0.90)
+    zeroGP.plot(num_points=100, exp_ratio=0.0, confidence=0.90)
+
+    # GP based on samples 
+    zeroGP_sample = ZeroGProcess(prior_mean=0.5, param_kernel=0.7) 
+    zeroGP_sample.get_data_from_file("data/sample_points_task1_gp.tsv")
+
+    zeroGP_sample.plot(num_points=100, exp_ratio=0.0, confidence=0.90)
+

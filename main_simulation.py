@@ -94,6 +94,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
         mu1 = [0]; mu2 = [5]; mu3 = [10]
         lambda1_t2 = lambda2 + 0.2; lambda2_t2 = 0; lambda3_t2 = lambda1 - 0.2
         mu1_t2 = [mu1[0]+0.2]; mu2_t2 = mu2; mu3_t2 = [mu3[0]-0.2]
+        
         theta1 = 1; theta2 = 1; theta3 = 1
     elif fun_type == "DOUBLE2TRIPLE":
         dim = 1
@@ -135,22 +136,22 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
 
         # Method 3 in task 1: GP-based Sampling STBO
         # stage 1: sampling from Gaussian Process
+        num_sample = 100
+        mean_sample = 0.5
+        sigma_sample = 0.01
+
         zeroGP = ZeroGProcess()
         zeroGP.get_data_from_file(file_1_sample_stbo)
-
-        num_sample = 10
-        mean_sample = 0.75
-        sigma_sample = 0.01
 
         lower_bound = [low_opt1 for i in range(dim)]
         upper_bound = [high_opt1 for i in range(dim)]
 
-        # give different weak prior information 
+        # give different weak prior information
         if fun_type == "DOUBLE2DOUBLE":
             #prior_pnts = [([0.2], 1.2), ([2.7], 0.8), ([4.8], 1.2)]
             #prior_pnts = [([0.5], 1.2), ([3.0], 0.8), ([4.5], 1.2)]
-            prior_pnts = [([0.8], 1.2), ([3.3], 0.8), ([4.2], 1.2)]
-            #prior_pnts = [([2.7], 1.2)]
+            #prior_pnts = [([0.8], 1.2), ([3.3], 0.8), ([4.2], 1.2)]
+            prior_pnts = [([2.7], 1.2)]
         elif fun_type == "DOUBLE2TRIPLE":
             #prior_pnts = [([0.2], 1.2), ([5.2], 0.8), ([9.8], 1.2)]
             #prior_pnts = [([0.5], 1.2), ([5.5], 0.8), ([4.5], 1.2)]
@@ -232,11 +233,11 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
                 EI.get_data_from_file(file_1_gp)
 
                 next_point_ei, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)
-                                
+
                 # Method 3: GP-based Sampling STBO
                 STBO_task1_sample = ShapeTransferBO()
                 STBO_task1_sample.get_data_from_file(file_1_sample_stbo)
-                STBO_task1_sample.build_task1_gp(file_1_sample, theta_task1=0.3)  # 0.7
+                STBO_task1_sample.build_task1_gp(file_1_sample, theta_task1=0.7*1.414, prior_mean=mean_sample)  # 0.7
                 STBO_task1_sample.build_diff_gp()
 
                 next_point_stbo1_sample, next_point_aux = STBO_task1_sample.find_best_NextPoint_ei(start_points, learn_rate=lr1, 
@@ -245,7 +246,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
                 # Method 4: mean reduction STBO
                 STBO_task1_mean = ShapeTransferBO()
                 STBO_task1_mean.get_data_from_file(file_1_mean_stbo)
-                STBO_task1_mean.build_task1_gp(file_1_mean, theta_task1=0.3)     # 0.7
+                STBO_task1_mean.build_task1_gp(file_1_mean, theta_task1=0.7*1.414, prior_mean=mean_sample)     # 0.7
                 STBO_task1_mean.build_diff_gp()
 
                 next_point_stbo1_mean, next_point_aux = STBO_task1_mean.find_best_NextPoint_ei(start_points, learn_rate=lr1, 
