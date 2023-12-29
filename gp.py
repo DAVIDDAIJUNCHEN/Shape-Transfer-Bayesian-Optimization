@@ -4,6 +4,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm, qmc
+from smt.sampling_methods import LHS
 from utils import write_exp_result, dist
 
 
@@ -241,11 +242,15 @@ class ZeroGProcess:
             assert(len(pnt) == self.dim)
         num_prior = len(prior_points)
 
-        # construct LHD 
+        # construct max-min LHD 
         num_lhd_sampled = num_prior + num
-        sampler = qmc.LatinHypercube(self.dim, centered=False, scramble=True, strength=1, optimization=None, seed=None)
-        sample_01 = sampler.random(n=num_lhd_sampled)
-        sample_scaled = qmc.scale(sample_01, l_bounds, u_bounds)
+#        sampler = qmc.LatinHypercube(self.dim, centered=False, scramble=True, strength=1, optimization=None, seed=None)
+#        sample_01 = sampler.random(n=num_lhd_sampled)
+#        sample_scaled = qmc.scale(sample_01, l_bounds, u_bounds)
+
+        xlimits = [[low_i, up_i] for low_i, up_i in zip(l_bounds, u_bounds)]
+        sampler = LHS(xlimits=np.array(xlimits), criterion='maximin')
+        sample_scaled = sampler(num_lhd_sampled)
 
         # sort points in LHD by distance from domain center 
         center = np.array([(l_bound_i + u_bound_i)/2 for l_bound_i, u_bound_i in zip(l_bounds, u_bounds)])

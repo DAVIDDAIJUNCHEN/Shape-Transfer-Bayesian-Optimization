@@ -65,19 +65,19 @@ def draw_2d_lhd(file_sampling):
     plt.show()
 
 if __name__ == "__main__":
-    file_dir = "./data/2D_Triple2Triple_10sample_3bad_prior_scaleTheta/10"
+    file_dir = "./data/2D_Triple2Triple_10sample_2bad_prior_scaleTheta_maxminLHS/4"
     file_name = "simTriple2Triple2D_points_task0_sample.tsv"
     draw_2d_lhd(file_sampling=file_dir+'/'+file_name)
 
-    # Maxmin LHD     
-    xlimits = np.array([[0.0, 4.0], [0.0, 3.0]])
+    # Maxmin LHD illustration    
+    xlimits = np.array([[1.0, 4.0], [2.0, 3.0]])
     sampling = LHS(xlimits=xlimits, criterion='maximin')
-    
+
     num = 10
     x = sampling(num)
-    
+
     print(x.shape)
-    
+
     plt.plot(x[:, 0], x[:, 1], "o")
     plt.xlabel("x")
     plt.ylabel("y")
