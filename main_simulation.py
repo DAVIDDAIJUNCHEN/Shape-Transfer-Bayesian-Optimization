@@ -136,7 +136,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
 
         # Method 3 in task 1: GP-based Sampling STBO
         # stage 1: sampling from Gaussian Process
-        num_sample = 5
+        num_sample = 10
         mean_sample = 0.5
         sigma_sample = 0.01
 
@@ -232,25 +232,26 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
                 EI = ExpectedImprovement()
                 EI.get_data_from_file(file_1_gp)
 
-                next_point_ei, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)
+                next_point_ei, _ = EI.find_best_NextPoint_ei(start_points, l_bounds=lower_bound, u_bounds=upper_bound,
+                                                            learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)
 
                 # Method 3: GP-based Sampling STBO
                 STBO_task1_sample = ShapeTransferBO()
                 STBO_task1_sample.get_data_from_file(file_1_sample_stbo)
-                STBO_task1_sample.build_task1_gp(file_1_sample, theta_task1=0.7, prior_mean=mean_sample)  # 0.7
+                STBO_task1_sample.build_task1_gp(file_1_sample, theta_task1=0.7*1.414, prior_mean=mean_sample, r_out_bound=0.01)  # 0.7
                 STBO_task1_sample.build_diff_gp()
 
-                next_point_stbo1_sample, next_point_aux = STBO_task1_sample.find_best_NextPoint_ei(start_points, learn_rate=lr1, 
-                                                                            num_step=num_steps_opt1, kessi=kessi_1)
+                next_point_stbo1_sample, _ = STBO_task1_sample.find_best_NextPoint_ei(start_points, l_bounds=lower_bound, u_bounds=upper_bound,
+                                                                                      learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)
 
                 # Method 4: mean reduction STBO
                 STBO_task1_mean = ShapeTransferBO()
                 STBO_task1_mean.get_data_from_file(file_1_mean_stbo)
-                STBO_task1_mean.build_task1_gp(file_1_mean, theta_task1=0.7, prior_mean=mean_sample)     # 0.7
+                STBO_task1_mean.build_task1_gp(file_1_mean, theta_task1=0.7*1.414, prior_mean=mean_sample, r_out_bound=0.01)     # 0.7
                 STBO_task1_mean.build_diff_gp()
 
-                next_point_stbo1_mean, next_point_aux = STBO_task1_mean.find_best_NextPoint_ei(start_points, learn_rate=lr1, 
-                                                                            num_step=num_steps_opt1, kessi=kessi_1)                
+                next_point_stbo1_mean, _ = STBO_task1_mean.find_best_NextPoint_ei(start_points, l_bounds=lower_bound, u_bounds=upper_bound,
+                                                                                  learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)                
 
                 if fun_type == "EXP":
                     next_response_rand  = exp_mu(next_point_rand, mu1, theta)

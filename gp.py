@@ -5,14 +5,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm, qmc
 from smt.sampling_methods import LHS
-from utils import write_exp_result, dist
+import itertools
+from utils import write_exp_result, dist, find_max_min_of_each_component, check_inBounds
 
 
 class ZeroGProcess:
     """
     Class ZeroGProgress: build zero mean Gaussian Process with known or unknown sigma (vairiance)
     """
-    def __init__(self, sigma_square=None, type_kernel="gaussian", param_kernel=1.0, prior_mean=None) -> None:
+    def __init__(self, sigma_square=None, type_kernel="gaussian", param_kernel=1.0, prior_mean=None, r_out_bound=1.0) -> None:
         self.Y = [] 
         self.X = []
         self.dim = None
@@ -21,6 +22,7 @@ class ZeroGProcess:
         self.kernel_type = type_kernel
         self.theta = param_kernel
         self.prior_mean = prior_mean
+        self.r_out_bound = r_out_bound      # mean ratio for out of boundary
 
     def get_data_from_file(self, file_exp):
         "get response vec and input from file_in"
@@ -152,7 +154,14 @@ class ZeroGProcess:
         if self.prior_mean != None:
             mean[0, 0] = mean[0, 0] + self.prior_mean
 
-        return mean[0, 0]
+        # construct boundary lists
+        l_bound = find_max_min_of_each_component(self.X, max=False)
+        u_bound = find_max_min_of_each_component(self.X, max=True)
+
+        if check_inBounds(current_point, l_bound, u_bound):
+            return mean[0, 0]
+        else:
+            return self.r_out_bound*mean[0, 0]
 
     def compute_grad_mean(self, current_point):
         "compute the gradient of mean(x) at current_point"
@@ -235,7 +244,7 @@ class ZeroGProcess:
 
         return lower_bound, upper_bound
 
-    def sample(self, num, mean, sigma, l_bounds, u_bounds, prior_points, mean_fix=True, out_file="./data/sample_points_task1_gp.tsv"):
+    def sample(self, num, mean, sigma, l_bounds, u_bounds, prior_points, mean_fix=True, epslon=0.5, out_file="./data/sample_points_task1_gp.tsv"):
         "sample num points from a GP with initial (mean & sigma) and prior points on a LHD"
         # assert dim of prior points == dim 
         for pnt, rel_qunt in prior_points:
@@ -305,8 +314,19 @@ class ZeroGProcess:
 
                 sample_str = str(sample_response) + sample_x_str
 
-            with open(out_file, "a", encoding="utf-8") as f_out:
+            with open(out_file, 'a', encoding="utf-8") as f_out:
                 f_out.writelines(sample_str + '\n')
+
+        # give very low values outside the boundary
+        # x_boundary = [[low_i-epslon, up_i+epslon] for low_i, up_i in zip(l_bounds, u_bounds)]
+        # with open(out_file, 'a', encoding="utf-8") as f_out:
+        #     for b_pnt in itertools.product(*x_boundary):
+        #         b_pnt_x = list(b_pnt)
+        #         sample_x_str = ''
+        #         for j in range(self.dim):
+        #             sample_x_str = sample_x_str + '\t' + str(b_pnt_x[j])
+        #             sample_str = str(0.1*mean) + sample_x_str
+        #         f_out.writelines(sample_str + '\n')
 
         return 0
 

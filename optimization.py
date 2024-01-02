@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm
 from operator import itemgetter
 from gp import ZeroGProcess
+from utils import check_inBounds
 
 
 class UpperConfidenceBound(ZeroGProcess):
@@ -144,16 +145,29 @@ class ExpectedImprovement(ZeroGProcess):
 
         return grad_current_util
 
-    def find_best_from_point_ei(self, init_point, num_step=1000, kessi=0.0, num_mc=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
-        "find maximum point of Acquisition function from init_point by using ADAM algorithm"
+    def find_best_from_point_ei(self, init_point, num_step=1000, kessi=0.0, l_bounds=None, u_bounds=None,
+                                num_mc=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
+        """
+        Find maximum point of Acquisition function in bounds from init_point by using ADAM algorithm.
+        l_bounds: [l_1, l_2, ..., l_d]
+        u_bounds: [u_1, u_2, ..., u_d]
+        """
         dim = self.dim
         assert(len(init_point) == dim)
+        
+        # optimize in bounds 
+        if l_bounds != None:
+            assert(len(l_bounds) == dim)
+        
+        if u_bounds != None:
+            assert(len(u_bounds) == dim)
         
         # initialize momentum & rmsp vector & gradient at init point
         m_t = np.zeros(shape=(dim, 1))
         gamma_t = np.zeros(shape=(dim, 1))
         point_current_vec = np.reshape(np.array(init_point), newshape=(dim, 1))
         point_current = init_point
+        aux_current = self.aux_func_ei(point_current, kessi)
 
         for t in range(num_step):
             grad_current = self.auto_grad_ei(point_current, num_mc, kessi)
@@ -165,26 +179,35 @@ class ExpectedImprovement(ZeroGProcess):
             gamma_t_BC = gamma_t / (1 - beta_2)  
 
             point_current_vec = point_current_vec + m_t_BC * learn_rate / np.sqrt(gamma_t_BC + epslon)
-            point_current = np.reshape(point_current_vec, newshape=(1, dim)).tolist()
-            point_current = point_current[0]
-            aux_current = self.aux_func_ei(point_current, kessi)
+            point_current_tmp = np.reshape(point_current_vec, newshape=(1, dim)).tolist()
+            point_current_tmp = point_current_tmp[0]
+            
+            # stop when find point out of boundary
+            if check_inBounds(point_current_tmp, l_bounds, u_bounds):
+                point_current = point_current_tmp
+                aux_current = self.aux_func_ei(point_current, kessi)
+            else:
+                break
 
         return point_current, aux_current
 
-    def find_best_NextPoint_ei(self, init_points=None, num_step=1000, kessi=0.0, num_mc=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
+
+    def find_best_NextPoint_ei(self, init_points=None, num_step=1000, kessi=0.0, l_bounds=None, u_bounds=None,
+                               num_mc=1000, thres=1e-3, learn_rate=0.1, beta_1=0.9, beta_2=0.999, epslon=1e-8):
         """ find best next point of Acquisition function by starting from multi-points
             init_points: init_points = experiment points if None,
         """
         if init_points == None:
-            init_points = self.X 
-        
+            init_points = self.X
+
         best_points_aux = []
 
         for point_k in init_points:
-            best_point_k, best_aux_k = self.find_best_from_point_ei(point_k, num_step, kessi, num_mc, thres, learn_rate, beta_1, beta_2, epslon)
+            best_point_k, best_aux_k = self.find_best_from_point_ei(point_k, num_step, kessi, l_bounds, u_bounds, num_mc,
+                                                                    thres, learn_rate, beta_1, beta_2, epslon)
             best_points_aux.append((best_point_k, best_aux_k))
 
-        best_point, best_aux = max(best_points_aux, key=itemgetter(1)) 
+        best_point, best_aux = max(best_points_aux, key=itemgetter(1))
 
         return best_point, best_aux
 
@@ -248,9 +271,14 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
         self.zeroGP1 = None
         self.diffGP = None
 
-    def build_task1_gp(self, file_exp_task1, theta_task1=1.0, prior_mean=None):
-        "build ZeroGProcess for task1 with known experiment points"
-        zeroGP1 = ZeroGProcess(prior_mean=prior_mean)
+    def build_task1_gp(self, file_exp_task1, theta_task1=1.0, prior_mean=None, r_out_bound=0.5):
+        """
+        build ZeroGProcess for task1 with known experiment points
+        theta_task1: float, kernel coefficient used in task 1
+        prior_mean:  constant mean used in building GP 1 
+        r_out_bound: ratio of mean used in out of boundary 
+        """
+        zeroGP1 = ZeroGProcess(prior_mean=prior_mean, r_out_bound=r_out_bound)
         zeroGP1.get_data_from_file(file_exp_task1)
         zeroGP1.theta = theta_task1
         assert(len(zeroGP1.X) == len(zeroGP1.Y))
@@ -346,6 +374,7 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
         # subplot 1: GProcess means & confidence bands of zeroGP1 (on data 1) and diffGP (on task2 - mean1)
         GP1 = self.zeroGP1
         y1_mean = [GP1.compute_mean([ele]) for ele in x_draw]
+
         y1_conf_int = [GP1.conf_interval([ele]) for ele in x_draw]
         y1_lower = [ele[0] for ele in y1_conf_int]
         y1_upper = [ele[1] for ele in y1_conf_int]
@@ -570,7 +599,7 @@ if __name__ == "__main__":
 
     # visulization only on 1-dimensional examples 
     if EXP == "Triple2Double":
-        i = 1
+        i = 2
         file_task1_gp = "data/Triple2Double_sample/" + str(i) + "/simTriple2Double_points_task1_gp.tsv"
         file_task1_rand = "data/Triple2Double_sample/" + str(i) + "/simTriple2Double_points_task1_rand.tsv"   
         file_task0_sample = "data/Triple2Double_sample/" + str(i) + "/simTriple2Double_points_task0_sample.tsv" 
@@ -603,20 +632,20 @@ if __name__ == "__main__":
         file_task2_bcbo_from_rand = "data/Double2Triple_0.5/" + str(i) + "/simDouble2Triple_points_task2_bcbo_from_rand.tsv"     
     elif EXP == "Double2Double":
         i = 1
-        file_task1_gp = "data/Double2Double_sample_bad_prior/" + str(i) + "/simDouble2Double_points_task1_gp.tsv"
-        file_task1_rand = "data/Double2Double_sample_bad_prior/" + str(i) + "/simDouble2Double_points_task1_rand.tsv"
-        file_task0_sample = "data/Double2Double_sample_bad_prior/" + str(i) + "/simDouble2Double_points_task0_sample.tsv"
-        file_task1_sample_stbo = "data/Double2Double_sample_bad_prior/" + str(i) + "/simDouble2Double_points_task1_sample_stbo.tsv"
-        file_task0_mean = "data/Double2Double_sample_bad_prior/" + str(i) + "/simDouble2Double_points_task0_mean.tsv"
-        file_task1_mean_stbo = "data/Double2Double_sample_bad_prior/" + str(i) + "/simDouble2Double_points_task1_mean_stbo.tsv"
+        file_task1_gp = "data/Double2Double_5sample_1bad_prior_0.1rOutBound/" + str(i) + "/simDouble2Double_points_task1_gp.tsv"
+        file_task1_rand = "data/Double2Double_5sample_1bad_prior_0.1rOutBound/" + str(i) + "/simDouble2Double_points_task1_rand.tsv"
+        file_task0_sample = "data/Double2Double_5sample_1bad_prior_0.1rOutBound/" + str(i) + "/simDouble2Double_points_task0_sample.tsv"
+        file_task1_sample_stbo = "data/Double2Double_5sample_1bad_prior_0.1rOutBound/" + str(i) + "/simDouble2Double_points_task1_sample_stbo.tsv"
+        file_task0_mean = "data/Double2Double_5sample_1bad_prior_0.1rOutBound/" + str(i) + "/simDouble2Double_points_task0_mean.tsv"
+        file_task1_mean_stbo = "data/Double2Double_5sample_1bad_prior_0.1rOutBound/" + str(i) + "/simDouble2Double_points_task1_mean_stbo.tsv"
 
-        file_task2_gp_from_gp = "data/Double2Double_sample_bad_prior/simDouble2Double_points_task2_gp_from_gp.tsv" 
-        file_task2_stbo_from_gp = "data/Double2Double_sample_bad_prior/simDouble2Double_points_task2_stbo_from_gp.tsv"
-        file_task2_bcbo_from_gp = "data/Double2Double_sample_bad_prior/simDouble2Double_points_task2_bcbo_from_gp.tsv" 
+        file_task2_gp_from_gp = "data/Double2Double_5sample_1bad_prior_0.1rOutBound/simDouble2Double_points_task2_gp_from_gp.tsv" 
+        file_task2_stbo_from_gp = "data/Double2Double_5sample_1bad_prior_0.1rOutBound/simDouble2Double_points_task2_stbo_from_gp.tsv"
+        file_task2_bcbo_from_gp = "data/Double2Double_5sample_1bad_prior_0.1rOutBound/simDouble2Double_points_task2_bcbo_from_gp.tsv" 
 
-        file_task2_gp_from_rand = "data/Double2Double_sample_bad_prior/simDouble2Double_points_task2_gp_from_rand.tsv" 
-        file_task2_stbo_from_rand = "data/Double2Double_sample_bad_prior/simDouble2Double_points_task2_stbo_from_rand.tsv"
-        file_task2_bcbo_from_rand = "data/Double2Double_sample_bad_prior/simDouble2Double_points_task2_bcbo_from_rand.tsv"        
+        file_task2_gp_from_rand = "data/Double2Double_5sample_1bad_prior_0.1rOutBound/simDouble2Double_points_task2_gp_from_rand.tsv" 
+        file_task2_stbo_from_rand = "data/Double2Double_5sample_1bad_prior_0.1rOutBound/simDouble2Double_points_task2_stbo_from_rand.tsv"
+        file_task2_bcbo_from_rand = "data/Double2Double_5sample_1bad_prior_0.1rOutBound/simDouble2Double_points_task2_bcbo_from_rand.tsv"        
 
     # Test UCB 
     # UCB = UpperConfidenceBound()
@@ -703,10 +732,10 @@ if __name__ == "__main__":
         # Test STBO from rand
         STBO = ShapeTransferBO()
         STBO.get_data_from_file(file_task1_sample_stbo)
-        STBO.build_task1_gp(file_task0_sample, theta_task1=0.7, prior_mean=0.75)
+        STBO.build_task1_gp(file_task0_sample, theta_task1=0.7, prior_mean=0.0, r_out_bound=0.1)
         STBO.build_diff_gp()
 
-        STBO.plot_ei(exp_ratio=0.3)
+        STBO.plot_ei(exp_ratio=1.0)
     elif from_task1 == "mean":
         # Test EI with rand
         EI = ExpectedImprovement()
@@ -724,7 +753,8 @@ if __name__ == "__main__":
         # Test STBO from rand
         STBO = ShapeTransferBO()
         STBO.get_data_from_file(file_task1_mean_stbo)
-        STBO.build_task1_gp(file_task0_mean, theta_task1=0.7, prior_mean=0.75)
+        STBO.build_task1_gp(file_task0_mean, theta_task1=0.7, prior_mean=0.0, r_out_bound=0.2)
         STBO.build_diff_gp()
 
         STBO.plot_ei(exp_ratio=0.3)
+

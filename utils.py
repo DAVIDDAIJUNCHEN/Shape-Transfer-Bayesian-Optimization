@@ -4,6 +4,42 @@ import matplotlib.pyplot as plt
 from smt.sampling_methods import LHS
 
 
+def find_max_min_of_each_component(lst, max=True):
+    "return [7, 8, 9] for find_max_of_each_component([1,2,3],[7,8,9])"
+    
+    if max:
+        max_values = []
+        for i in range(len(lst[0])):
+            max_val = float('-inf')
+            for sub_lst in lst:
+                if sub_lst[i] > max_val:
+                    max_val = sub_lst[i]
+            max_values.append(max_val)
+        return max_values
+    else:
+        min_values = []
+        for i in range(len(lst[0])):
+            min_val = float("inf")
+            for sub_lst in lst:
+                if sub_lst[i] < min_val:
+                    min_val = sub_lst[i]
+            min_values.append(min_val)
+
+        return min_values
+
+def check_inBounds(pnt, l_bounds, u_bounds):
+    "check if point pnt lies in zone with boundary (l_bounds, u_bounds)"
+    assert(len(pnt)==len(l_bounds)) 
+    assert(len(pnt)==len(u_bounds))
+    in_zone = True
+
+    for i in range(len(pnt)):
+        if pnt[i]<l_bounds[i] or pnt[i]>u_bounds[i]:
+            in_zone = False
+            break
+
+    return in_zone
+
 def write_exp_result(file, response, exp_point):
     "write experiemnt results to file"
     with open(file, 'a', encoding="utf-8") as fout:
@@ -65,7 +101,11 @@ def draw_2d_lhd(file_sampling):
     plt.show()
 
 if __name__ == "__main__":
-    file_dir = "./data/2D_Triple2Triple_10sample_2bad_prior_scaleTheta_maxminLHS/4"
+    l_bounds = [1, 3]
+    u_bounds = [5, 9]
+    print(check_inBounds([-3, 5], l_bounds, u_bounds))
+
+    file_dir = "./data/2D_Triple2Triple_sample_backup/2D_Triple2Triple_sample_bad_prior_scaleTheta/20"
     file_name = "simTriple2Triple2D_points_task0_sample.tsv"
     draw_2d_lhd(file_sampling=file_dir+'/'+file_name)
 
