@@ -3,10 +3,11 @@
 import os, copy
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from scipy.stats import norm
 from operator import itemgetter
 from gp import ZeroGProcess
-from utils import check_inBounds
+from utils import check_inBounds, find_max_min_of_each_component
 
 
 class UpperConfidenceBound(ZeroGProcess):
@@ -357,8 +358,43 @@ class ShapeTransferBO(ExpectedImprovement, UpperConfidenceBound):
 
         return grad_var
 
+    def plot_ac(self, exp_ratio=0.5, kessis=[0.0]):
+        fig = plt.figure(figsize=plt.figaspect(0.5))
+        #fig.suptilte("AC function optimization checking",)
+
+        ax = fig.add_subplot(1, 2, 1, projection="3d")
+        
+        # find min&max values 
+        min_exp2 = find_max_min_of_each_component(self.X, max=False)
+        min_point_exp2_x1 = min_exp2[0] - abs(min_exp2[0])*exp_ratio
+        min_point_exp2_x2 = min_exp2[1] - abs(min_exp2[0])*exp_ratio
+
+        max_exp2 = find_max_min_of_each_component(self.X, max=True)
+        max_point_exp2_x1 = max_exp2[0] + abs(max_exp2[0])*exp_ratio
+        max_point_exp2_x2 = max_exp2[1] + abs(max_exp2[0])*exp_ratio
+
+        X = np.arange(min_point_exp2_x1, max_point_exp2_x1, 0.25)
+        Y = np.arange(min_point_exp2_x2, max_point_exp2_x2, 0.25)
+    
+        X, Y = np.meshgrid(X, Y)
+        Z = np.zeros([len(X), len(Y[0])])
+        for i in range(len(X)):
+            for j in range(len(Y[0])):
+                x = X[i,j]
+                y = Y[i,j]
+                Z[i, j] = self.aux_func_ei([x, y], kessis)
+
+        surf_ac = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+
+        fig.colorbar(surf_ac, shrink=0.5, aspect=10)
+
+        plt.show()
+
+        return 0
+
     def plot_ei(self, num_points=100, exp_ratio=1, confidence=0.9, kessis=[0.0], highlight_point=None):
         "plot the acquisition function as well as ZeroGP&STBO in a figure with two figs"
+
         min_point_exp1 = min(self.zeroGP1.X)[0]
         min_point_exp2 = min(self.X)[0]
         min_point = min(min_point_exp1, min_point_exp2)
@@ -594,11 +630,27 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
 
 if __name__ == "__main__":
     "Main part: iteratively analyze results by adding points one by one"
-    EXP = "Double2Double"    # "Double2Double" | "Double2Triple" | "Triple2Double" 
+    EXP = "2D_Triple2Triple"    # "Double2Double" | "Double2Triple" | "Triple2Double" 
     from_task1 = "sample"      # "rand"          | "gp"            | "sample"        | "mean"
 
     # visulization only on 1-dimensional examples 
-    if EXP == "Triple2Double":
+    if EXP == "2D_Triple2Triple":
+        i = 2
+        file_task1_gp = "data/2D_Triple2Triple_5sample_2bad_prior/" + str(i) + "/simTriple2Triple2D_points_task1_gp.tsv"
+        file_task1_rand = "data/2D_Triple2Triple_5sample_2bad_prior/" + str(i) + "/simTriple2Triple2D_points_task1_rand.tsv"   
+        file_task0_sample = "data/2D_Triple2Triple_5sample_2bad_prior/" + str(i) + "/simTriple2Triple2D_points_task0_sample.tsv" 
+        file_task1_sample_stbo = "data/2D_Triple2Triple_5sample_2bad_prior/" + str(i) + "/simTriple2Triple2D_points_task1_sample_stbo.tsv" 
+        file_task0_mean = "data/2D_Triple2Triple_5sample_2bad_prior/" + str(i) + "/simTriple2Triple2D_points_task0_mean.tsv" 
+        file_task1_mean_stbo = "data/2D_Triple2Triple_5sample_2bad_prior/" + str(i) + "/simTriple2Triple2D_points_task1_mean_stbo.tsv" 
+
+        file_task2_gp_from_gp = "data/2D_Triple2Triple_5sample_2bad_prior/" + str(i) + "/simTriple2Triple2D_points_task2_gp_from_gp.tsv" 
+        file_task2_stbo_from_gp = "data/2D_Triple2Triple_5sample_2bad_prior/" + str(i) + "/simTriple2Triple2D_points_task2_stbo_from_gp.tsv"
+        file_task2_bcbo_from_gp = "data/2D_Triple2Triple_5sample_2bad_prior/" + str(i) + "/simTriple2Triple2D_points_task2_bcbo_from_gp.tsv"   
+
+        file_task2_gp_from_rand = "data/2D_Triple2Triple_5sample_2bad_prior/" + str(i) + "/simTriple2Triple2D_points_task2_gp_from_rand.tsv" 
+        file_task2_stbo_from_rand = "data/2D_Triple2Triple_5sample_2bad_prior/" + str(i) + "/simTriple2Triple2D_points_task2_stbo_from_rand.tsv"
+        file_task2_bcbo_from_rand = "data/2D_Triple2Triple_5sample_2bad_prior/" + str(i) + "/simTriple2Triple2D_points_task2_bcbo_from_rand.tsv" 
+    elif EXP == "Triple2Double":
         i = 2
         file_task1_gp = "data/Triple2Double_sample/" + str(i) + "/simTriple2Double_points_task1_gp.tsv"
         file_task1_rand = "data/Triple2Double_sample/" + str(i) + "/simTriple2Double_points_task1_rand.tsv"   
@@ -717,9 +769,9 @@ if __name__ == "__main__":
         BCBO.plot_ei(exp_ratio=0.2)
     elif from_task1 == "sample":
         # Test EI with rand
-        EI = ExpectedImprovement()
-        EI.get_data_from_file(file_task0_sample)
-        EI.theta = 0.7
+        # EI = ExpectedImprovement()
+        # EI.get_data_from_file(file_task0_sample)
+        # EI.theta = 0.7
 
         # gamma = 0.9
         # x1 = [1.5]
@@ -727,15 +779,16 @@ if __name__ == "__main__":
         # x2 = [10.4]
         # print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func_ei(x2, gamma)))
     
-        EI.plot_ei(exp_ratio=0.0)
+        #EI.plot_ei(exp_ratio=0.0)
 
         # Test STBO from rand
         STBO = ShapeTransferBO()
         STBO.get_data_from_file(file_task1_sample_stbo)
-        STBO.build_task1_gp(file_task0_sample, theta_task1=0.7, prior_mean=0.0, r_out_bound=0.1)
+        STBO.build_task1_gp(file_task0_sample, theta_task1=0.7*1.414, prior_mean=0.5, r_out_bound=0.1)
         STBO.build_diff_gp()
 
-        STBO.plot_ei(exp_ratio=1.0)
+        #STBO.plot_ei(exp_ratio=0.5)
+        STBO.plot_ac(exp_ratio=1.0)
     elif from_task1 == "mean":
         # Test EI with rand
         EI = ExpectedImprovement()

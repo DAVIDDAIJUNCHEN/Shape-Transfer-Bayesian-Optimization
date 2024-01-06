@@ -39,7 +39,7 @@ def arg_parser():
     
     return parser
 
-def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=50, kessi_1=0.0, 
+def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=250, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=10, kessi_1=0.0, 
              file_1_gp="f1_gp.tsv", file_1_rand="f1_rand.tsv", file_1_sample="f1_sample.tsv", file_1_mean="f1_mean.tsv", 
              file_1_sample_stbo="f1_sample_stbo.tsv", file_1_mean_stbo="f1_mean_stbo.tsv",  
              num_start_opt2=50, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=100, kessi_2=0.0, 
@@ -136,7 +136,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
 
         # Method 3 in task 1: GP-based Sampling STBO
         # stage 1: sampling from Gaussian Process
-        num_sample = 10
+        num_sample = 5
         mean_sample = 0.5
         sigma_sample = 0.01
 
@@ -235,10 +235,11 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
                 next_point_ei, _ = EI.find_best_NextPoint_ei(start_points, l_bounds=lower_bound, u_bounds=upper_bound,
                                                             learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)
 
+                mean_sample_low = 1.0*mean_sample
                 # Method 3: GP-based Sampling STBO
                 STBO_task1_sample = ShapeTransferBO()
                 STBO_task1_sample.get_data_from_file(file_1_sample_stbo)
-                STBO_task1_sample.build_task1_gp(file_1_sample, theta_task1=0.7*1.414, prior_mean=mean_sample, r_out_bound=0.01)  # 0.7
+                STBO_task1_sample.build_task1_gp(file_1_sample, theta_task1=0.7*1.414, prior_mean=mean_sample_low, r_out_bound=0.1)  # 0.7
                 STBO_task1_sample.build_diff_gp()
 
                 next_point_stbo1_sample, _ = STBO_task1_sample.find_best_NextPoint_ei(start_points, l_bounds=lower_bound, u_bounds=upper_bound,
@@ -247,7 +248,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
                 # Method 4: mean reduction STBO
                 STBO_task1_mean = ShapeTransferBO()
                 STBO_task1_mean.get_data_from_file(file_1_mean_stbo)
-                STBO_task1_mean.build_task1_gp(file_1_mean, theta_task1=0.7*1.414, prior_mean=mean_sample, r_out_bound=0.01)     # 0.7
+                STBO_task1_mean.build_task1_gp(file_1_mean, theta_task1=0.7*1.414, prior_mean=mean_sample_low, r_out_bound=0.1)     # 0.7
                 STBO_task1_mean.build_diff_gp()
 
                 next_point_stbo1_mean, _ = STBO_task1_mean.find_best_NextPoint_ei(start_points, l_bounds=lower_bound, u_bounds=upper_bound,

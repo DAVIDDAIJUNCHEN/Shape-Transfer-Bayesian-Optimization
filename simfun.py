@@ -109,7 +109,7 @@ def show_branin(shift=[5,5], mu=[5, 5], theta=1, x_low=-1, x_up=1, y_low=-1, y_u
     
     fig.suptitle("Branin v.s. modified Branin with mu=("+str(mu[0]) + "," + str(mu[1]) + "), theta="+str(theta),)
 
-    ax = fig.add_subplot(1, 2, 1, projection='3d')
+    ax = fig.add_subplot(1, 2, 1, projection="3d")
 
     X = np.arange(-10, 10, 0.25)
     Y = np.arange(-10, 15, 0.25)
