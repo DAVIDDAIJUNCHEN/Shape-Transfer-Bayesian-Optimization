@@ -18,7 +18,7 @@ from utils import write_exp_result, get_best_point
 def arg_parser():
     "parse the arguments"
     argparser = argparse.ArgumentParser(description="run simulation to compare 3 methods, ZeroGProcess, BCBO and STBO")
-    argparser.add_argument("--type", default="EXP", choices=["EXP", "BR", "NEEDLE", "MONO2NEEDLE", "MONO2DOUBLE", "DOUBLE2DOUBLE", "TRIPLE2DOUBLE", "DOUBLE2TRIPLE", "TRIPLE2TRIPLE_2D"], help="choose target function type")
+    argparser.add_argument("--type", default="EXP", choices=["EXP", "BR", "NEEDLE", "MONO2NEEDLE", "MONO2DOUBLE", "DOUBLE2DOUBLE", "TRIPLE2DOUBLE", "DOUBLE2TRIPLE", "TRIPLE2TRIPLE_2D", "DOUBLE2DOUBLE_2D"], help="choose target function type")
 
     # arguments for EXP type only
     argparser.add_argument("--theta", default="1.0", help="shape parameter in tyep EXP")
@@ -39,7 +39,7 @@ def arg_parser():
     
     return parser
 
-def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=250, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=10, kessi_1=0.0, 
+def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=30, kessi_1=0.0, 
              file_1_gp="f1_gp.tsv", file_1_rand="f1_rand.tsv", file_1_sample="f1_sample.tsv", file_1_mean="f1_mean.tsv", 
              file_1_sample_stbo="f1_sample_stbo.tsv", file_1_mean_stbo="f1_mean_stbo.tsv",  
              num_start_opt2=50, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=100, kessi_2=0.0, 
@@ -106,12 +106,20 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=250, 
         theta1 = 1; theta2 = 1; theta3 = 1
     elif fun_type == "TRIPLE2TRIPLE_2D":
         dim = 2
-        lambda1 = 1.7; lambda2 = 1.2; lambda3 = 0.8
-        mu1 = [0.5, 0.5]; mu2 = [5.5, 5.5]; mu3 = [9.5, 9.5]
+        lambda1 = 2; lambda2 = 1.65; lambda3 = 1.65
+        mu1 = [-1.5, -1.5]; mu2 = [7.5, 5.5]; mu3 = [9.5, 9.5]
         lambda1_t2 = 1; lambda2_t2 = 1.4; lambda3_t2 = 1.9
         mu1_t2 = [0, 0]; mu2_t2 = [5, 5]; mu3_t2 = [10, 10]
 
-        theta1 = 1; theta2 = 1; theta3 = 1
+        theta1 = 3; theta2 = 0.7; theta3 = 0.7
+    elif fun_type == "DOUBLE2DOUBLE_2D":
+        dim = 2
+        lambda1 = 2; lambda2 = 0; lambda3 = 1.65
+        mu1 = [-1.5, -1.5]; mu2 = [7.5, 5.5]; mu3 = [9.5, 9.5]
+        lambda1_t2 = 1; lambda2_t2 = 0; lambda3_t2 = 1.9
+        mu1_t2 = [0, 0]; mu2_t2 = [5, 5]; mu3_t2 = [10, 10]
+
+        theta1 = 3; theta2 = 0.7; theta3 = 0.7
     else:
         raise(TypeError)
 
@@ -137,7 +145,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=250, 
         # Method 3 in task 1: GP-based Sampling STBO
         # stage 1: sampling from Gaussian Process
         num_sample = 5
-        mean_sample = 0.5
+        mean_sample = 1.75
         sigma_sample = 0.01
 
         zeroGP = ZeroGProcess()
@@ -163,8 +171,17 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=250, 
             prior_pnts = [([0.8], 1.2), ([5.8], 1.2), ([8.3], 0.8), ([9.2], 1.2)]
             #prior_pnts = [([2.7], 1.2), ([7.7], 1.2)]
         elif fun_type == "TRIPLE2TRIPLE_2D":
-            #prior_pnts = [([0.8, 0.8], 1.2), ([5.8, 5.8], 1.2), ([9.5, 9.5], 1.2)]
-            prior_pnts = [([3, 3], 1.2), ([7.5, 7.5], 1.2)]
+            #prior_pnts = [([1, 1], 1.2), ([5, 5], 1.2)]            # farmore
+            #prior_pnts = [([0, 0], 1.2), ([6, 6], 1.2)]             # far
+            #prior_pnts = [([-0.5, -0.5], 1.2), ([6.5, 6.5], 1.2)]  # middle
+            #prior_pnts = [([-1, -1], 1.2), ([7, 7], 1.2)]          # close
+            prior_pnts = [([11, -1], 1.2), ([-2, 11], 1.2)]        # bad
+        elif fun_type == "DOUBLE2DOUBLE_2D":
+            #prior_pnts = [([1, 1], 1.2), ([7, 7], 1.2)]            # farmore
+            #prior_pnts = [([0, 0], 1.2), ([8, 8], 1.2)]             # far
+            #prior_pnts = [([-0.5, -0.5], 1.2), ([8.5, 8.5], 1.2)]  # middle
+            #prior_pnts = [([-1, -1], 1.2), ([9, 9], 1.2)]          # close
+            prior_pnts = [([11, -1], 1.2), ([-2, 11], 1.2)]        # bad
 
         zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, prior_points=prior_pnts, mean_fix=False, out_file=file_1_sample)
         best_point_exp0_sample = get_best_point(file_1_sample)
@@ -212,6 +229,10 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=250, 
             init_res_1 = tri_exp_mu(init_point_1, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
             res1_point_exp0_sample = tri_exp_mu(best_point_exp0_sample, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
             res1_point_exp0_mean = tri_exp_mu(best_point_exp0_mean, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)            
+        elif fun_type == "DOUBLE2DOUBLE_2D":
+            init_res_1 = tri_exp_mu(init_point_1, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+            res1_point_exp0_sample = tri_exp_mu(best_point_exp0_sample, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+            res1_point_exp0_mean = tri_exp_mu(best_point_exp0_mean, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)              
         else:
             raise(TypeError)
 
@@ -299,6 +320,11 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=250, 
                     next_response_ei     = tri_exp_mu(next_point_ei, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
                     next_response_stbo1_sample  = tri_exp_mu(next_point_stbo1_sample, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
                     next_response_stbo1_mean  = tri_exp_mu(next_point_stbo1_mean, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)                    
+                elif fun_type == "DOUBLE2DOUBLE_2D":
+                    next_response_rand   = tri_exp_mu(next_point_rand, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+                    next_response_ei     = tri_exp_mu(next_point_ei, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+                    next_response_stbo1_sample  = tri_exp_mu(next_point_stbo1_sample, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+                    next_response_stbo1_mean  = tri_exp_mu(next_point_stbo1_mean, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)  
                 else:
                     raise(TypeError)
                 
@@ -347,6 +373,9 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=250, 
     elif fun_type == "TRIPLE2TRIPLE_2D":
         res2_point_exp1 = tri_exp_mu(best_point_exp1, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)
         res2_point_cold = tri_exp_mu(cold_start_point, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)          
+    elif fun_type == "DOUBLE2DOUBLE_2D":
+        res2_point_exp1 = tri_exp_mu(best_point_exp1, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)
+        res2_point_cold = tri_exp_mu(cold_start_point, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)   
     else:
         raise(TypeError)
 
@@ -405,6 +434,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=250, 
                 next_response_gp = tri_exp_mu(next_point_gp, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)
             elif fun_type == "TRIPLE2TRIPLE_2D":
                 next_response_gp = tri_exp_mu(next_point_gp, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)
+            elif fun_type == "DOUBLE2DOUBLE_2D":
+                next_response_gp = tri_exp_mu(next_point_gp, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)
             else:
                 raise(TypeError)
 
@@ -434,7 +465,9 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=250, 
                 elif fun_type == "DOUBLE2TRIPLE":
                     next_response_gp_cold = tri_exp_mu(next_point_gp_cold, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)
                 elif fun_type == "TRIPLE2TRIPLE_2D":
-                    next_response_gp_cold = tri_exp_mu(next_point_gp_cold, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)                    
+                    next_response_gp_cold = tri_exp_mu(next_point_gp_cold, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)              
+                elif fun_type == "DOUBLE2DOUBLE_2D":
+                    next_response_gp_cold = tri_exp_mu(next_point_gp_cold, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)         
                 else:
                     raise(TypeError)
 
@@ -472,6 +505,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=250, 
                 next_response_stbo = tri_exp_mu(next_point_stbo,  lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)
             elif fun_type == "TRIPLE2TRIPLE_2D":
                 next_response_stbo = tri_exp_mu(next_point_stbo,  lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)
+            elif fun_type == "DOUBLE2DOUBLE_2D":
+                next_response_stbo = tri_exp_mu(next_point_stbo,  lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)
             else:
                 raise(TypeError)
 
@@ -508,6 +543,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=250, 
             elif fun_type == "DOUBLE2TRIPLE":
                 next_response_bcbo = tri_exp_mu(next_point_bcbo, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)
             elif fun_type == "TRIPLE2TRIPLE_2D":
+                next_response_bcbo = tri_exp_mu(next_point_bcbo, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)
+            elif fun_type == "DOUBLE2DOUBLE_2D":
                 next_response_bcbo = tri_exp_mu(next_point_bcbo, lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3)
             else:
                 raise(TypeError)
@@ -740,3 +777,25 @@ if __name__ == "__main__":
                 fun_type="TRIPLE2TRIPLE_2D", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
                 file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 
+    elif fun_type == "DOUBLE2DOUBLE_2D":
+        f1_gp = os.path.join(out_dir, "simDouble2Double2D_points_task1_gp.tsv")
+        f1_rand = os.path.join(out_dir, "simDouble2Double2D_points_task1_rand.tsv")
+        f1_sample = os.path.join(out_dir, "simDouble2Double2D_points_task0_sample.tsv")
+        f1_mean = os.path.join(out_dir, "simDouble2Double2D_points_task0_mean.tsv")
+        f1_sample_stbo = os.path.join(out_dir, "simDouble2Double2D_points_task1_sample_stbo.tsv")
+        f1_mean_stbo = os.path.join(out_dir, "simDouble2Double2D_points_task1_mean_stbo.tsv")
+
+        f2_gp = os.path.join(out_dir, "simDouble2Double2D_points_task2_gp" + "_from_" + task2_start_from + ".tsv")
+        f2_gp_cold = os.path.join(out_dir, "simDouble2Double2D_points_task2_gp" + "_from_cold" + ".tsv")
+        f2_stbo = os.path.join(out_dir, "simDouble2Double2D_points_task2_stbo" + "_from_" + task2_start_from + ".tsv")
+        f2_bcbo = os.path.join(out_dir, "simDouble2Double2D_points_task2_bcbo" + "_from_" + task2_start_from + ".tsv")
+
+        low_opt1 = -5
+        high_opt1 = 15
+        low_opt2 = -5
+        high_opt2 = 15
+
+        main_experiment(T1, T2, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
+                file_1_sample=f1_sample, file_1_mean=f1_mean, file_1_sample_stbo=f1_sample_stbo, file_1_mean_stbo=f1_mean_stbo,
+                fun_type="DOUBLE2DOUBLE_2D", low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
+                file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)

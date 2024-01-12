@@ -4,7 +4,7 @@ stage=$1       # 0: run both EXP and BR; 1: run EXP only; 2: run BR only
 from_task1=$2  # 1: start from task1, 0: start from task2
 task2_start_from=$3
 
-path_data=data/
+path_data=data
 
 
 # check arguments
@@ -224,12 +224,33 @@ if [ $stage -eq 0 ] || [ $stage -eq 9 ]; then
     echo "Task 1: 2D Triple exp function; Task 2: 2D Triple exp function"
     for i in $(seq 1 $num_rep); do
         echo "Running $i-th simulation"
-        mkdir -p $path_data/2D_Triple2Triple_5sample_2bad_prior_0.1rOutBound_highOptimized/$i
-        out_dir=$path_data/2D_Triple2Triple_5sample_2bad_prior_0.1rOutBound_highOptimized/$i
+        mkdir -p $path_data/2D_Triple2Triple_5sample_2bad_prior_sampleMean1.75_1rF1Mean/$i
+        out_dir=$path_data/2D_Triple2Triple_5sample_2bad_prior_sampleMean1.75_1rF1Mean/$i
         job_name=Triple2Triple_2D_${task2_start_from}_$i
         sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
                                         --type TRIPLE2TRIPLE_2D  --from_task1 $from_task1
         echo "Submitted $i-th 2D Triple2Triple exponential simulation by slurm"
+    done
+fi
+
+
+if [ $stage -eq 0 ] || [ $stage -eq 10 ]; then
+    echo "Simulation 10: Transfer Bayesian Optimization from 2D Double to 2D Double exponential function"
+
+    T1=20
+    T2=20
+
+    num_rep=20
+
+    echo "Task 1: 2D Double exp function; Task 2: 2D Double exp function"
+    for i in $(seq 1 $num_rep); do
+        echo "Running $i-th simulation"
+        mkdir -p $path_data/2D_Double2Double_5sample_2bad_prior_sampleMean1.75_1rF1Mean/$i
+        out_dir=$path_data/2D_Double2Double_5sample_2bad_prior_sampleMean1.75_1rF1Mean/$i
+        job_name=Double2Double_2D_${task2_start_from}_$i
+        sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
+                                        --type DOUBLE2DOUBLE_2D  --from_task1 $from_task1
+        echo "Submitted $i-th 2D Double2Double exponential simulation by slurm"
     done
 fi
 

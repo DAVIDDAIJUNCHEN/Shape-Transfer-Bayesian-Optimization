@@ -252,7 +252,7 @@ def show_mono2double_exp_mu(lambda2, mu1, mu2, theta1, theta2, x_low, x_high):
 
     y1 = [exp_mu([ele], mu1, theta1) for ele in x_draw]
     y2 = [two_exp_mu([ele], 1, lambda2, mu1, mu2, theta1, theta2) for ele in x_draw]
-    
+
     diff_y2_y1 = [ele2 - ele1 for ele1, ele2 in zip(y1, y2)]
 
     fig, ax = plt.subplots(1, 1)
@@ -337,6 +337,36 @@ def show_triple2double_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, 
     fig.savefig("./images/triple2triple.pdf")   
 
 
+def show_3D_triple():
+    fig = plt.figure(figsize=plt.figaspect(0.5))
+
+    ax = fig.add_subplot(1, 1, 1, projection="3d")
+
+    lambda1 = 1.7; lambda2 = 1.2; lambda3 = 0.8
+    mu1 = [0.5, 0.5]; mu2 = [5.5, 5.5]; mu3 = [9.5, 9.5]
+    theta1 = theta2 = theta3 = 1
+
+    X = np.arange(-10, 10, 0.25)
+    Y = np.arange(-10, 15, 0.25)
+    X, Y = np.meshgrid(X, Y)
+
+    Z = np.zeros([len(X), len(Y[0])])
+    for i in range(len(X)):
+        for j in range(len(Y[0])):
+            x = X[i,j]
+            y = Y[i,j]
+            Z[i, j] = tri_exp_mu([x, y], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+
+    ax = fig.add_subplot(1, 1, 1, projection='3d')
+    ax.plot_wireframe(X, Y, Z, rstride=5, cstride=5)
+    ax.set_zlim(-20, 800)
+
+    plt.show()
+
+    fig.savefig("./images/triple_3d")
+
+    return 0
+
 
 if __name__ == "__main__":
     # Exponential family
@@ -377,3 +407,7 @@ if __name__ == "__main__":
     mu1 = [0]; mu2 = [5]; mu3 = [10]
     theta1 = 1; theta2 = 1; theta3 = 1
     show_triple2double_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low=-5, x_high=15)
+
+    # 3D Triple Illustration
+    show_3D_triple()
+    

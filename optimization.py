@@ -630,7 +630,7 @@ class BiasCorrectedBO(ExpectedImprovement, UpperConfidenceBound):
 
 if __name__ == "__main__":
     "Main part: iteratively analyze results by adding points one by one"
-    EXP = "2D_Triple2Triple"    # "Double2Double" | "Double2Triple" | "Triple2Double" 
+    EXP = "Double2Double"      # "2D_Triple2Triple"  |  "Double2Double" | "Double2Triple" | "Triple2Double" 
     from_task1 = "sample"      # "rand"          | "gp"            | "sample"        | "mean"
 
     # visulization only on 1-dimensional examples 
@@ -769,26 +769,26 @@ if __name__ == "__main__":
         BCBO.plot_ei(exp_ratio=0.2)
     elif from_task1 == "sample":
         # Test EI with rand
-        # EI = ExpectedImprovement()
-        # EI.get_data_from_file(file_task0_sample)
-        # EI.theta = 0.7
+        EI = ExpectedImprovement()
+        EI.get_data_from_file(file_task1_gp)
+        EI.theta = 0.7
 
-        # gamma = 0.9
-        # x1 = [1.5]
-        # print("EI({:.2f}) = {:.2f}".format(x1[0], EI.aux_func_ei(x1, gamma)))
-        # x2 = [10.4]
-        # print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func_ei(x2, gamma)))
+        gamma = 0.9
+        x1 = [1.5]
+        print("EI({:.2f}) = {:.2f}".format(x1[0], EI.aux_func_ei(x1, gamma)))
+        x2 = [10.4]
+        print("EI({:.2f}) = {:.2f}".format(x2[0], EI.aux_func_ei(x2, gamma)))
     
-        #EI.plot_ei(exp_ratio=0.0)
+        EI.plot_ei(exp_ratio=0.0)
 
         # Test STBO from rand
         STBO = ShapeTransferBO()
         STBO.get_data_from_file(file_task1_sample_stbo)
-        STBO.build_task1_gp(file_task0_sample, theta_task1=0.7*1.414, prior_mean=0.5, r_out_bound=0.1)
+        STBO.build_task1_gp(file_task0_sample, theta_task1=0.5, prior_mean=0.0, r_out_bound=0.1)
         STBO.build_diff_gp()
 
-        #STBO.plot_ei(exp_ratio=0.5)
-        STBO.plot_ac(exp_ratio=1.0)
+        STBO.plot_ei(exp_ratio=0.5)
+        #STBO.plot_ac(exp_ratio=1.0)
     elif from_task1 == "mean":
         # Test EI with rand
         EI = ExpectedImprovement()
