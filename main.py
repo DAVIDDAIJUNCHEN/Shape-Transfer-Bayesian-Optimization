@@ -11,30 +11,56 @@ from optimization import BiasCorrectedBO
 
 
 if __name__ == "__main__":
-    """" Run Real experiment """
-    task = 2
+    """" Run Real experiments """
+    task = 1
 
     if task == 1:
         # Part 1: EI on Experiment 1
         # 1.1 ZeroGP EI initialization
         EI_task1 = ExpectedImprovement()
         EI_task1.get_data_from_file("data/experiment_points_task1_gp.tsv")
-        print(EI_task1.X)
-        print(EI_task1.Y)
 
         # 1.2 AC optimization 
         dim = EI_task1.dim
-        low_opt1 = 0; high_opt1 = 1000
+        low_opt1 = 0; high_opt1 = 5000
         num_start_opt1 = 15
         start_points = [np.random.uniform(low_opt1, high_opt1, size=dim).tolist() for i in range(num_start_opt1)]
-        # start_points = [[12], [1], [13], [11]]
+        
         kessi = 0
 
-        next_point, next_point_aux = EI_task1.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=800, kessi=kessi)
-        # EI.plot_ei(kessis=[0.0], num_points=300, highlight_point=[next_point, next_point_aux])
+        next_point, next_point_aux = EI_task1.find_best_NextPoint_ei(start_points, learn_rate=0.5, num_step=300, kessi=kessi)
         print("GP next point in task1: ", next_point)
+
+        # Part 2: Efficient Bayesian Optimization with sampling + weak priors
+        # 3.1 Efficient BO with sampling points
+        mean_sample_low = 0.8
+        STBO_task1_sample = ShapeTransferBO()
+        STBO_task1_sample.get_data_from_file("./data/sample_points_task1_efficient_BO.tsv")
+        STBO_task1_sample.build_task1_gp("./data/experiment_points_task1_efficient_BO_sample.tsv", theta_task1=0.7*np.sqrt(dim), prior_mean=mean_sample_low, r_out_bound=0.1)
+        STBO_task1_sample.build_diff_gp()
+
+        # 3.2 AC optimization (shared the same start points as in gp)
+        kessi = 0 
+        next_point_stbo1_sample, next_point_aux = STBO_task1_sample.find_best_NextPoint_ei(start_points, l_bounds=low_opt1, u_bounds=high_opt1,
+                                                                      learn_rate=0.5, num_step=300, kessi=kessi)
+        print("Sample BO, next point in task1: ", next_point, " AC: ", next_point_aux)
+
+        # Part 3: Efficient Bayesian Optimization with mean + weak priors
+        # 3.1 Efficient BO with sampling points
+        mean_sample_low = 0.8
+        STBO_task1_mean = ShapeTransferBO()
+        STBO_task1_mean.get_data_from_file("./data/mean_points_task1_efficient_BO.tsv")
+        STBO_task1_mean.build_task1_gp("./data/experiment_points_task1_efficient_BO_mean.tsv", theta_task1=0.7*np.sqrt(dim), prior_mean=mean_sample_low, r_out_bound=0.1)
+        STBO_task1_mean.build_diff_gp()
+
+        # 3.2 AC optimization (shared the same start points as in gp)
+        kessi = 0 
+        next_point_stbo1_mean, next_point_aux = STBO_task1_mean.find_best_NextPoint_ei(start_points, l_bounds=low_opt1, u_bounds=high_opt1,
+                                                                      learn_rate=0.5, num_step=300, kessi=kessi)
+        print("Mean BO, next point in task1: ", next_point, " AC: ", next_point_aux)                 
+
     elif task == 2:
-        # Part 2: EI on Experiment 2
+        # Part 3: EI on Experiment 2
         # 2.0 Create start points
         EI_task1 = ExpectedImprovement()
         EI_task1.get_data_from_file("data/experiment_points_task1_gp.tsv")
