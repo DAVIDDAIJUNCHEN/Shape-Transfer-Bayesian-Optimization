@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
         # 1.2 AC optimization 
         dim = EI_task1.dim
-        low_opt1 = 0; high_opt1 = 5000
+        low_opt1 = 0; high_opt1 = 5
         low_bounds = [low_opt1 for i in range(dim)]
         up_bounds  = [high_opt1 for i in range(dim)]
         
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         # 2.2 AC optimization (shared the same start points as in gp)
         kessi = 0
         next_point_stbo1_sample, next_point_aux = STBO_task1_sample.find_best_NextPoint_ei(start_points, l_bounds=low_bounds, u_bounds=up_bounds,
-                                                                      learn_rate=0.5, num_step=1, kessi=kessi)
+                                                                      learn_rate=0.1, num_step=1, kessi=kessi)
         print("Sample BO, next point in task1: ", next_point_stbo1_sample, " AC: ", next_point_aux)
 
         # Part 3: Efficient Bayesian Optimization with mean + weak priors
@@ -63,7 +63,8 @@ if __name__ == "__main__":
 
         start_points_task1.extend(start_points_rand)
         start_points = start_points_task1
-        
+        print(len(start_points))
+
         # 3.1 Efficient BO with sampling points
         mean_sample_low = 0.8
         STBO_task1_mean = ShapeTransferBO()
@@ -74,7 +75,7 @@ if __name__ == "__main__":
         # 3.2 AC optimization (shared the same start points as in gp)
         kessi = 0 
         next_point_stbo1_mean, next_point_aux = STBO_task1_mean.find_best_NextPoint_ei(start_points, l_bounds=low_bounds, u_bounds=up_bounds,
-                                                                      learn_rate=0.5, num_step=1, kessi=kessi)
+                                                                      learn_rate=0.1, num_step=1, kessi=kessi)
         print("Mean BO, next point in task1: ", next_point_stbo1_mean, " AC: ", next_point_aux)
     elif task == 2:
         # Part 4: EI on Experiment 2
