@@ -5,6 +5,9 @@ from matplotlib import cm
 from mpl_toolkits.mplot3d import axes3d
 
 from analyze_results import collect_file, run_statistics
+from optimization import ExpectedImprovement, ShapeTransferBO
+from gp import ZeroGProcess
+from simfun import two_exp_mu, tri_exp_mu
 
 
 # Part 1: images for simulation 1
@@ -38,7 +41,6 @@ def show_exp(mu1=[0.1, 0.1], mu2=[0.4163, 0.4163], m3=[1.0,1.0], theta=0.5, x_lo
         ax.plot_wireframe(X, Y, Z2, rstride=2, cstride=2)
     
         ax.set_title(r"$\mu$"+"=("+str(mu[i][0]) +","+str(mu[i][1])+")", fontsize=25)
-
 
     plt.show()
 
@@ -163,165 +165,319 @@ def show_EXP_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_
     return 0
 
 
+# Part 4: rejection effect in 1D
+def show_reject_effect_highMean(x_low, x_high, file_sample_task0, file_task1_stbo, lambda1=1, lambda2=1.5, lambda3=1.25,
+                        mu1=[0], mu2=[5], mu3=[10], theta1=1, theta2=1, theta3=1, kessis=[0]):
+    """illustrate the rejection effect in 1D"""
+    x_draw = np.linspace(x_low, x_high, 100)
+
+    # Line1: standard line
+    GP1 = ZeroGProcess(prior_mean=1.1, r_out_bound=0.1)
+    GP1.get_data_from_file(file_sample_task0)
+    GP1.theta = 0.7
+
+    y1_mean = [GP1.compute_mean([ele]) for ele in x_draw]
+    y1_conf_int = [GP1.conf_interval([ele]) for ele in x_draw]
+    y1_lower = [ele[0] for ele in y1_conf_int]
+    y1_upper = [ele[1] for ele in y1_conf_int]
+
+    # Line 2: target function
+    y_target = [tri_exp_mu([ele], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3) for ele in x_draw]
+    print(tri_exp_mu([4.71], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3))    
+    
+    # Line 3: AC function
+    STBO = ShapeTransferBO()
+    STBO.get_data_from_file(file_task1_stbo)
+    STBO.build_task1_gp(file_sample_task0, theta_task1=0.7, prior_mean=1.1, r_out_bound=0.1)
+    STBO.build_diff_gp()
+
+    ac_values_lst = []
+    if isinstance(kessis, list):
+        for kessi in kessis:
+            ac_kessi = [STBO.aux_func_ei([ele], kessi) for ele in x_draw]
+            ac_values_lst.append(ac_kessi)
+            x_next = 4.71
+            y_next = 1.438249038075815
+            ac_next = STBO.aux_func_ei([x_next], kessis[0])
+    elif isinstance(kessis, float):
+        ac_kessi = [STBO.aux_func_ei([ele], kessis) for ele in x_draw]
+        ac_values_lst.append(ac_kessi)
+        kessis = [kessis]    
+
+    # draw in one fig
+    fig, ax = plt.subplots(1, 1)
+    ax.set_title("")
+
+    ax.plot(x_draw, y1_mean, label="standard line")
+    ax.fill_between(x_draw, y1_lower, y1_upper, alpha=0.2)
+    ax.plot(GP1.X[2:], [y + 1.1 for y in GP1.Y[2:]], 'o', label="LHS points", color="tab:blue")
+    ax.plot(GP1.X[:2], [y + 1.1 for y in GP1.Y[:2]], 'x', label="prior points", markersize=10, color="tab:blue")
+
+    ax.plot(x_draw, y_target, '--', label="target function")
+    ax.plot(STBO.X, STBO.Y, 'o', color="tab:red", label="experiment points")
+    ax.plot([x_next], [y_next], '*', label="next point to evaluate", markersize=10, color="tab:red")
+
+    for ac_value, kessi in zip(ac_values_lst, kessis):
+        ax.plot(x_draw, ac_value, linestyle='dashdot', label="acquisition function")
+        ax.plot([x_next], [ac_next], '*', label="acquisition peak", markersize=10, color="tab:green")
+        
+    ax.axvline(x=4.71, color='orange')
+
+    # add text 
+    ax.text(7.80, 0.08, '1', color="red", size=12)
+    ax.text(2.80, 0.08, '2', color="red", size=12)
+    ax.text(-0.2, 0.86, '3', color="red", size=12)
+    ax.text(10.5, 1.13, '4', color="red", size=12)
+    ax.text(5.80, 1.30, '5', color="red", size=12)
+    ax.text(3.90, 0.3, 'x=4.71', color="red", size=12)
+    
+    ax.legend(loc="center right", fontsize=7)
+    fig.tight_layout()
+    fig.savefig("./images/raise_bo_reject_highMean.pdf")
+
+    return 0
+
+def show_reject_effect_lowMean(x_low, x_high, file_sample_task0, file_task1_stbo, lambda1=1, lambda2=1.5, lambda3=1.25,
+                        mu1=[0], mu2=[5], mu3=[10], theta1=1, theta2=1, theta3=1, kessis=[0]):
+    """illustrate the rejection effect in 1D"""
+    x_draw = np.linspace(x_low, x_high, 100)
+
+    # Line1: standard line
+    GP1 = ZeroGProcess(prior_mean=0.5, r_out_bound=0.1)
+    GP1.get_data_from_file(file_sample_task0)
+    GP1.theta = 0.7
+
+    y1_mean = [GP1.compute_mean([ele]) for ele in x_draw]
+    y1_conf_int = [GP1.conf_interval([ele]) for ele in x_draw]
+    y1_lower = [ele[0] for ele in y1_conf_int]
+    y1_upper = [ele[1] for ele in y1_conf_int]
+
+    # Line 2: target function
+    y_target = [tri_exp_mu([ele], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3) for ele in x_draw]
+    print(tri_exp_mu([-1.27], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3))    
+    
+    # Line 3: AC function
+    STBO = ShapeTransferBO()
+    STBO.get_data_from_file(file_task1_stbo)
+    STBO.build_task1_gp(file_sample_task0, theta_task1=0.7, prior_mean=0.5, r_out_bound=0.1)
+    STBO.build_diff_gp()
+
+    ac_values_lst = []
+    if isinstance(kessis, list):
+        for kessi in kessis:
+            ac_kessi = [STBO.aux_func_ei([ele], kessi) for ele in x_draw]
+            ac_values_lst.append(ac_kessi)
+            x_next = -1.27
+            y_next = 0.4464401231991101
+            ac_next = STBO.aux_func_ei([x_next], kessis[0])
+    elif isinstance(kessis, float):
+        ac_kessi = [STBO.aux_func_ei([ele], kessis) for ele in x_draw]
+        ac_values_lst.append(ac_kessi)
+        kessis = [kessis]    
+
+    # draw in one fig
+    fig, ax = plt.subplots(1, 1)
+    ax.set_title("")
+
+    ax.plot(x_draw, y1_mean, label="standard line")
+    ax.fill_between(x_draw, y1_lower, y1_upper, alpha=0.2)
+    ax.plot(GP1.X[2:], [y + 0.5 for y in GP1.Y[2:]], 'o', label="LHS points", color="tab:blue")
+    ax.plot(GP1.X[:2], [y + 0.5 for y in GP1.Y[:2]], 'x', label="prior points", markersize=10, color="tab:blue")
+
+    ax.plot(x_draw, y_target, '--', label="target function")
+    ax.plot(STBO.X, STBO.Y, 'o', color="tab:red", label="experiment points")
+    ax.plot([x_next], [y_next], '*', markersize=10, label="next point to evaluate", color="tab:red")
+
+    for ac_value, kessi in zip(ac_values_lst, kessis):
+        ax.plot(x_draw, ac_value, linestyle='dashdot', label="acquisition function")
+        ax.plot([x_next], [ac_next], '*', label="acquisition peak", markersize=10, color="tab:green")
+        
+    ax.axvline(x=-1.27, color='orange')
+
+    # add text 
+    ax.text(7.80, 0.08, '1', color="red", size=12)
+    ax.text(2.80, 0.08, '2', color="red", size=12)
+    ax.text(-0.2, 0.86, '3', color="red", size=12)
+    ax.text(-1.25, 0.15, 'x=-1.27', color="red", size=12)
+    
+    ax.legend(loc="center right", fontsize=7)
+    fig.tight_layout()
+    fig.savefig("./images/raise_bo_reject_lowMean.pdf")
+
+    return 0
+
+
 if __name__ == "__main__":
-    # Exponential family
-    size = 4
-    mu1 = [0.1,0.1]; mu2 = [0.4163, 0.4163]; mu3 = [1.0, 1.0]
-    theta = 0.5
-    show_exp(mu1, mu2, mu3, theta, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
+    paper_id = "raise"      # stbo / raise
 
-    # simulation 1: Double2Double
-    in_dir1 = "./data/Double2Double"
-    out_dir1 = "./simulation_results/Double2Double"
+    if paper_id == "raise":
+        # rejection effect
+        file_sample_task0_high = "./data/Triple2Double_5sample_2bad_prior_sampleMean1.1_1rF1Mean/13/simTriple2Double_points_task0_mean.tsv"
+        file_task1_stbo_high = "./data/Triple2Double_5sample_2bad_prior_sampleMean1.1_1rF1Mean/13/simTriple2Double_points_task1_mean_stbo_draw.tsv"
 
-    file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
-    file_lsts_cold1 = collect_file(in_dir1, "from_cold")
-    file_lsts_stbo1.extend(file_lsts_cold1)
-    file_lsts_1 = file_lsts_stbo1
+        file_sample_task0_low = "./data/Triple2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean/13/simTriple2Double_points_task0_mean.tsv"
+        file_task1_stbo_low = "./data/Triple2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean/13/simTriple2Double_points_task1_mean_stbo_draw.tsv"        
+        show_reject_effect_highMean(-3.2, 14.8, file_sample_task0_high, file_task1_stbo_high)
+        show_reject_effect_lowMean(-2.8, 14.3, file_sample_task0_low, file_task1_stbo_low)
+    elif paper_id == "stbo":
+        # Exponential family
+        size = 4
+        mu1 = [0.1,0.1]; mu2 = [0.4163, 0.4163]; mu3 = [1.0, 1.0]
+        theta = 0.5
+        show_exp(mu1, mu2, mu3, theta, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
 
-    _, dct_medium_perc1 = run_statistics(file_lsts_1, out_dir1)
-
-    file_lsts_2 = collect_file(in_dir1, topic="from_rand")
-    file_lsts_3 = collect_file(in_dir1, topic="from_gp")
-
-    _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
-    _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
-
-    fig_name_medium = "./images/double2double_paper.pdf"
-
-    title = ["Simulation 1: from double modals to double modals", "transfer vs non-transfer", "start from rand", "start from gp"]
-    show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
-
-    # simulation 2: Triple2Double 
-    in_dir1 = "./data/Triple2Double"
-    out_dir1 = "./simulation_results/Triple2Double"
-
-    file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
-    file_lsts_cold1 = collect_file(in_dir1, "from_cold")
-    file_lsts_stbo1.extend(file_lsts_cold1)
-    file_lsts_1 = file_lsts_stbo1
-
-    _, dct_medium_perc1 = run_statistics(file_lsts_1, out_dir1)
-
-    file_lsts_2 = collect_file(in_dir1, topic="from_rand")
-    file_lsts_3 = collect_file(in_dir1, topic="from_gp")
-
-    _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
-    _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
-
-    fig_name_medium = "./images/triple2double_paper.pdf"
-
-    title = ["Simulation 2: from triple modals to double modals", "transfer vs non-transfer", "start from rand", "start from gp"]
-    show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
-
-    # simulation 2: Double2Triple
-    in_dir1 = "./data/Double2Triple_0.5"
-    out_dir1 = "./simulation_results/Double2Triple_0.5"
-
-    file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
-    file_lsts_cold1 = collect_file(in_dir1, "from_cold")
-    file_lsts_stbo1.extend(file_lsts_cold1)
-    file_lsts_1 = file_lsts_stbo1
-
-    _, dct_medium_perc1 = run_statistics(file_lsts_1, out_dir1)
-
-    file_lsts_2 = collect_file(in_dir1, topic="from_rand")
-    file_lsts_3 = collect_file(in_dir1, topic="from_gp")
-
-    _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
-    _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
-
-    fig_name_medium = "./images/double2triple_paper.pdf"
-
-    title = ["Simulation 2: from double modals to triple modals", "transfer vs non-transfer", "start from rand", "start from gp"]
-    show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
-
-
-    # simulation 3: 2D Triple2Triple
-    in_dir1 = "./data/2D_Triple2Triple"
-    out_dir1 = "./simulation_results/2D_Triple2Triple"
-
-    file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
-    file_lsts_cold1 = collect_file(in_dir1, "from_cold")
-    file_lsts_stbo1.extend(file_lsts_cold1)
-    file_lsts_1 = file_lsts_stbo1
-
-    _, dct_medium_perc1 = run_statistics(file_lsts_1, out_dir1)
-
-    file_lsts_2 = collect_file(in_dir1, topic="from_rand")
-    file_lsts_3 = collect_file(in_dir1, topic="from_gp")
-
-    _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
-    _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
-
-    fig_name_medium = "./images/2d_triple2triple_paper.pdf"
-
-    title = ["Simulation 3: from 2d triple modals to triple modals", "transfer vs non-transfer", "start from rand", "start from gp"]
-    show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
-
-
-    # simulation 4: EXP 
-    thetas = [0.87, 1, 1.414]
-    means = [(0.435, 0.74, 1.74), (0.5, 0.832555, 2), (0.707, 1.177, 2.828)]
-    #thetas = [0.5, 1, 1.414]
-    #means = [(0.1, 0.4163, 1.0), (0.5, 0.832555, 2), (0.707, 1.177, 2.828)]
-
-    for i in range(3):
-        theta = thetas[i]
-        mean_tuple = means[i]
-        # mean 1
-        in_dir1 = "./data/EXP_mu2_" + str(mean_tuple[0]) + "_" + str(mean_tuple[0]) + "_theta_" + str(theta)
-        out_dir1 = "./simulation_results/EXP_theta_" + str(theta)
+        # simulation 1: Double2Double
+        in_dir1 = "./data/Double2Double"
+        out_dir1 = "./simulation_results/Double2Double"
 
         file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
         file_lsts_cold1 = collect_file(in_dir1, "from_cold")
         file_lsts_stbo1.extend(file_lsts_cold1)
+        file_lsts_1 = file_lsts_stbo1
 
-        file_lsts_1_1 = file_lsts_stbo1
-        _, dct_medium_perc1_1 = run_statistics(file_lsts_1_1, out_dir1)        
+        _, dct_medium_perc1 = run_statistics(file_lsts_1, out_dir1)
 
-        file_lsts_1_2 = collect_file(in_dir1, topic="from_rand")
-        _, dct_medium_perc1_2 = run_statistics(file_lsts_1_2, out_dir1)
+        file_lsts_2 = collect_file(in_dir1, topic="from_rand")
+        file_lsts_3 = collect_file(in_dir1, topic="from_gp")
 
-        dct_medium_perc1 = [dct_medium_perc1_1, dct_medium_perc1_2]
+        _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
+        _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
 
-        # mean 2
-        in_dir2 = "./data/EXP_mu2_" + str(mean_tuple[1]) + "_" + str(mean_tuple[1]) + "_theta_" + str(theta)
-        out_dir2 = "./simulation_results/EXP_theta_" + str(theta)
+        fig_name_medium = "./images/double2double_paper.pdf"
 
-        file_lsts_stbo2 = collect_file(in_dir2, "stbo_from_rand")
-        file_lsts_cold2 = collect_file(in_dir2, "from_cold")
-        file_lsts_stbo2.extend(file_lsts_cold2)
+        title = ["Simulation 1: from double modals to double modals", "transfer vs non-transfer", "start from rand", "start from gp"]
+        show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
 
-        file_lsts_2_1 = file_lsts_stbo2
-        _, dct_medium_perc2_1 = run_statistics(file_lsts_2_1, out_dir2)        
+        # simulation 2: Triple2Double 
+        in_dir1 = "./data/Triple2Double"
+        out_dir1 = "./simulation_results/Triple2Double"
 
-        file_lsts_2_2 = collect_file(in_dir2, topic="from_rand")
-        _, dct_medium_perc2_2 = run_statistics(file_lsts_2_2, out_dir2)     
+        file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
+        file_lsts_cold1 = collect_file(in_dir1, "from_cold")
+        file_lsts_stbo1.extend(file_lsts_cold1)
+        file_lsts_1 = file_lsts_stbo1
 
-        dct_medium_perc2 = [dct_medium_perc2_1, dct_medium_perc2_2]
+        _, dct_medium_perc1 = run_statistics(file_lsts_1, out_dir1)
 
-        # mean 3
-        in_dir3 = "./data/EXP_mu2_" + str(mean_tuple[2]) + "_" + str(mean_tuple[2]) + "_theta_" + str(theta)
-        out_dir3 = "./simulation_results/EXP_theta_" + str(theta)
+        file_lsts_2 = collect_file(in_dir1, topic="from_rand")
+        file_lsts_3 = collect_file(in_dir1, topic="from_gp")
 
-        file_lsts_stbo3 = collect_file(in_dir3, "stbo_from_rand")
-        file_lsts_cold3 = collect_file(in_dir3, "from_cold")
-        file_lsts_stbo3.extend(file_lsts_cold3)
+        _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
+        _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
 
-        file_lsts_3_1 = file_lsts_stbo3
-        _, dct_medium_perc3_1 = run_statistics(file_lsts_3_1, out_dir3)        
+        fig_name_medium = "./images/triple2double_paper.pdf"
 
-        file_lsts_3_2 = collect_file(in_dir3, topic="from_rand")
-        _, dct_medium_perc3_2 = run_statistics(file_lsts_3_2, out_dir3)  
+        title = ["Simulation 2: from triple modals to double modals", "transfer vs non-transfer", "start from rand", "start from gp"]
+        show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
 
-        dct_medium_perc3 = [dct_medium_perc3_1, dct_medium_perc3_2]
+        # simulation 2: Double2Triple
+        in_dir1 = "./data/Double2Triple_0.5"
+        out_dir1 = "./simulation_results/Double2Triple_0.5"
 
-        fig_name_medium = "./images/simEXP_theta_" + str(theta) + ".pdf"
+        file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
+        file_lsts_cold1 = collect_file(in_dir1, "from_cold")
+        file_lsts_stbo1.extend(file_lsts_cold1)
+        file_lsts_1 = file_lsts_stbo1
 
-        t0 = "(" + str(mean_tuple[0]) + ", " + str(mean_tuple[0]) + ")"
-        t1 = "(" + str(mean_tuple[1]) + ", " + str(mean_tuple[1]) + ")"
-        t2 = "(" + str(mean_tuple[2]) + ", " + str(mean_tuple[2]) + ")"
-        title = ["transfer vs. non-transfer methods", "transfer methods", t0, t1, t2]
+        _, dct_medium_perc1 = run_statistics(file_lsts_1, out_dir1)
 
-        show_EXP_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
+        file_lsts_2 = collect_file(in_dir1, topic="from_rand")
+        file_lsts_3 = collect_file(in_dir1, topic="from_gp")
+
+        _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
+        _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
+
+        fig_name_medium = "./images/double2triple_paper.pdf"
+
+        title = ["Simulation 2: from double modals to triple modals", "transfer vs non-transfer", "start from rand", "start from gp"]
+        show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
+
+
+        # simulation 3: 2D Triple2Triple
+        in_dir1 = "./data/2D_Triple2Triple"
+        out_dir1 = "./simulation_results/2D_Triple2Triple"
+
+        file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
+        file_lsts_cold1 = collect_file(in_dir1, "from_cold")
+        file_lsts_stbo1.extend(file_lsts_cold1)
+        file_lsts_1 = file_lsts_stbo1
+
+        _, dct_medium_perc1 = run_statistics(file_lsts_1, out_dir1)
+
+        file_lsts_2 = collect_file(in_dir1, topic="from_rand")
+        file_lsts_3 = collect_file(in_dir1, topic="from_gp")
+
+        _, dct_medium_perc2 = run_statistics(file_lsts_2, out_dir1)
+        _, dct_medium_perc3 = run_statistics(file_lsts_3, out_dir1)
+
+        fig_name_medium = "./images/2d_triple2triple_paper.pdf"
+
+        title = ["Simulation 3: from 2d triple modals to triple modals", "transfer vs non-transfer", "start from rand", "start from gp"]
+        show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
+
+
+        # simulation 4: EXP 
+        thetas = [0.87, 1, 1.414]
+        means = [(0.435, 0.74, 1.74), (0.5, 0.832555, 2), (0.707, 1.177, 2.828)]
+        #thetas = [0.5, 1, 1.414]
+        #means = [(0.1, 0.4163, 1.0), (0.5, 0.832555, 2), (0.707, 1.177, 2.828)]
+
+        for i in range(3):
+            theta = thetas[i]
+            mean_tuple = means[i]
+            # mean 1
+            in_dir1 = "./data/EXP_mu2_" + str(mean_tuple[0]) + "_" + str(mean_tuple[0]) + "_theta_" + str(theta)
+            out_dir1 = "./simulation_results/EXP_theta_" + str(theta)
+
+            file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
+            file_lsts_cold1 = collect_file(in_dir1, "from_cold")
+            file_lsts_stbo1.extend(file_lsts_cold1)
+
+            file_lsts_1_1 = file_lsts_stbo1
+            _, dct_medium_perc1_1 = run_statistics(file_lsts_1_1, out_dir1)        
+
+            file_lsts_1_2 = collect_file(in_dir1, topic="from_rand")
+            _, dct_medium_perc1_2 = run_statistics(file_lsts_1_2, out_dir1)
+
+            dct_medium_perc1 = [dct_medium_perc1_1, dct_medium_perc1_2]
+
+            # mean 2
+            in_dir2 = "./data/EXP_mu2_" + str(mean_tuple[1]) + "_" + str(mean_tuple[1]) + "_theta_" + str(theta)
+            out_dir2 = "./simulation_results/EXP_theta_" + str(theta)
+
+            file_lsts_stbo2 = collect_file(in_dir2, "stbo_from_rand")
+            file_lsts_cold2 = collect_file(in_dir2, "from_cold")
+            file_lsts_stbo2.extend(file_lsts_cold2)
+
+            file_lsts_2_1 = file_lsts_stbo2
+            _, dct_medium_perc2_1 = run_statistics(file_lsts_2_1, out_dir2)        
+
+            file_lsts_2_2 = collect_file(in_dir2, topic="from_rand")
+            _, dct_medium_perc2_2 = run_statistics(file_lsts_2_2, out_dir2)     
+
+            dct_medium_perc2 = [dct_medium_perc2_1, dct_medium_perc2_2]
+
+            # mean 3
+            in_dir3 = "./data/EXP_mu2_" + str(mean_tuple[2]) + "_" + str(mean_tuple[2]) + "_theta_" + str(theta)
+            out_dir3 = "./simulation_results/EXP_theta_" + str(theta)
+
+            file_lsts_stbo3 = collect_file(in_dir3, "stbo_from_rand")
+            file_lsts_cold3 = collect_file(in_dir3, "from_cold")
+            file_lsts_stbo3.extend(file_lsts_cold3)
+
+            file_lsts_3_1 = file_lsts_stbo3
+            _, dct_medium_perc3_1 = run_statistics(file_lsts_3_1, out_dir3)        
+
+            file_lsts_3_2 = collect_file(in_dir3, topic="from_rand")
+            _, dct_medium_perc3_2 = run_statistics(file_lsts_3_2, out_dir3)  
+
+            dct_medium_perc3 = [dct_medium_perc3_1, dct_medium_perc3_2]
+
+            fig_name_medium = "./images/simEXP_theta_" + str(theta) + ".pdf"
+
+            t0 = "(" + str(mean_tuple[0]) + ", " + str(mean_tuple[0]) + ")"
+            t1 = "(" + str(mean_tuple[1]) + ", " + str(mean_tuple[1]) + ")"
+            t2 = "(" + str(mean_tuple[2]) + ", " + str(mean_tuple[2]) + ")"
+            title = ["transfer vs. non-transfer methods", "transfer methods", t0, t1, t2]
+
+            show_EXP_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)

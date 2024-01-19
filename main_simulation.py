@@ -147,7 +147,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
         # Method 3 in task 1: GP-based Sampling STBO
         # stage 1: sampling from Gaussian Process
         num_sample = 5
-        mean_sample = 1.75
+        mean_sample = 1.1
         sigma_sample = 0.01
 
         zeroGP = ZeroGProcess()
@@ -165,8 +165,8 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=50, l
         elif fun_type == "TRIPLE2DOUBLE":
             #prior_pnts = [([0.5], 1.2), ([5.5], 1.2)]  # close
             #prior_pnts = [([1.0], 1.2), ([6.0], 1.2)]  # far
-            #prior_pnts = [([2.5], 1.2), ([7.5], 1.2)]  # bad
-            prior_pnts = [] # no prior
+            prior_pnts = [([2.5], 1.2), ([7.5], 1.2)]  # bad
+            #prior_pnts = [] # no prior
         elif fun_type == "DOUBLE2TRIPLE":
             #prior_pnts = [([0.2], 1.2), ([5.2], 0.8), ([9.8], 1.2)]
             #prior_pnts = [([0.5], 1.2), ([5.5], 0.8), ([4.5], 1.2)]

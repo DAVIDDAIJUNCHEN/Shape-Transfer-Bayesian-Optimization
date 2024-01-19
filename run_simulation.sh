@@ -182,8 +182,8 @@ if [ $stage -eq 0 ] || [ $stage -eq 7 ]; then
     echo "Task 1: triple exp function; Task 2: double exp function"
     for i in $(seq 1 $num_rep); do
         echo "Running $i-th simulation"
-        mkdir -p $path_data/Triple2Double_5sample_no_prior_sampleMean0.1_1rF1Mean/$i
-        out_dir=$path_data/Triple2Double_5sample_no_prior_sampleMean0.1_1rF1Mean/$i
+        mkdir -p $path_data/Triple2Double_5sample_bad_prior_sampleMean1.1_1rF1Mean/$i
+        out_dir=$path_data/Triple2Double_5sample_bad_prior_sampleMean1.1_1rF1Mean/$i
         job_name=Triple2Double_2close_prior_$i
         sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
                                         --type TRIPLE2DOUBLE  --from_task1 $from_task1
