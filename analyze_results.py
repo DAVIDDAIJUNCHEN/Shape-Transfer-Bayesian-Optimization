@@ -82,7 +82,7 @@ def maxulative(lists):
 
     return max_list
 
-def run_statistics(file_lsts, out_dir, header_name="response"):
+def run_statistics(file_lsts, out_dir, header_name="response", topic=None):
     """
     get statistics of column header_name at each step,
     file_lsts: [[file1_name1, file2_name1], [file1_name2, file2_name2]]
@@ -146,6 +146,9 @@ def run_statistics(file_lsts, out_dir, header_name="response"):
                 fout.writelines(line)
 
         fname = os.path.basename(file_lst_k[0])
+        
+        if topic is not None:
+            fname = topic + fname
 
         dct_mean_std[fname] = [(m, s) for m, s in zip(mean_lst, std_lst)]
         dct_medium_perc[fname] = [(p25, p50, p75) for p25, p50, p75 in zip(per25_lst, per50_lst, per75_lst)]
