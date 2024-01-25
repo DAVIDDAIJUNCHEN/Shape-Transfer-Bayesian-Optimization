@@ -5,6 +5,76 @@ from matplotlib import cm
 from mpl_toolkits.mplot3d import axes3d
 
 
+# benchmark functions
+def ackley(pnt_2d):  # 1
+    x = pnt_2d[0]
+    y = pnt_2d[1]
+
+    fx = -20.0 * np.exp(-0.2*np.sqrt(0.5*(x**2 + y**2)))-np.exp(0.5*(np.cos(2*np.pi*x)+np.cos(2*np.pi*y))) + np.e + 20
+    return -1*fx
+
+def bukin(pnt_2d):   # 2 
+    x = pnt_2d[0]
+    y = pnt_2d[1]
+
+    fx = 100 * np.sqrt(np.abs(y - 0.01*(x**2) + 0.01*np.abs(x + 10)))
+    return -1*fx
+
+def booth(pnt_2d):   # 24
+    x = pnt_2d[0]
+    y = pnt_2d[1]
+
+    fx = (x + 2*y - 7)**2 + (2*x + y -5)**2
+    return -1*fx
+
+def griewank(pnt_2d):  #7 [-5, 5]
+    x = pnt_2d[0]
+    y = pnt_2d[1]
+
+    fx = x**2/4000 + y**2/4000 - np.cos(x)*np.cos(y/np.sqrt(2)) + 1
+    return -1*fx
+
+def schwefel(pnt_2d):  #15 [-50, 50]
+    x = pnt_2d[0]*10
+    y = pnt_2d[1]*10
+
+    fx = 418.9829*2 - x*np.sin(np.sqrt(np.abs(x))) - y*np.sin(np.sqrt(np.abs(x)))
+    return -1*fx    
+
+def bohachevsky(pnt_2d): # 17  []
+    x = pnt_2d[0]
+    y = pnt_2d[1]
+
+    fx = x**2 + 2*(y**2) - 0.3*np.cos(3*np.pi*x) - 0.4*np.cos(4*np.pi*y) + 0.7
+    return -1*fx
+
+def rotate_hyper(pnt_2d):  # 19 [-50, 50]
+    x = pnt_2d[0]
+    y = pnt_2d[1]
+
+    fx = x**2 + x**2 + y**2 
+    return -1*fx 
+
+def matyas(pnt_2d): # 25 [-10, 10]
+    x = pnt_2d[0]
+    y = pnt_2d[1]
+
+    fx = 0.26*(x**2 + y**2) - 0.48*x*y
+    return -1*fx
+
+def six_hump(pnt_2d): # 30 [-3, 3]
+    x = pnt_2d[0]
+    y = pnt_2d[1]
+
+    fx = (4 - 2.1*(x**2) + (x**4)/3)*(x**2) + x*y + (-4 + 4*(y**2))*(y**2)
+    return -1*fx 
+
+def forrester(pnt_1d): # 39 [0, 1]
+    x = pnt_1d[0]
+
+    fx = np.sin(12*x -4)*((6*x - 2)**2)
+    return -1*fx 
+
 def exp_mu(input, mu, theta=1):
     """
     Exponential function on ||input - mu||^2,
@@ -90,7 +160,7 @@ def branin(input=[3., 4.]):
     branin2 = 10*(1 - 1/(8*np.pi))*np.cos(x1)
     branin = branin1**2 + branin2 + 10
 
-    return branin
+    return -1*branin
 
 def mod_branin(input=[3., 4.], shift=[5, 5]):
     "Modified Branin function: branin(x1, x2) + 20*x1 - 30*x2"
@@ -369,6 +439,7 @@ def show_3D_triple():
 
 
 if __name__ == "__main__":
+    print(six_hump([1, 0]))
     # Exponential family
     plot_rkhs_norm()
     size = 4

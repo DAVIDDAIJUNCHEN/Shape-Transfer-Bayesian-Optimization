@@ -306,19 +306,442 @@ def show_reject_effect_lowMean(x_low, x_high, file_sample_task0, file_task1_stbo
 
     return 0
 
+def show_RAISE_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name):
+    "plot lines with error bar based on medium and percentile"
+
+    fig = plt.figure(figsize=plt.figaspect(0.3))
+    fig.suptitle(title[0])
+
+    dct_medium_perc = [dct_medium_perc1, dct_medium_perc2, dct_medium_perc3]
+
+    for i in range(3):
+        ax = fig.add_subplot(1, 3, i+1)
+        ax.set_title(title[i+1])
+        for item in sorted(dct_medium_perc[i].items()):
+            x_draw = np.arange(len(item[1]))
+            x_draw = [ele + 1 for ele in x_draw]
+            y_medium = [ele[1] for ele in item[1]]
+            y_perc25 = [ele[1] - ele[0] for ele in item[1]]
+            y_perc75 = [ele[2] - ele[1] for ele in item[1]]
+            asymmetric_error = [y_perc25, y_perc75]
+
+            if "task1_mean_stbo.tsv" in item[0] and "good" in item[0]:
+                label = "RAISE BO with good prior"
+                fmt = '-o'
+                color = "green"
+            elif "task1_mean_stbo.tsv" in item[0] and "close" in item[0]:
+                label = "RAISE BO with close prior"
+                fmt = '-o'
+                color = "green"
+            elif "task1_mean_stbo.tsv" in item[0] and "middle" in item[0]:
+                label = "RAISE BO with middle prior"
+                fmt = '--*'
+                color = "orange"
+            elif "task1_mean_stbo.tsv" in item[0] and "far" in item[0]:
+                label = "RAISE BO with far prior"
+                fmt = '-x'
+                color = "cyan"                            
+            elif "task1_mean_stbo.tsv" in item[0] and "bad" in item[0]:
+                label = "RAISE BO with bad prior"
+                fmt = '-.^'
+                color = "blue"
+            elif "task1_sample_stbo.tsv" in item[0] and "noprior" in item[0]:
+                label = "RAISE BO without prior"
+                fmt = '--o'
+                color = "orange"
+            elif "task1_gp.tsv" in item[0]:
+                label = "EI "
+                fmt = '--s'
+                color = "red"
+            elif "task1_mean_stbo.tsv" in item[0] and "0.1_low" in item[0]:
+                label = "RAISE BO with $\mu=0.1$"
+                fmt = '-x'
+                color = "green"
+            elif "task1_mean_stbo.tsv" in item[0] and "0.5_center" in item[0]:
+                label = "RAISE BO with $\mu=0.5$"
+                fmt = '-.^'
+                color = "blue"
+            elif "task1_mean_stbo.tsv" in item[0] and "1.0_center" in item[0]:
+                label = "RAISE BO with $\mu=1.0$"
+                fmt = '-.o'
+                color = "orange"
+            elif "task1_mean_stbo.tsv" in item[0] and "1.5_high" in item[0]:
+                label = "RAISE BO with $\mu=1.5$"
+                fmt = '--*'
+                color = "cyan"
+            elif "task1_mean_stbo.tsv" in item[0] and "1.75_high" in item[0]:
+                label = "RAISE BO with $\mu=1.75$"
+                fmt = '--*'
+                color = "cyan"
+
+            ax.errorbar(x_draw, y_medium, yerr=asymmetric_error, label=label, fmt=fmt, color=color)
+            ax.set_xticks(np.arange(0, 21, 5))
+        plt.legend(loc=4)
+
+    plt.gcf().set_size_inches(20, 5)
+    plt.show()
+    plt.savefig(fig_name)
+    
+    return 0
+
+
 
 if __name__ == "__main__":
-    paper_id = "raise"      # stbo / raise
+    paper_id = "raise"                # stbo / raise
 
     if paper_id == "raise":
+        # Simulation 1: 1D Double (Mean = 0.5)
+        # Left Figure: Double
+        in_dir_bad_1 = "./data/Double2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+        out_dir_bad_1 = "./simulation_results/Double2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_close_1 = "./data/Double2Double_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+        out_dir_close_1 = "./simulation_results/Double2Double_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_noprior_1 = "./data/Double2Double_5sample_no_prior_sampleMean0.5_1rF1Mean"
+        out_dir_noprior_1 = "./simulation_results/Double2Double_5sample_no_prior_sampleMean0.5_1rF1Mean"
+
+        file_lsts1_ei = collect_file(in_dir_bad_1, "gp")
+        file_lsts1_raise_close = collect_file(in_dir_close_1, "mean_stbo")
+        file_lsts1_raise_noprior = collect_file(in_dir_noprior_1, "sample_stbo")
+        file_lsts1_raise_bad = collect_file(in_dir_bad_1, "mean_stbo")
+    
+        _, dct_medium_perc1_ei = run_statistics(file_lsts1_ei, out_dir_bad_1, topic="0bad")
+        _, dct_medium_perc1_close = run_statistics(file_lsts1_raise_close, out_dir_close_1, topic="1close")
+        _, dct_medium_perc1_noprior = run_statistics(file_lsts1_raise_noprior, out_dir_noprior_1, topic="2noprior")
+        _, dct_medium_perc1_bad = run_statistics(file_lsts1_raise_bad, out_dir_bad_1, topic="3bad")
+   
+        dct_1d_double = {**dct_medium_perc1_ei, **dct_medium_perc1_close, **dct_medium_perc1_noprior, **dct_medium_perc1_bad} 
+
+        # Middle Figure: fix mean = 0.5, and vary prior distances
+        in_dir_gp_2 = "./data/Double2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+        out_dir_gp_2 = "./simulation_results/Double2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"        
+
+        in_dir_bad_2 = "./data/Double2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+        out_dir_bad_2 = "./simulation_results/Double2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_close_2 = "./data/Double2Double_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+        out_dir_close_2 = "./simulation_results/Double2Double_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_middle_2 = "./data/Double2Double_5sample_2middle_prior_sampleMean0.5_1rF1Mean"
+        out_dir_middle_2 = "./simulation_results/Double2Double_5sample_2middle_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_far_2 = "./data/Double2Double_5sample_2far_prior_sampleMean0.5_1rF1Mean"
+        out_dir_far_2 = "./simulation_results/Double2Double_5sample_2far_prior_sampleMean0.5_1rF1Mean"
+
+        file_lsts2_ei = collect_file(in_dir_gp_2, "gp")
+        file_lsts2_raise_close = collect_file(in_dir_close_2, "mean_stbo")
+        file_lsts2_raise_middle = collect_file(in_dir_middle_2, "mean_stbo")
+        file_lsts2_raise_far = collect_file(in_dir_far_2, "mean_stbo")
+        file_lsts2_raise_bad = collect_file(in_dir_bad_2, "mean_stbo")
+
+        _, dct_medium_perc2_ei = run_statistics(file_lsts2_ei, out_dir_gp_2, topic="0bad")
+        _, dct_medium_perc2_close = run_statistics(file_lsts2_raise_close, out_dir_close_2, topic="1close")
+        _, dct_medium_perc2_middle = run_statistics(file_lsts2_raise_middle, out_dir_middle_2, topic="2middle")
+        _, dct_medium_perc2_far = run_statistics(file_lsts2_raise_far, out_dir_far_2, topic="3far")
+        _, dct_medium_perc2_bad = run_statistics(file_lsts2_raise_bad, out_dir_bad_2, topic="4bad")
+
+        dct_1d_var_priors = {**dct_medium_perc2_ei, **dct_medium_perc2_close, **dct_medium_perc2_middle, **dct_medium_perc2_far, **dct_medium_perc2_bad} 
+
+        # Right Figure: varing means in bad prior
+        in_dir_bad_3_1 = "./data/Double2Double_5sample_no_prior_sampleMean0.1_1rF1Mean"
+        out_dir_bad_3_1 = "./simulation_results/Double2Double_5sample_no_prior_sampleMean0.1_1rF1Mean"
+
+        in_dir_bad_3_2 = "./data/Double2Double_5sample_no_prior_sampleMean0.5_1rF1Mean"
+        out_dir_bad_3_2 = "./simulation_results/Double2Double_5sample_no_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_bad_3_3 = "./data/Double2Double_5sample_no_prior_sampleMean1.0_1rF1Mean"
+        out_dir_bad_3_3 = "./simulation_results/Double2Double_5sample_no_prior_sampleMean1.0_1rF1Mean"
+
+        in_dir_bad_3_4 = "./data/Double2Double_5sample_no_prior_sampleMean1.5_1rF1Mean"
+        out_dir_bad_3_4 = "./simulation_results/Double2Double_5sample_no_prior_sampleMean1.5_1rF1Mean"        
+
+        file_lsts3_1 = collect_file(in_dir_bad_1, "gp")
+        file_lsts3_2 = collect_file(in_dir_bad_3_1, "mean_stbo")  # mean = 0.1
+        file_lsts3_3 = collect_file(in_dir_bad_3_2, "mean_stbo")  # mean = 0.5
+        file_lsts3_4 = collect_file(in_dir_bad_3_3, "mean_stbo")  # mean = 1.0
+        file_lsts3_5 = collect_file(in_dir_bad_3_4, "mean_stbo")  # mean = 1.5
+
+        _, dct_medium_perc3_ei = run_statistics(file_lsts3_1, out_dir_bad_1, topic="0.1_gp")
+        _, dct_medium_perc3_low = run_statistics(file_lsts3_2, out_dir_bad_3_1, topic="0.1_low")
+        _, dct_medium_perc3_mid1 = run_statistics(file_lsts3_3, out_dir_bad_3_2, topic="0.5_center")
+        _, dct_medium_perc3_mid2 = run_statistics(file_lsts3_4, out_dir_bad_3_3, topic="1.0_center")
+        _, dct_medium_perc3_high = run_statistics(file_lsts3_5, out_dir_bad_3_4, topic="1.5_high")
+   
+        dct_1d_bad_var_means = {**dct_medium_perc3_ei, **dct_medium_perc3_low, **dct_medium_perc3_mid1, **dct_medium_perc3_mid2, **dct_medium_perc3_high} 
+
+        fig_name_medium = "./images/raiseBO_1D_Double_paper.pdf"
+
+        title = ["Simulation 1: 1-dimensional target function with double modals", "$\mu=0.5$", "$\mu=0.5$", "no prior"]
+        show_RAISE_medium_percentile_errorbar(dct_1d_double, dct_1d_var_priors, dct_1d_bad_var_means, title, fig_name=fig_name_medium)
+
+        # Simulation 2: 1D Triple (Mean = 0.5)
+        # Left Figure: Triple
+        in_dir_gp_2 = "./data/Triple2Double_5sample_2bad_prior_sampleMean0.1_1rF1Mean"
+        out_dir_gp_2 = "./simulation_results/Triple2Double_5sample_2bad_prior_sampleMean0.1_1rF1Mean" 
+
+        in_dir_bad_1 = "./data/Triple2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+        out_dir_bad_1 = "./simulation_results/Triple2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_close_1 = "./data/Triple2Double_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+        out_dir_close_1 = "./simulation_results/Triple2Double_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_noprior_1 = "./data/Triple2Double_5sample_no_prior_sampleMean0.5_1rF1Mean"
+        out_dir_noprior_1 = "./simulation_results/Triple2Double_5sample_no_prior_sampleMean0.5_1rF1Mean"
+
+        file_lsts1_ei = collect_file(in_dir_gp_2, "gp")
+        file_lsts1_raise_close = collect_file(in_dir_close_1, "mean_stbo")
+        file_lsts1_raise_noprior = collect_file(in_dir_noprior_1, "sample_stbo")
+        file_lsts1_raise_bad = collect_file(in_dir_bad_1, "mean_stbo")
+    
+        _, dct_medium_perc1_ei = run_statistics(file_lsts1_ei, in_dir_gp_2, topic="0bad")
+        _, dct_medium_perc1_close = run_statistics(file_lsts1_raise_close, out_dir_close_1, topic="1close")
+        _, dct_medium_perc1_noprior = run_statistics(file_lsts1_raise_noprior, out_dir_noprior_1, topic="2noprior")
+        _, dct_medium_perc1_bad = run_statistics(file_lsts1_raise_bad, out_dir_bad_1, topic="3bad")
+   
+        dct_1d_double = {**dct_medium_perc1_ei, **dct_medium_perc1_close, **dct_medium_perc1_noprior, **dct_medium_perc1_bad} 
+
+        # Middle Figure: fix mean = 0.5, and vary prior distances
+        in_dir_gp_2 = "./data/Triple2Double_5sample_2bad_prior_sampleMean0.1_1rF1Mean"
+        out_dir_gp_2 = "./simulation_results/Triple2Double_5sample_2bad_prior_sampleMean0.1_1rF1Mean"        
+
+        in_dir_bad_2 = "./data/Triple2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+        out_dir_bad_2 = "./simulation_results/Triple2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_close_2 = "./data/Triple2Double_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+        out_dir_close_2 = "./simulation_results/Triple2Double_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_middle_2 = "./data/Triple2Double_5sample_2middle_prior_sampleMean0.5_1rF1Mean"
+        out_dir_middle_2 = "./simulation_results/Triple2Double_5sample_2middle_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_far_2 = "./data/Triple2Double_5sample_2far_prior_sampleMean0.5_1rF1Mean"
+        out_dir_far_2 = "./simulation_results/Triple2Double_5sample_2far_prior_sampleMean0.5_1rF1Mean"
+
+        file_lsts2_ei = collect_file(in_dir_gp_2, "gp")
+        file_lsts2_raise_close = collect_file(in_dir_close_2, "mean_stbo")
+        file_lsts2_raise_middle = collect_file(in_dir_middle_2, "mean_stbo")
+        file_lsts2_raise_far = collect_file(in_dir_far_2, "mean_stbo")
+        file_lsts2_raise_bad = collect_file(in_dir_bad_2, "mean_stbo")
+
+        _, dct_medium_perc2_ei = run_statistics(file_lsts2_ei, out_dir_gp_2, topic="0bad")
+        _, dct_medium_perc2_close = run_statistics(file_lsts2_raise_close, out_dir_close_2, topic="1close")
+        _, dct_medium_perc2_middle = run_statistics(file_lsts2_raise_middle, out_dir_middle_2, topic="2middle")
+        _, dct_medium_perc2_far = run_statistics(file_lsts2_raise_far, out_dir_far_2, topic="3far")
+        _, dct_medium_perc2_bad = run_statistics(file_lsts2_raise_bad, out_dir_bad_2, topic="4bad")
+
+        dct_1d_var_priors = {**dct_medium_perc2_ei, **dct_medium_perc2_close, **dct_medium_perc2_middle, **dct_medium_perc2_far, **dct_medium_perc2_bad} 
+
+        # Right Figure: varing means in bad prior
+        in_dir_bad_3_1 = "./data/Triple2Double_5sample_no_prior_sampleMean0.1_1rF1Mean"
+        out_dir_bad_3_1 = "./simulation_results/Triple2Double_5sample_no_prior_sampleMean0.1_1rF1Mean"
+
+        in_dir_bad_3_2 = "./data/Triple2Double_5sample_no_prior_sampleMean0.5_1rF1Mean"
+        out_dir_bad_3_2 = "./simulation_results/Triple2Double_5sample_no_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_bad_3_3 = "./data/Triple2Double_5sample_no_prior_sampleMean1.0_1rF1Mean"
+        out_dir_bad_3_3 = "./simulation_results/Triple2Double_5sample_no_prior_sampleMean1.0_1rF1Mean"
+
+        in_dir_bad_3_4 = "./data/Triple2Double_5sample_no_prior_sampleMean1.5_1rF1Mean"
+        out_dir_bad_3_4 = "./simulation_results/Triple2Double_5sample_no_prior_sampleMean1.5_1rF1Mean"        
+
+        file_lsts3_1 = collect_file(in_dir_bad_3_1, "gp")
+        file_lsts3_2 = collect_file(in_dir_bad_3_1, "mean_stbo")  # mean = 0.1
+        file_lsts3_3 = collect_file(in_dir_bad_3_2, "mean_stbo")  # mean = 0.5
+        file_lsts3_4 = collect_file(in_dir_bad_3_3, "mean_stbo")  # mean = 1.0
+        file_lsts3_5 = collect_file(in_dir_bad_3_4, "mean_stbo")  # mean = 1.75
+
+        _, dct_medium_perc3_ei = run_statistics(file_lsts3_1, out_dir_bad_3_1, topic="0.1_gp")
+        _, dct_medium_perc3_low = run_statistics(file_lsts3_2, out_dir_bad_3_1, topic="0.1_low")
+        _, dct_medium_perc3_mid1 = run_statistics(file_lsts3_3, out_dir_bad_3_2, topic="0.5_center")
+        _, dct_medium_perc3_mid2 = run_statistics(file_lsts3_4, out_dir_bad_3_3, topic="1.0_center")
+        _, dct_medium_perc3_high = run_statistics(file_lsts3_5, out_dir_bad_3_4, topic="1.5_high")
+   
+        dct_1d_bad_var_means = {**dct_medium_perc3_ei, **dct_medium_perc3_low, **dct_medium_perc3_mid1, **dct_medium_perc3_mid2, **dct_medium_perc3_high} 
+
+        fig_name_medium = "./images/raiseBO_1D_Triple_paper.pdf"
+
+        title = ["Simulation 2: 1-dimensional target function with triple modals", "$\mu=0.5$", "$\mu=0.5$", "no prior"]
+        show_RAISE_medium_percentile_errorbar(dct_1d_double, dct_1d_var_priors, dct_1d_bad_var_means, title, fig_name=fig_name_medium)
+
+        # Simulation 3: 2D Double (Mean = 0.5)
+        # Left Figure: Triple
+        in_dir_bad_1 = "./data/2D_Double2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+        out_dir_bad_1 = "./simulation_results/2D_Double2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_close_1 = "./data/2D_Double2Double_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+        out_dir_close_1 = "./simulation_results/2D_Double2Double_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_noprior_1 = "./data/2D_Double2Double_5sample_no_prior_sampleMean0.5_1rF1Mean"
+        out_dir_noprior_1 = "./simulation_results/2D_Double2Double_5sample_no_prior_sampleMean0.5_1rF1Mean"
+
+        file_lsts1_ei = collect_file(in_dir_bad_1, "gp")
+        file_lsts1_raise_close = collect_file(in_dir_close_1, "mean_stbo")
+        file_lsts1_raise_noprior = collect_file(in_dir_noprior_1, "sample_stbo")
+        file_lsts1_raise_bad = collect_file(in_dir_bad_1, "mean_stbo")
+    
+        _, dct_medium_perc1_ei = run_statistics(file_lsts1_ei, out_dir_bad_1, topic="0bad")
+        _, dct_medium_perc1_close = run_statistics(file_lsts1_raise_close, out_dir_close_1, topic="1close")
+        _, dct_medium_perc1_noprior = run_statistics(file_lsts1_raise_noprior, out_dir_noprior_1, topic="2noprior")
+        _, dct_medium_perc1_bad = run_statistics(file_lsts1_raise_bad, out_dir_bad_1, topic="3bad")
+   
+        dct_2d_double = {**dct_medium_perc1_ei, **dct_medium_perc1_close, **dct_medium_perc1_noprior, **dct_medium_perc1_bad} 
+
+        # Middle Figure: fix mean = 0.5, and vary prior distances
+        in_dir_gp_2 = "./data/2D_Double2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+        out_dir_gp_2 = "./simulation_results/2D_Double2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"        
+
+        in_dir_bad_2 = "./data/2D_Double2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+        out_dir_bad_2 = "./simulation_results/2D_Double2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_close_2 = "./data/2D_Double2Double_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+        out_dir_close_2 = "./simulation_results/2D_Double2Double_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_middle_2 = "./data/2D_Double2Double_5sample_2middle_prior_sampleMean0.5_1rF1Mean"
+        out_dir_middle_2 = "./simulation_results/2D_Double2Double_5sample_2middle_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_far_2 = "./data/2D_Double2Double_5sample_2far_prior_sampleMean0.5_1rF1Mean"
+        out_dir_far_2 = "./simulation_results/2D_Double2Double_5sample_2far_prior_sampleMean0.5_1rF1Mean"
+
+        file_lsts2_ei = collect_file(in_dir_gp_2, "gp")
+        file_lsts2_raise_close = collect_file(in_dir_close_2, "mean_stbo")
+        file_lsts2_raise_middle = collect_file(in_dir_middle_2, "mean_stbo")
+        file_lsts2_raise_far = collect_file(in_dir_far_2, "mean_stbo")
+        file_lsts2_raise_bad = collect_file(in_dir_bad_2, "mean_stbo")
+
+        _, dct_medium_perc2_ei = run_statistics(file_lsts2_ei, out_dir_gp_2, topic="0bad")
+        _, dct_medium_perc2_close = run_statistics(file_lsts2_raise_close, out_dir_close_2, topic="1close")
+        _, dct_medium_perc2_middle = run_statistics(file_lsts2_raise_middle, out_dir_middle_2, topic="2middle")
+        _, dct_medium_perc2_far = run_statistics(file_lsts2_raise_far, out_dir_far_2, topic="3far")
+        _, dct_medium_perc2_bad = run_statistics(file_lsts2_raise_bad, out_dir_bad_2, topic="4bad")
+
+        dct_2d_var_priors = {**dct_medium_perc2_ei, **dct_medium_perc2_close, **dct_medium_perc2_middle, **dct_medium_perc2_far, **dct_medium_perc2_bad} 
+
+        # Right Figure: varing means in bad prior
+        in_dir_bad_3_1 = "./data/2D_Double2Double_5sample_no_prior_sampleMean0.1_1rF1Mean"
+        out_dir_bad_3_1 = "./simulation_results/2D_Double2Double_5sample_no_prior_sampleMean0.1_1rF1Mean"
+
+        in_dir_bad_3_2 = "./data/2D_Double2Double_5sample_no_prior_sampleMean0.5_1rF1Mean"
+        out_dir_bad_3_2 = "./simulation_results/2D_Double2Double_5sample_no_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_bad_3_3 = "./data/2D_Double2Double_5sample_no_prior_sampleMean1.0_1rF1Mean"
+        out_dir_bad_3_3 = "./simulation_results/2D_Double2Double_5sample_no_prior_sampleMean1.0_1rF1Mean"
+
+        in_dir_bad_3_4 = "./data/2D_Double2Double_5sample_no_prior_sampleMean1.5_1rF1Mean"
+        out_dir_bad_3_4 = "./simulation_results/2D_Double2Double_5sample_no_prior_sampleMean1.5_1rF1Mean"        
+
+        file_lsts3_1 = collect_file(in_dir_gp_2, "gp")
+        file_lsts3_2 = collect_file(in_dir_bad_3_1, "mean_stbo")  # mean = 0.1
+        file_lsts3_3 = collect_file(in_dir_bad_3_2, "mean_stbo")  # mean = 0.5
+        file_lsts3_4 = collect_file(in_dir_bad_3_3, "mean_stbo")  # mean = 1.0
+        file_lsts3_5 = collect_file(in_dir_bad_3_4, "mean_stbo")  # mean = 1.75
+
+        _, dct_medium_perc3_ei = run_statistics(file_lsts3_1, out_dir_gp_2, topic="0.1_gp")
+        _, dct_medium_perc3_low = run_statistics(file_lsts3_2, out_dir_bad_3_1, topic="0.1_low")
+        _, dct_medium_perc3_mid1 = run_statistics(file_lsts3_3, out_dir_bad_3_2, topic="0.5_center")
+        _, dct_medium_perc3_mid2 = run_statistics(file_lsts3_4, out_dir_bad_3_3, topic="1.0_center")
+        _, dct_medium_perc3_high = run_statistics(file_lsts3_5, out_dir_bad_3_4, topic="1.5_high")
+   
+        dct_2d_bad_var_means = {**dct_medium_perc3_ei, **dct_medium_perc3_low, **dct_medium_perc3_mid1, **dct_medium_perc3_mid2, **dct_medium_perc3_high} 
+
+        fig_name_medium = "./images/raiseBO_2D_Double_paper.pdf"
+
+        title = ["Simulation 3: 2-dimensional target function with double modals", "$\mu=0.5$", "$\mu=0.5$", "no prior"]
+        show_RAISE_medium_percentile_errorbar(dct_2d_double, dct_2d_var_priors, dct_2d_bad_var_means, title, fig_name=fig_name_medium)
+
+        # Simulation 4: 2D Triple (Mean = 0.5)
+        # Simulation 4: 2D Triple (Mean = 0.5)
+        # Left Figure: Triple
+        in_dir_bad_1 = "./data/2D_Triple2Triple_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+        out_dir_bad_1 = "./simulation_results/2D_Triple2Triple_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_close_1 = "./data/2D_Triple2Triple_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+        out_dir_close_1 = "./simulation_results/2D_Triple2Triple_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_noprior_1 = "./data/2D_Triple2Triple_5sample_no_prior_sampleMean0.5_1rF1Mean"
+        out_dir_noprior_1 = "./simulation_results/2D_Triple2Triple_5sample_no_prior_sampleMean0.5_1rF1Mean"
+
+        file_lsts1_ei = collect_file(in_dir_bad_1, "gp")
+        file_lsts1_raise_close = collect_file(in_dir_close_1, "mean_stbo")
+        file_lsts1_raise_noprior = collect_file(in_dir_noprior_1, "sample_stbo")
+        file_lsts1_raise_bad = collect_file(in_dir_bad_1, "mean_stbo")
+    
+        _, dct_medium_perc1_ei = run_statistics(file_lsts1_ei, out_dir_bad_1, topic="0bad")
+        _, dct_medium_perc1_close = run_statistics(file_lsts1_raise_close, out_dir_close_1, topic="1close")
+        _, dct_medium_perc1_noprior = run_statistics(file_lsts1_raise_noprior, out_dir_noprior_1, topic="2noprior")
+        _, dct_medium_perc1_bad = run_statistics(file_lsts1_raise_bad, out_dir_bad_1, topic="3bad")
+   
+        dct_2d_triple = {**dct_medium_perc1_ei, **dct_medium_perc1_close, **dct_medium_perc1_noprior, **dct_medium_perc1_bad} 
+
+        # Middle Figure: fix mean = 0.5, and vary prior distances
+        in_dir_gp_2 = "./data/2D_Triple2Triple_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+        out_dir_gp_2 = "./simulation_results/2D_Triple2Triple_5sample_2bad_prior_sampleMean0.5_1rF1Mean"        
+
+        in_dir_bad_2 = "./data/2D_Triple2Triple_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+        out_dir_bad_2 = "./simulation_results/2D_Triple2Triple_5sample_2bad_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_close_2 = "./data/2D_Triple2Triple_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+        out_dir_close_2 = "./simulation_results/2D_Triple2Triple_5sample_2close_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_middle_2 = "./data/2D_Triple2Triple_5sample_2middle_prior_sampleMean0.5_1rF1Mean"
+        out_dir_middle_2 = "./simulation_results/2D_Triple2Triple_5sample_2middle_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_far_2 = "./data/2D_Triple2Triple_5sample_2far_prior_sampleMean0.5_1rF1Mean"
+        out_dir_far_2 = "./simulation_results/2D_Triple2Triple_5sample_2far_prior_sampleMean0.5_1rF1Mean"
+
+        file_lsts2_ei = collect_file(in_dir_gp_2, "gp")
+        file_lsts2_raise_close = collect_file(in_dir_close_2, "mean_stbo")
+        file_lsts2_raise_middle = collect_file(in_dir_middle_2, "mean_stbo")
+        file_lsts2_raise_far = collect_file(in_dir_far_2, "mean_stbo")
+        file_lsts2_raise_bad = collect_file(in_dir_bad_2, "mean_stbo")
+
+        _, dct_medium_perc2_ei = run_statistics(file_lsts2_ei, out_dir_gp_2, topic="0bad")
+        _, dct_medium_perc2_close = run_statistics(file_lsts2_raise_close, out_dir_close_2, topic="1close")
+        _, dct_medium_perc2_middle = run_statistics(file_lsts2_raise_middle, out_dir_middle_2, topic="2middle")
+        _, dct_medium_perc2_far = run_statistics(file_lsts2_raise_far, out_dir_far_2, topic="3far")
+        _, dct_medium_perc2_bad = run_statistics(file_lsts2_raise_bad, out_dir_bad_2, topic="4bad")
+
+        dct_2d_var_priors = {**dct_medium_perc2_ei, **dct_medium_perc2_close, **dct_medium_perc2_middle, **dct_medium_perc2_far, **dct_medium_perc2_bad} 
+
+        # Right Figure: varing means in bad prior
+        in_dir_bad_3_1 = "./data/2D_Triple2Triple_5sample_no_prior_sampleMean0.1_1rF1Mean"
+        out_dir_bad_3_1 = "./simulation_results/2D_Triple2Triple_5sample_no_prior_sampleMean0.1_1rF1Mean"
+
+        in_dir_bad_3_2 = "./data/2D_Triple2Triple_5sample_no_prior_sampleMean0.5_1rF1Mean"
+        out_dir_bad_3_2 = "./simulation_results/2D_Triple2Triple_5sample_no_prior_sampleMean0.5_1rF1Mean"
+
+        in_dir_bad_3_3 = "./data/2D_Triple2Triple_5sample_no_prior_sampleMean1.0_1rF1Mean"
+        out_dir_bad_3_3 = "./simulation_results/2D_Triple2Triple_5sample_no_prior_sampleMean1.0_1rF1Mean"
+
+        in_dir_bad_3_4 = "./data/2D_Triple2Triple_5sample_no_prior_sampleMean1.5_1rF1Mean"
+        out_dir_bad_3_4 = "./simulation_results/2D_Triple2Triple_5sample_no_prior_sampleMean1.5_1rF1Mean"        
+
+        file_lsts3_1 = collect_file(in_dir_gp_2, "gp")
+        file_lsts3_2 = collect_file(in_dir_bad_3_1, "mean_stbo")  # mean = 0.1
+        file_lsts3_3 = collect_file(in_dir_bad_3_2, "mean_stbo")  # mean = 0.5
+        file_lsts3_4 = collect_file(in_dir_bad_3_3, "mean_stbo")  # mean = 1.0
+        file_lsts3_5 = collect_file(in_dir_bad_3_4, "mean_stbo")  # mean = 1.75
+
+        _, dct_medium_perc3_ei = run_statistics(file_lsts3_1, out_dir_gp_2, topic="0.1_gp")
+        _, dct_medium_perc3_low = run_statistics(file_lsts3_2, out_dir_bad_3_1, topic="0.1_low")
+        _, dct_medium_perc3_mid1 = run_statistics(file_lsts3_3, out_dir_bad_3_2, topic="0.5_center")
+        _, dct_medium_perc3_mid2 = run_statistics(file_lsts3_4, out_dir_bad_3_3, topic="1.0_center")
+        _, dct_medium_perc3_high = run_statistics(file_lsts3_5, out_dir_bad_3_4, topic="1.5_high")
+   
+        dct_2d_bad_var_means = {**dct_medium_perc3_ei, **dct_medium_perc3_low, **dct_medium_perc3_mid1, **dct_medium_perc3_mid2, **dct_medium_perc3_high} 
+
+        fig_name_medium = "./images/raiseBO_2D_Triple_paper.pdf"
+
+        title = ["Simulation 4: 2-dimensional target function with triple modals", "$\mu=0.5$", "$\mu=0.5$", "no prior"]
+        show_RAISE_medium_percentile_errorbar(dct_2d_triple, dct_2d_var_priors, dct_2d_bad_var_means, title, fig_name=fig_name_medium)
+
         # rejection effect
         file_sample_task0_high = "./data/Triple2Double_5sample_2bad_prior_sampleMean1.1_1rF1Mean/13/simTriple2Double_points_task0_mean.tsv"
         file_task1_stbo_high = "./data/Triple2Double_5sample_2bad_prior_sampleMean1.1_1rF1Mean/13/simTriple2Double_points_task1_mean_stbo_draw.tsv"
 
         file_sample_task0_low = "./data/Triple2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean/13/simTriple2Double_points_task0_mean.tsv"
         file_task1_stbo_low = "./data/Triple2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean/13/simTriple2Double_points_task1_mean_stbo_draw.tsv"        
-        show_reject_effect_highMean(-3.2, 14.8, file_sample_task0_high, file_task1_stbo_high)
-        show_reject_effect_lowMean(-2.8, 14.3, file_sample_task0_low, file_task1_stbo_low)
+        #show_reject_effect_highMean(-3.2, 14.8, file_sample_task0_high, file_task1_stbo_high)
+        #show_reject_effect_lowMean(-2.8, 14.3, file_sample_task0_low, file_task1_stbo_low)
     elif paper_id == "stbo":
         # Exponential family
         size = 4
@@ -414,7 +837,6 @@ if __name__ == "__main__":
 
         title = ["Simulation 3: from 2d triple modals to triple modals", "transfer vs non-transfer", "start from rand", "start from gp"]
         show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
-
 
         # simulation 4: EXP 
         thetas = [0.87, 1, 1.414]

@@ -285,7 +285,7 @@ class ZeroGProcess:
             f_out.writelines(first_line + '\n')
         
         for pnt, rel_qunt in prior_points:
-            res_pnt = rel_qunt*mean
+            res_pnt = mean + (rel_qunt-1)*np.abs(mean)
             write_exp_result(out_file, res_pnt, pnt)
 
         # sample points based on prior & mean & LHD 
