@@ -42,7 +42,7 @@ def arg_parser():
     
     return parser
 
-def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=100, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=30, kessi_1=0.0, 
+def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=30, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=30, kessi_1=0.0, 
              file_1_gp="f1_gp.tsv", file_1_rand="f1_rand.tsv", file_1_sample="f1_sample.tsv", file_1_mean="f1_mean.tsv", 
              file_1_sample_stbo="f1_sample_stbo.tsv", file_1_mean_stbo="f1_mean_stbo.tsv",  
              num_start_opt2=50, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=100, kessi_2=0.0, 
@@ -158,7 +158,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=100, 
         # Method 3 in task 1: GP-based Sampling STBO
         # stage 1: sampling from Gaussian Process
         num_sample = 5
-        mean_sample = -800
+        mean_sample = 0.5
         sigma_sample = 0.01
 
         zeroGP = ZeroGProcess()
@@ -206,10 +206,10 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=100, 
             #prior_pnts = [([10, 10], 1.05)]            # bad
             prior_pnts = []                             # no
         elif fun_type == "BUKIN":
-            #prior_pnts = [([-9.5, 0.75], 1.05)]         # close
-            #prior_pnts = [([-9, 0.75], 1.05)]           # middle
-            #prior_pnts = [([-8.5, 0.75], 1.05)]         # far
-            prior_pnts = [([-5, 1.5], 1.05)]            # bad
+            #prior_pnts = [([-10, 1.5], 1.05)]         # close
+            #prior_pnts = [([-10, 2], 1.05)]           # middle
+            #prior_pnts = [([-10, 2.5], 1.05)]         # far
+            prior_pnts = [([-5, 1.5], 1.05)]           # bad
             #prior_pnts = []                              # no            
         elif fun_type == "BOHACH":
             #prior_pnts = [([0.5, 0.5], 1.05)]          # close
@@ -224,26 +224,41 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=100, 
             #prior_pnts = [([5, 5], 1.05)]              # bad
             prior_pnts = []                             # no
         elif fun_type == "GRIEWANK":
-            prior_pnts = [([-5, 0], 1.05)]              # bad
-            #prior_pnts = []                             # no 
+            #prior_pnts = [([0.5, 0.5], 1.05)]          # close
+            #prior_pnts = [([1.0, 1.0], 1.05)]          # middle
+            #prior_pnts = [([1.5, 1.5], 1.05)]          # far
+            #prior_pnts = [([-5, 0], 1.05)]             # bad
+            prior_pnts = []                            # no 
         elif fun_type == "SCHWEFEL":
-            #prior_pnts = [([20, 20], 1.05)]            # bad           
+            #prior_pnts = [([40, 40], 1.05)]             # close
+            #prior_pnts = [([35, 35], 1.05)]             # middle 
+            #prior_pnts = [([30, 30], 1.05)]             # far  
+            #prior_pnts = [([20, 20], 1.05)]             # bad      
             prior_pnts = []                             # no
         elif fun_type == "ROTATE_HYPER":
-            prior_pnts = [([10, 10], 1.05)]            # bad
-            #prior_pnts = []                             # no
+            #prior_pnts = [([10, 10], 1.05)]             # bad
+            prior_pnts = []                              # no
         elif fun_type == "MATYAS":
-            prior_pnts = [([-8, 8], 1.05)]            # bad
-            #prior_pnts = []                             # no
+            #prior_pnts = [([-8, 8], 1.05)]              # bad 
+            prior_pnts = []                             # no
         elif fun_type == "SIX_HUMP":
-            prior_pnts = [([1, 0], 1.05)]            # bad
-            #prior_pnts = []                          # no
+            #prior_pnts = [([0.1, -1], 1.05)]            # close
+            #prior_pnts = [([0.3, -1.2], 1.05)]          # middle
+            #prior_pnts = [([0.5, -1.4], 1.05)]          # far
+            #prior_pnts = [([1, 0], 1.05)]               # bad
+            prior_pnts = []                             # no
         elif fun_type == "FORRESTER":
-            #prior_pnts = [([0.2], 1.05)]             # bad
-            prior_pnts = []                           # no
+            #prior_pnts = [([0.7], 1.05)]               # close
+            #prior_pnts = [([0.6], 1.05)]               # middle
+            prior_pnts = [([0.5], 1.05)]               # far
+            #prior_pnts = [([0.2], 1.05)]               # bad
+            #prior_pnts = []                            # no
         elif fun_type == "BR":
-            prior_pnts = [([8, 10], 1.05)]             # bad
-            #prior_pnts = []                           # no            
+            #prior_pnts = [([np.pi, 3], 1.05)]          # close
+            #prior_pnts = [([np.pi, 4], 1.05)]          # middle
+            #prior_pnts = [([np.pi, 5], 1.05)]          # far
+            #prior_pnts = [([8, 10], 1.05)]             # bad
+            prior_pnts = []                            # no            
 
         zeroGP.sample(num_sample, mean_sample, sigma_sample, l_bounds=lower_bound, u_bounds=upper_bound, prior_points=prior_pnts, mean_fix=False, out_file=file_1_sample)
         best_point_exp0_sample = get_best_point(file_1_sample)

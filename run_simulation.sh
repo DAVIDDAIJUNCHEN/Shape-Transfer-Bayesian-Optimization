@@ -350,8 +350,8 @@ if [ $stage -eq 0 ] || [ $stage -eq 15 ]; then
     echo "Task: griewank function"
     for i in $(seq 1 $num_rep); do
         echo "Running $i-th simulation"
-        mkdir -p $path_data/2D_griewank_5sample_no_prior_sampleMeanNeg2_1rF1Mean/$i
-        out_dir=$path_data/2D_griewank_5sample_no_prior_sampleMeanNeg2_1rF1Mean/$i
+        mkdir -p $path_data/2D_griewank_5sample_bad_prior_sampleMeanNeg2_1rF1Mean/$i
+        out_dir=$path_data/2D_griewank_5sample_bad_prior_sampleMeanNeg2_1rF1Mean/$i
         job_name=Griewank_2D_$i
         sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
                                         --type GRIEWANK  --from_task1 $from_task1
@@ -429,13 +429,13 @@ if [ $stage -eq 0 ] || [ $stage -eq 19 ]; then
     T1=20
     T2=20
 
-    num_rep=2
+    num_rep=20
 
     echo "Task: SixHump function"
     for i in $(seq 1 $num_rep); do
         echo "Running $i-th simulation"
-        mkdir -p $path_data/2D_sixHump_5sample_bad_prior_sampleMeanNeg0_1rF1Mean/$i
-        out_dir=$path_data/2D_sixHump_5sample_bad_prior_sampleMeanNeg0_1rF1Mean/$i
+        mkdir -p $path_data/2D_sixHump_5sample_no_prior_sampleMeanNeg0.5_1rF1Mean/$i
+        out_dir=$path_data/2D_sixHump_5sample_no_prior_sampleMeanNeg0.5_1rF1Mean/$i
         job_name=SixHump_2D_$i
         sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
                                         --type SIX_HUMP  --from_task1 $from_task1
@@ -450,13 +450,13 @@ if [ $stage -eq 0 ] || [ $stage -eq 20 ]; then
     T1=20
     T2=20
 
-    num_rep=2
+    num_rep=20
 
     echo "Task: Forrester function"
     for i in $(seq 1 $num_rep); do
         echo "Running $i-th simulation"
-        mkdir -p $path_data/2D_forrester_5sample_no_prior_sampleMean0.5_1rF1Mean/$i
-        out_dir=$path_data/2D_forrester_5sample_no_prior_sampleMean0.5_1rF1Mean/$i
+        mkdir -p $path_data/2D_forrester_5sample_far_prior_sampleMeanNeg0.5_1rF1Mean/$i
+        out_dir=$path_data/2D_forrester_5sample_far_prior_sampleMeanNeg0.5_1rF1Mean/$i
         job_name=Forrester_2D_$i
         sbatch --job-name=$job_name ./main_simulation.py  --T1 $T1  --T2 $T2  --task2_start_from $task2_start_from  --out_dir $out_dir \
                                         --type FORRESTER  --from_task1 $from_task1
