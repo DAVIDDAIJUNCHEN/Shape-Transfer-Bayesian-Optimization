@@ -54,7 +54,7 @@ def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medi
     "plot lines with error bar based on medium and percentile"
 
     fig = plt.figure(figsize=plt.figaspect(0.3))
-    fig.suptitle(title[0])
+    #fig.suptitle(title[0])
 
     dct_medium_perc = [dct_medium_perc1, dct_medium_perc2, dct_medium_perc3]
 
@@ -183,7 +183,7 @@ def show_reject_effect_highMean(x_low, x_high, file_sample_task0, file_task1_stb
 
     # Line 2: target function
     y_target = [tri_exp_mu([ele], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3) for ele in x_draw]
-    print(tri_exp_mu([4.71], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3))    
+    print(tri_exp_mu([5.5], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3))    
     
     # Line 3: AC function
     STBO = ShapeTransferBO()
@@ -202,36 +202,42 @@ def show_reject_effect_highMean(x_low, x_high, file_sample_task0, file_task1_stb
     elif isinstance(kessis, float):
         ac_kessi = [STBO.aux_func_ei([ele], kessis) for ele in x_draw]
         ac_values_lst.append(ac_kessi)
-        kessis = [kessis]    
+        kessis = [kessis]
+
+    # Line 4: add rejection region with line
+    line_y = 0.04
 
     # draw in one fig
     fig, ax = plt.subplots(1, 1)
     ax.set_title("")
 
     ax.plot(x_draw, y1_mean, label="standard line")
-    ax.fill_between(x_draw, y1_lower, y1_upper, alpha=0.2)
-    ax.plot(GP1.X[2:], [y + 1.1 for y in GP1.Y[2:]], 'o', label="LHS points", color="tab:blue")
+    #ax.fill_between(x_draw, y1_lower, y1_upper, alpha=0.2)
+    #ax.plot(GP1.X[2:], [y + 1.1 for y in GP1.Y[2:]], 'o', label="LHS points", color="tab:blue")
     ax.plot(GP1.X[:2], [y + 1.1 for y in GP1.Y[:2]], 'x', label="prior points", markersize=10, color="tab:blue")
 
     ax.plot(x_draw, y_target, '--', label="target function")
-    ax.plot(STBO.X, STBO.Y, 'o', color="tab:red", label="experiment points")
-    ax.plot([x_next], [y_next], '*', label="next point to evaluate", markersize=10, color="tab:red")
+    ax.plot(STBO.X, STBO.Y, 'o', color="tab:red", label="observations")
+    ax.plot([x_next], [y_next], '*', label="next evaluation", markersize=10, color="tab:red")
+
+    ax.axvline(x=4.71, color='orange')
 
     for ac_value, kessi in zip(ac_values_lst, kessis):
         ax.plot(x_draw, ac_value, linestyle='dashdot', label="acquisition function")
         ax.plot([x_next], [ac_next], '*', label="acquisition peak", markersize=10, color="tab:green")
-        
-    ax.axvline(x=4.71, color='orange')
+        # add rejection area between AC func and line_y
+        ac_value_adapt = [min(ele, line_y) for ele in ac_value]
+        ax.fill_between(x_draw, ac_value_adapt, line_y, facecolor="lightblue", edgecolor="white", label="rejection area")
 
     # add text 
     ax.text(7.80, 0.08, '1', color="red", size=12)
     ax.text(2.80, 0.08, '2', color="red", size=12)
     ax.text(-0.2, 0.86, '3', color="red", size=12)
-    ax.text(10.5, 1.13, '4', color="red", size=12)
+    ax.text(10.5, 1.18, '4', color="red", size=12)
     ax.text(5.80, 1.30, '5', color="red", size=12)
     ax.text(3.90, 0.3, 'x=4.71', color="red", size=12)
     
-    ax.legend(loc="center right", fontsize=7)
+    ax.legend(loc="upper right", fontsize=7)
     fig.tight_layout()
     fig.savefig("./images/raise_bo_reject_highMean.pdf")
 
@@ -254,7 +260,7 @@ def show_reject_effect_lowMean(x_low, x_high, file_sample_task0, file_task1_stbo
 
     # Line 2: target function
     y_target = [tri_exp_mu([ele], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3) for ele in x_draw]
-    print(tri_exp_mu([-1.27], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3))    
+    print(tri_exp_mu([7.5], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3))    
     
     # Line 3: AC function
     STBO = ShapeTransferBO()
@@ -275,6 +281,9 @@ def show_reject_effect_lowMean(x_low, x_high, file_sample_task0, file_task1_stbo
         ac_values_lst.append(ac_kessi)
         kessis = [kessis]    
 
+    # Line 4: rejection area
+    line_y = 0.05
+
     # draw in one fig
     fig, ax = plt.subplots(1, 1)
     ax.set_title("")
@@ -292,6 +301,9 @@ def show_reject_effect_lowMean(x_low, x_high, file_sample_task0, file_task1_stbo
         ax.plot(x_draw, ac_value, linestyle='dashdot', label="acquisition function")
         ax.plot([x_next], [ac_next], '*', label="acquisition peak", markersize=10, color="tab:green")
         
+        # add rejection area between AC func and line_y
+        ax.fill_between(x_draw, ac_value, 1)
+
     ax.axvline(x=-1.27, color='orange')
 
     # add text 
@@ -405,6 +417,7 @@ if __name__ == "__main__":
     paper_id = "raise"                # stbo / raise
 
     if paper_id == "raise":
+        topic_means = {}
         topic_means = {"Double2Double": [0.5, 0.1, 1.0, 1.5], 
                        "Triple2Double": [0.5, 0.1, 1.0, 1.5],
                        "2D_forrester":  [0.5, 1.5, "Neg5", "Neg10"], 
@@ -523,19 +536,20 @@ if __name__ == "__main__":
             num_sim += 1
 
         # rejection effect
-        file_sample_task0_high = "./data/Triple2Double_5sample_2bad_prior_sampleMean1.1_1rF1Mean/13/simTriple2Double_points_task0_mean.tsv"
-        file_task1_stbo_high = "./data/Triple2Double_5sample_2bad_prior_sampleMean1.1_1rF1Mean/13/simTriple2Double_points_task1_mean_stbo_draw.tsv"
+        file_sample_task0_high = "./data/Triple2Double_5sample_2bad_prior_sampleMean1.1_1rF1Mean/simTriple2Double_points_task0_mean.tsv"
+        file_task1_stbo_high = "./data/Triple2Double_5sample_2bad_prior_sampleMean1.1_1rF1Mean/simTriple2Double_points_task1_mean_stbo_draw.tsv"
 
-        file_sample_task0_low = "./data/Triple2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean/13/simTriple2Double_points_task0_mean.tsv"
-        file_task1_stbo_low = "./data/Triple2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean/13/simTriple2Double_points_task1_mean_stbo_draw.tsv"        
-        #show_reject_effect_highMean(-3.2, 14.8, file_sample_task0_high, file_task1_stbo_high)
+        #file_sample_task0_low = "./data/Triple2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean/13/simTriple2Double_points_task0_mean.tsv"
+        #file_task1_stbo_low = "./data/Triple2Double_5sample_2bad_prior_sampleMean0.5_1rF1Mean/13/simTriple2Double_points_task1_mean_stbo_draw.tsv"        
+        
+        show_reject_effect_highMean(-3.2, 14.8, file_sample_task0_high, file_task1_stbo_high)
         #show_reject_effect_lowMean(-2.8, 14.3, file_sample_task0_low, file_task1_stbo_low)
     elif paper_id == "stbo":
         # Exponential family
         size = 4
         mu1 = [0.1,0.1]; mu2 = [0.4163, 0.4163]; mu3 = [1.0, 1.0]
         theta = 0.5
-        show_exp(mu1, mu2, mu3, theta, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
+        #show_exp(mu1, mu2, mu3, theta, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
 
         # simulation 1: Double2Double
         in_dir1 = "./data/Double2Double"
@@ -581,8 +595,8 @@ if __name__ == "__main__":
         title = ["Simulation 2: from triple modals to double modals", "transfer vs non-transfer", "start from rand", "start from gp"]
         show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
 
-        # simulation 2: Double2Triple
-        in_dir1 = "./data/Double2Triple_0.5"
+        # simulation 3: Double2Triple
+        in_dir1 = "./data/Double2Triple"#_0.5"
         out_dir1 = "./simulation_results/Double2Triple_0.5"
 
         file_lsts_stbo1 = collect_file(in_dir1, "stbo_from_rand")
@@ -602,7 +616,6 @@ if __name__ == "__main__":
 
         title = ["Simulation 2: from double modals to triple modals", "transfer vs non-transfer", "start from rand", "start from gp"]
         show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medium_perc3, title, fig_name=fig_name_medium)
-
 
         # simulation 3: 2D Triple2Triple
         in_dir1 = "./data/2D_Triple2Triple"

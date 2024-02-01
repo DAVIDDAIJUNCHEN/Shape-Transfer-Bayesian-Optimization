@@ -136,14 +136,14 @@ def run_statistics(file_lsts, out_dir, header_name="response", topic=None):
             per50_lst.append(per50_t)
             per75_lst.append(per75_t)
 
-        with open(outfile_name, 'w', encoding="utf-8") as fout:
-            fout.writelines("step#mean#std#min#25% percentile#50% percentile#75% percentile#max\n")
-            for t in range(max_len):
-                line = str(t+1) + '\t' + str(mean_lst[t]) + '\t' + str(std_lst[t]) + '\t' + \
-                    str(min_lst[t]) + '\t' + str(per25_lst[t])  + '\t' + str(per50_lst[t])  + \
-                    '\t' + str(per75_lst[t]) + '\t' + str(max_lst[t]) + '\n'
+        # with open(outfile_name, 'w', encoding="utf-8") as fout:
+        #     fout.writelines("step#mean#std#min#25% percentile#50% percentile#75% percentile#max\n")
+        #     for t in range(max_len):
+        #         line = str(t+1) + '\t' + str(mean_lst[t]) + '\t' + str(std_lst[t]) + '\t' + \
+        #             str(min_lst[t]) + '\t' + str(per25_lst[t])  + '\t' + str(per50_lst[t])  + \
+        #             '\t' + str(per75_lst[t]) + '\t' + str(max_lst[t]) + '\n'
                 
-                fout.writelines(line)
+        #         fout.writelines(line)
 
         fname = os.path.basename(file_lst_k[0])
         
