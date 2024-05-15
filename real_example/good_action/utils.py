@@ -15,6 +15,7 @@ FUNC = {'keane' : 'Keane',
         'robot4': 'Robot_Push_4D',
         'xgbboston': 'XGB_Boston',
         'xgbcal': 'XGB_Calif',
+        'xgbtor': 'XGB_Tornodo',
         }
 
 ALGO = {'gpucb' : 'GP-UCB',
@@ -28,3 +29,4 @@ ALGO = {'gpucb' : 'GP-UCB',
         'mes' : 'MES',
         'gs' : 'GS',
         }
+

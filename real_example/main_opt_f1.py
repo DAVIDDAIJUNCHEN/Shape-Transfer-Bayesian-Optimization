@@ -16,7 +16,7 @@ from good_action.GPBO import GPBO
 from good_action.utils import FUNC, ALGO
 
 parser = argparse.ArgumentParser(description='Arguments of good-action identification.')
-parser.add_argument("function", type=str, choices=['robot3', 'robot4', 'xgbboston', 'xgbcal'], \
+parser.add_argument("function", type=str, choices=['robot3', 'robot4', 'xgbboston', 'xgbcal', 'xgbtor'], \
                          help='specify the function to test')
 parser.add_argument("noise", type=str, choices=['noisy', 'noiseless'], help='Whether the black-box function has noise')
 parser.add_argument("eps", type=float, help='specify good action threshold')

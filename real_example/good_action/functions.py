@@ -12,6 +12,8 @@ from numpy.matlib import *
 from scipy.stats import multivariate_normal
 import xgboost as xgb
 from sklearn.datasets import fetch_california_housing
+from sklearn.preprocessing import StandardScaler
+import xgboost as xgb
 
 class Keane:
     def __init__(self, noisy=False):
@@ -521,6 +523,62 @@ class XGB_Boston():
         raw_df = pd.read_csv(data_url, sep="\s+", skiprows=22, header=None)
         X = np.hstack([raw_df.values[::2, :], raw_df.values[1::2, :2]])
         Y = raw_df.values[1::2, 2]
+
+        self.data_dmatrix = xgb.DMatrix(data=X, label=Y)
+
+    def __call__(self, x):
+        max_depth, lr, max_delta_step, colsample_bytree, subsample = x
+
+        params =  {
+                    'objective': 'reg:squarederror',
+                    'max_depth': int(max_depth),
+                    'learning_rate': lr,
+                    'max_delta_step': int(max_delta_step),
+                    'colsample_bytree': colsample_bytree,
+                    'subsample' : subsample
+                    }
+
+        cv_results = xgb.cv(params=params, 
+                            dtrain=self.data_dmatrix, 
+                            nfold=3, 
+                            seed=3,
+                            num_boost_round=50000,
+                            early_stopping_rounds=50,
+                            metrics='rmse')
+
+        return 10 - cv_results['test-rmse-mean'].min()
+
+
+class XGB_Tornodo():
+    """
+    XGBoost trained/tested on Tornodo
+    """
+    def __init__(self, noisy=False):
+        self.noisy = noisy
+        self.dim=5
+        self.max=10
+
+        self.bounds=np.array([
+                            [2, 15],        # max_depth
+                            [0.01, 0.3],    # learning_rate
+                            [0, 10],        # max_delta_step
+                            [0, 1],         # colsample_bytree
+                            [0, 1],         # subsample
+                            # [1, 20],        # min_child_weight
+                            # [0, 10],        # gamma
+                            # [0, 10],        # reg_alpha
+                                ])
+
+        scaler = StandardScaler()
+        X = pd.read_csv("../Toronto_Housing_Market/Tornodo_X.csv")
+        Y = pd.read_csv("../Toronto_Housing_Market/Tornodo_Y.csv")
+        
+        X = X.values
+        Y = Y.values
+
+        Y = Y[:,3]
+        Y = Y.reshape(-1, 1)
+        Y = scaler.fit_transform(Y)
 
         self.data_dmatrix = xgb.DMatrix(data=X, label=Y)
 
