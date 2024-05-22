@@ -1,0 +1,8 @@
+srun: job 46625124 queued and waiting for resources
+srun: job 46625124 has been allocated resources
+/mnt/users/daijun_chen/tools/miniconda3.10/install/envs/python3_huggingface/bin/python: can't open file '/mnt/users/daijun_chen/gits/github/transfergpbo/./experiment.py': [Errno 2] No such file or directory
+srun: error: cn043: task 0: Exited with exit code 2
+srun: job 46627660 queued and waiting for resources
+srun: job 46627660 has been allocated resources
+/mnt/users/daijun_chen/tools/miniconda3.10/install/envs/python3_huggingface/bin/python: can't open file '/mnt/users/daijun_chen/gits/github/transfergpbo/./experiment.py': [Errno 2] No such file or directory
+srun: error: cn042: task 0: Exited with exit code 2
