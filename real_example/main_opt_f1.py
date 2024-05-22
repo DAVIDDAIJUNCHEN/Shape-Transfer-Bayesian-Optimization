@@ -27,7 +27,7 @@ args = parser.parse_args()
 NOISY = True if args.noise == 'noisy' else False
 NUM_TRIAL = 1
 NUM_EXP = 1
-MAXSTEP = 5
+MAXSTEP = 50
 N_INITS = 2
 ALGOS = ["ei"] #['gpucb', 'pg', 'pi', 'eg', 'ei', 'ts', 'gs', 'mes', 'sts']
 

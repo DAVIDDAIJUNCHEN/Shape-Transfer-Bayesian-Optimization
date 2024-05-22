@@ -330,15 +330,6 @@ After we run all these simulations and visualize the process of choosing next po
 
 ## Citation
 
-```angular2
-@misc{2024stbo,
-      title={Shape Transfer Bayesian Optimization}, 
-      author={Yang Li, Daijun Chen, Shifeng Xiong, Yuanzhi Zhao},
-      year={2024},
-      eprint={},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL}
-}
 
 @InProceedings{2017bcbo,
   title = 	 {Regret Bounds for Transfer Learning in Bayesian Optimisation},
@@ -362,5 +353,3 @@ After we run all these simulations and visualize the process of choosing next po
   year      = {2018},
   volume    = {31}
 }
-
-```

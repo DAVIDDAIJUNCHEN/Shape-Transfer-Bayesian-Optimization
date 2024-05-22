@@ -41,7 +41,14 @@ class XGB_Calif():
     
         X = housing.data
         Y = housing.target
-    
+        Y = np.array([y*10 for y in Y])
+        print(Y[:10])
+        print(type(Y))
+        print(shape(Y))
+        print("California: mean = ", mean(Y))
+        print("California: max = ", max(Y))
+        print("California: min = ", min(Y))
+        print("California: std = ", std(Y))
         self.data_dmatrix = xgb.DMatrix(data=X, label=Y)
 
     def __call__(self, x):
@@ -64,7 +71,7 @@ class XGB_Calif():
                             early_stopping_rounds=50,
                             metrics='rmse')
 
-        return 10 - cv_results['test-rmse-mean'].min()
+        return 10 - cv_results['test-rmse-mean'].median()
 
 
 class XGB_Boston():
@@ -91,7 +98,13 @@ class XGB_Boston():
         raw_df = pd.read_csv(data_url, sep="\s+", skiprows=22, header=None)
         X = np.hstack([raw_df.values[::2, :], raw_df.values[1::2, :2]])
         Y = raw_df.values[1::2, 2]
-
+        print(Y[:10])
+        print(type(Y))
+        print(shape(Y))
+        print("Boston: mean = ", mean(Y))
+        print("Boston: max = ", max(Y))
+        print("Boston: min = ", min(Y))
+        print("Boston: std = ", std(Y))
         self.data_dmatrix = xgb.DMatrix(data=X, label=Y)
 
     def __call__(self, x):
@@ -114,7 +127,7 @@ class XGB_Boston():
                             early_stopping_rounds=50,
                             metrics='rmse')
 
-        return 10 - cv_results['test-rmse-mean'].min()
+        return 10 - cv_results['test-rmse-mean'].median()
 
 
 class XGB_Tornodo():
@@ -146,8 +159,16 @@ class XGB_Tornodo():
 
         Y = Y[:,3]
         Y = Y.reshape(-1, 1)
-        Y = scaler.fit_transform(Y)
+        #Y = scaler.fit_transform(Y)
+        Y = np.array([y[0]/40000 for y in Y])
 
+        print(Y[:10])
+        print(type(Y))
+        print(shape(Y))
+        print("Tornodo: mean = ", mean(Y))
+        print("Tornodo: max = ", max(Y))
+        print("Tornodo: min = ", min(Y))
+        print("Tornodo: std = ", std(Y))
         self.data_dmatrix = xgb.DMatrix(data=X, label=Y)
 
     def __call__(self, x):
@@ -170,7 +191,7 @@ class XGB_Tornodo():
                             early_stopping_rounds=50,
                             metrics='rmse')
 
-        return 10 - cv_results['test-rmse-mean'].min()
+        return 10 - cv_results['test-rmse-mean'].median()
 
 
 

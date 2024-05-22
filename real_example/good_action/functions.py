@@ -473,7 +473,8 @@ class XGB_Calif():
     
         X = housing.data
         Y = housing.target
-    
+        Y = np.array([y*10 for y in Y])
+        
         self.data_dmatrix = xgb.DMatrix(data=X, label=Y)
 
     def __call__(self, x):
@@ -496,7 +497,8 @@ class XGB_Calif():
                             early_stopping_rounds=50,
                             metrics='rmse')
 
-        return 10 - cv_results['test-rmse-mean'].min()
+        #return 10 - cv_results['test-rmse-mean'].min()
+        return 10 - cv_results['test-rmse-mean'].median()
 
 
 class XGB_Boston():
@@ -546,7 +548,8 @@ class XGB_Boston():
                             early_stopping_rounds=50,
                             metrics='rmse')
 
-        return 10 - cv_results['test-rmse-mean'].min()
+        #return 10 - cv_results['test-rmse-mean'].min()
+        return 10 - cv_results['test-rmse-mean'].median()
 
 
 class XGB_Tornodo():
@@ -570,15 +573,17 @@ class XGB_Tornodo():
                                 ])
 
         scaler = StandardScaler()
-        X = pd.read_csv("../Toronto_Housing_Market/Tornodo_X.csv")
-        Y = pd.read_csv("../Toronto_Housing_Market/Tornodo_Y.csv")
+        X = pd.read_csv("./Toronto_Housing_Market/Tornodo_X.csv")
+        Y = pd.read_csv("./Toronto_Housing_Market/Tornodo_Y.csv")
         
         X = X.values
         Y = Y.values
 
         Y = Y[:,3]
         Y = Y.reshape(-1, 1)
-        Y = scaler.fit_transform(Y)
+        #Y = scaler.fit_transform(Y)
+
+        Y = np.array([y[0]/40000 for y in Y])
 
         self.data_dmatrix = xgb.DMatrix(data=X, label=Y)
 
@@ -602,4 +607,6 @@ class XGB_Tornodo():
                             early_stopping_rounds=50,
                             metrics='rmse')
 
-        return 10 - cv_results['test-rmse-mean'].min()
+        #return 10 - cv_results['test-rmse-mean'].min()
+        return 10 - cv_results['test-rmse-mean'].median()
+
