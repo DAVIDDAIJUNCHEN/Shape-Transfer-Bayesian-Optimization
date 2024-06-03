@@ -4,11 +4,13 @@ setup.py
 transfergpbo/__init__.py
 transfergpbo/experiment.py
 transfergpbo/parameters.py
+transfergpbo/parameters_asr_4d.py
 transfergpbo/parameters_d2d_1d.py
 transfergpbo/parameters_d2t_1d.py
 transfergpbo/parameters_exp_2d.py
 transfergpbo/parameters_t2t_2d.py
 transfergpbo/parameters_xgb_5d.py
+transfergpbo/run_experiment_interactive.py
 transfergpbo.egg-info/PKG-INFO
 transfergpbo.egg-info/SOURCES.txt
 transfergpbo.egg-info/dependency_links.txt
@@ -16,6 +18,7 @@ transfergpbo.egg-info/requires.txt
 transfergpbo.egg-info/top_level.txt
 transfergpbo/benchmarks/__init__.py
 transfergpbo/benchmarks/alpine.py
+transfergpbo/benchmarks/asr_4d.py
 transfergpbo/benchmarks/boston2calif.py
 transfergpbo/benchmarks/branin.py
 transfergpbo/benchmarks/d2d_1d.py

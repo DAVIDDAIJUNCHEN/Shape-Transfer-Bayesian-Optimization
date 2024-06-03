@@ -15,6 +15,7 @@
 
 from typing import Callable, Union
 import numpy as np
+import pandas as pd
 import scipy.optimize as opt
 import os
 
@@ -111,3 +112,47 @@ def run_bo(
     print("BO loop is finished.")
     
     return regret
+
+
+def run_bo_interactive(
+        model: Union[Model, IModel],
+        space: ParameterSpace,
+        dir_target_points: str = None,
+        file_target_points: str = None,
+        num_rep: int = None
+):
+    """Runs Bayesian optimization interatively."""
+
+    file_target = os.path.join(dir_target_points, str(num_rep), file_target_points)
+
+    if not os.path.exists(file_target):
+        X_new = space.sample_uniform(1)
+        print(f"Initial step: random sample X at 1st step")
+        
+        with open(file_target, 'a', encoding="utf-8") as fout:
+            header_x = '#'.join(["dim"+str(dim) for dim in range(len(X_new[0]))])
+            fout.writelines("response#" + header_x + '\n')
+            line = '_\t' + '\t'.join([str(x_dim) for x_dim in X_new[0]])
+            fout.writelines(line + '\n')
+
+        return 0
+
+    print(f"Read target task data from ", file_target)
+    
+    df = pd.read_csv(file_target, sep='\t', comment='#', header=None, skiprows=1)
+    Y_tmp = -1*df[0].values
+    Y = Y_tmp.reshape(-1, 1)
+    X = df.iloc[:, 1:].values
+
+    model.fit(TaskData(X, Y), optimize=True)
+
+    af = UCB(model, beta=np.float64(3.0))
+    optimizer = GradientAcquisitionOptimizer(space)
+    X_new, _ = optimizer.optimize(af)
+    
+    with open(file_target, 'a', encoding="utf-8") as fout:
+        line = '_\t' + '\t'.join([str(x_dim) for x_dim in X_new[0]])
+        fout.writelines(line + '\n')
+    
+    print(f"Next training point to evaluate: {X_new}")
+    print(f"Please do real experiments and fill the value in ", file_target)

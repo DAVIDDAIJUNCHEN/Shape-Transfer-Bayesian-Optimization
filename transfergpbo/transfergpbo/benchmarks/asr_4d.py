@@ -13,13 +13,24 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .hartmann import hartmann3d, hartmann6d
-from .branin import branin
-from .alpine import alpine
-from .forrester import forrester
-from .d2d_1d import d2d_1d
-from .d2t_1d import d2t_1d
-from .t2t_2d import t2t_2d
-from .exp_2d import exp_2d
-from .boston2calif import xgb_5d
-from .asr_4d import asr_4d
+from typing import Tuple, Callable
+from functools import partial
+
+import numpy as np
+from emukit.core import ParameterSpace, ContinuousParameter
+import pandas as pd
+
+
+def asr_4d(language: str = None) -> Tuple[ParameterSpace]:
+    if language is None:
+        language = "yue-CHN"
+
+    return ParameterSpace(
+        [
+            ContinuousParameter("x1", 0.0, 5000),
+            ContinuousParameter("x2", 0.0, 5000),
+            ContinuousParameter("x3", 0.0, 5000),
+            ContinuousParameter("x4", 0.0, 5000),
+        ]
+    )
+
