@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Callable, Union
+from typing import Callable, Union, Dict, Hashable
 import numpy as np
 import pandas as pd
 import scipy.optimize as opt
@@ -59,7 +59,9 @@ def run_bo(
     experiment_fun: Callable,
     model: Union[Model, IModel],
     space: ParameterSpace,
-    num_iter: int,
+    best_X_source: Dict[Hashable, np.ndarray],
+    start_bo: str = "random",     
+    num_iter: int = 20,
     noiseless_fun: Callable = None,
     dir_target_points: str = None,
     file_target_points: str = None,
@@ -78,10 +80,19 @@ def run_bo(
     for i in range(num_iter):
         print(f"Processing for step: {i + 1}")
 
-        if i == 0:  # sample a random point for the first experiment
-            X_new = space.sample_uniform(1)
-            Y_new = experiment_fun(X_new)
-            X, Y = X_new, Y_new
+        if i == 0: # only support 1 source Now
+            if "rand" in start_bo or "Rand" in start_bo:
+                # sample a random point for the first experiment
+                print(f"Initial step: random sample X at 1st step")                  
+                X_new = space.sample_uniform(1)
+                Y_new = experiment_fun(X_new)
+                X, Y = X_new, Y_new
+            else:
+                print(f"Initial step: start from best source point")
+                X_new = np.array([best_X_source[0].tolist()])                   
+                Y_new = experiment_fun(X_new)
+                X, Y = X_new, Y_new
+                
             # add header: response#dim1#...#dimN
             with open(file_target, "w", encoding="utf-8") as fout:
                 header_x = '#'.join(["dim"+str(dim) for dim in range(len(X[0]))])
@@ -117,6 +128,8 @@ def run_bo(
 def run_bo_interactive(
         model: Union[Model, IModel],
         space: ParameterSpace,
+        best_X_source: Dict[Hashable, np.ndarray],
+        start_bo: str = "random", 
         dir_target_points: str = None,
         file_target_points: str = None,
         num_rep: int = None
@@ -126,9 +139,13 @@ def run_bo_interactive(
     file_target = os.path.join(dir_target_points, str(num_rep), file_target_points)
 
     if not os.path.exists(file_target):
-        X_new = space.sample_uniform(1)
-        print(f"Initial step: random sample X at 1st step")
-        
+        if "rand" in start_bo or "Rand" in start_bo:
+            print(f"Initial step: random sample X at 1st step")
+            X_new = space.sample_uniform(1)
+        else:
+            print(f"Initial step: start from best source point")
+            X_new = np.array([best_X_source[0].tolist()])   # only support 1 source Now
+
         with open(file_target, 'a', encoding="utf-8") as fout:
             header_x = '#'.join(["dim"+str(dim) for dim in range(len(X_new[0]))])
             fout.writelines("response#" + header_x + '\n')
@@ -156,3 +173,4 @@ def run_bo_interactive(
     
     print(f"Next training point to evaluate: {X_new}")
     print(f"Please do real experiments and fill the value in ", file_target)
+

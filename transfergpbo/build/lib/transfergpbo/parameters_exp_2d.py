@@ -40,5 +40,7 @@ parameters = {
     },
     # Mandatory parameter. Defines the magnitude of the i.i.d. measurement noise.
     "output_noise": 0.0,
+    # Mandatory parameter. The start point of transfer GP, [ random | source_best ]
+    "start_bo": "source_best"
 }
 

@@ -17,7 +17,7 @@ from typing import List, Tuple, Callable, Dict, Hashable
 from functools import partial
 import pandas as pd
 import numpy as np
-import os
+import os, copy
 
 from emukit.core import ParameterSpace
 from GPy.kern import RBF
@@ -36,7 +36,7 @@ from transfergpbo import models, benchmarks
 #from transfergpbo.parameters import parameters as params
 
 ## Exp1: double2double 1D 
-#from transfergpbo.parameters_d2d_1d import parameters as params
+from transfergpbo.parameters_d2d_1d import parameters as params
 
 ## Exp2: double2triple 1D
 #from transfergpbo.parameters_d2t_1d import parameters as params
@@ -45,7 +45,7 @@ from transfergpbo import models, benchmarks
 #from transfergpbo.parameters_t2t_2d import parameters as params
 
 ## EXP4：exponential 2D
-from transfergpbo.parameters_exp_2d import parameters as params
+#from transfergpbo.parameters_exp_2d import parameters as params
 
 ## EXP5: XGB from Boston to California
 #from transfergpbo.parameters_xgb_5d import parameters as params
@@ -126,6 +126,19 @@ def get_model(
 
     return model
 
+def best_source_point(source_data: Dict[Hashable, TaskData]):
+    """return best point from source task"""
+    data = copy.deepcopy(source_data)
+    best_X_source = {}
+
+    for i, (source_id, source_d) in enumerate(data.items()):
+        X_i = source_d.X
+        Y_i = source_d.Y
+        idx_min = np.argmin(Y_i)
+        best_X_i = X_i[idx_min]
+        best_X_source[i] = best_X_i
+    
+    return best_X_source
 
 def run_experiment(parameters: dict) -> List[float]:
     """The actual experiment code."""
@@ -133,7 +146,9 @@ def run_experiment(parameters: dict) -> List[float]:
     technique = parameters["technique"]
     benchmark_name = parameters["benchmark"]["name"]
     num_steps = parameters["benchmark"]["num_steps"]
+
     output_noise = parameters["output_noise"]
+    start_bo = parameters["start_bo"]    
     params_source = parameters["benchmark"].get("parameters_source", None)
     params_target = parameters["benchmark"].get("parameters_target", None)
 
@@ -159,15 +174,21 @@ def run_experiment(parameters: dict) -> List[float]:
         )
         model = get_model(technique, space, source_data)
 
+        # Run BO and write parameters for real experiments
+        best_X_source = best_source_point(source_data)
+
         # Run BO and return the regret
         regret_num_rep = run_bo(
             experiment_fun=partial(f_target, output_noise=output_noise),
             model=model,
             space=space,
+            best_X_source=best_X_source,
+            start_bo=start_bo,
             num_iter=num_steps,
             noiseless_fun=partial(f_target, output_noise=0.0),
-            dir_target_points=dir_target_points, 
-            file_target_points=file_target_points, num_rep=num_rep
+            dir_target_points=dir_target_points,
+            file_target_points=file_target_points, 
+            num_rep=num_rep
         )
 
         regret_total.append(regret_num_rep)

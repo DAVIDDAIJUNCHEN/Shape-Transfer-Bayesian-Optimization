@@ -2,7 +2,7 @@ from typing import List, Tuple, Callable, Dict, Hashable
 from functools import partial
 import pandas as pd
 import numpy as np
-import os
+import os, copy
 
 from emukit.core import ParameterSpace
 from GPy.kern import RBF
@@ -76,6 +76,20 @@ def get_model(
 
     return model
 
+def best_source_point(source_data: Dict[Hashable, TaskData]):
+    """return best point from source task"""
+    data = copy.deepcopy(source_data)
+    best_X_source = {}
+
+    for i, (source_id, source_d) in enumerate(data.items()):
+        X_i = source_d.X
+        Y_i = source_d.Y
+        idx_min = np.argmin(Y_i)
+        best_X_i = X_i[idx_min]
+        best_X_source[i] = best_X_i
+    
+    return best_X_source
+
 def run_experiment_interactive(parameters: dict) -> List[float]:
     "The real experiment code with interaction"
 
@@ -86,6 +100,7 @@ def run_experiment_interactive(parameters: dict) -> List[float]:
     benchmark_name = parameters["benchmark"]["name"]    
 
     output_noise = parameters["output_noise"]
+    start_bo = parameters["start_bo"]
     params_source = parameters["benchmark"].get("parameters_source", None)    
     params_target = parameters["benchmark"].get("parameters_target", None)    
 
@@ -108,11 +123,15 @@ def run_experiment_interactive(parameters: dict) -> List[float]:
             benchmark_name, output_noise, params_target, dir_source_points, file_source_points, num_rep 
         )
         model = get_model(technique, space, source_data)
-    
+
         # Run BO and write parameters for real experiments
+        best_X_source = best_source_point(source_data)
+
         run_bo_interactive(
            model=model,
            space=space,
+           best_X_source=best_X_source,
+           start_bo=start_bo,
            dir_target_points=dir_target_points,
            file_target_points=file_target_points,
            num_rep=num_rep
