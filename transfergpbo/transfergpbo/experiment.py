@@ -86,8 +86,6 @@ def get_benchmark(
     f_target, f_source, space = generate_functions(
         benchmark_name, num_source_functions, params_source, params_target
     )
-    print("source func: ", f_source)
-    print("target func: ", f_target)
 
     source_data = {}
     if dir_source == None:  # generate if no existed source data

@@ -31,6 +31,7 @@ from transfergpbo.models import (
     BHGP,
     STBO,
 )
+
 from transfergpbo.bo.run_bo import run_bo
 from emukit.core.optimization import GradientAcquisitionOptimizer
 from transfergpbo import models, benchmarks
@@ -131,6 +132,7 @@ def get_model(
 
     return model
 
+
 def best_source_point(source_data: Dict[Hashable, TaskData]):
     """return best point from source task"""
     data = copy.deepcopy(source_data)
@@ -145,12 +147,13 @@ def best_source_point(source_data: Dict[Hashable, TaskData]):
     
     return best_X_source
 
+
 def run_experiment(parameters: dict) -> List[float]:
     """The actual experiment code."""
     num_source_points = parameters["benchmark"]["num_source_points"]
     technique = parameters["technique"]
     benchmark_name = parameters["benchmark"]["name"]
-    num_steps = 1 # parameters["benchmark"]["num_steps"]
+    num_steps = 3 # parameters["benchmark"]["num_steps"]
 
     output_noise = parameters["output_noise"]
     start_bo = parameters["start_bo"]    
@@ -158,7 +161,7 @@ def run_experiment(parameters: dict) -> List[float]:
     params_target = parameters["benchmark"].get("parameters_target", None)
 
     # start from existed f1 task file
-    num_repetitions = 1 #parameters["benchmark"]["num_repetitions"]
+    num_repetitions = 1 # parameters["benchmark"]["num_repetitions"]
     dir_source_points = parameters["benchmark"]["dir_source_points"]
     file_source_points = parameters["benchmark"]["file_source_points"]
 
@@ -195,7 +198,7 @@ def run_experiment(parameters: dict) -> List[float]:
                 if "rand" in start_bo or "Rand" in start_bo:
                     # sample a random point for the first experiment
                     print(f"Initial step: random sample X at 1st step")                  
-                    X_new = space.sample_uniform(3)
+                    X_new = space.sample_uniform(1)
                     Y_new = experiment_fun(X_new)
                     X, Y = X_new, Y_new
                 else:
@@ -226,22 +229,28 @@ def run_experiment(parameters: dict) -> List[float]:
 
             print(f"Next training point is: {X_new}, {Y_new}")
             model.fit(TaskData(X, Y), optimize=False)
-            
-        x = [-5 + i/40 * 10 for i in range(70)]
-        #af = EI(model)
-        #Ei_x = [af.evaluate(np.array([[x_i]])) for x_i in x]
+        
+        # illustrate selecting process
+        x = [-5 + i/40 * 10 for i in range(80)]
+        af_ei = EI(model)
+        af_ucb = UCB(model, beta=np.float64(3.0))
+
+        Ei_x = [af_ei.evaluate(np.array([[x_i]])) for x_i in x]
+        ucb_x = [af_ucb.evaluate(np.array([[x_i]])) for x_i in x]
         stbo_x = [model.predict(np.array([[x_i]])) for x_i in x]
         stbo_x_f0 = [model.source_gps[0].predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
         stbo_x_g = [model.target_gp.predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
         
-        plt.plot(x, [-1*v[0][0][0] for v in stbo_x_f0], label="f0")
-        plt.plot(x, [-1*v[0][0][0] for v in stbo_x_g], label="diff_f0_f1")
-        plt.plot(x, [-1*v[0][0][0] for v in stbo_x], label="f2")
+        plt.plot(x, [-1*v[0][0][0] for v in stbo_x_f0], label="f_s")
+        plt.plot(x, [-1*v[0][0][0] for v in stbo_x_g], label="diff_fs_ft")
+        plt.plot(x, [-1*v[0][0][0] for v in stbo_x], label="f_t")
         plt.plot(x, [v[1][0][0] for v in stbo_x], label="var")
+        plt.plot(x, [v[0][0] for v in Ei_x], label="EI")
+        plt.plot(x, [v[0][0] for v in ucb_x], label="UCB")        
         plt.show()
         
         plt.legend()
-        plt.savefig('EI_x.png')
+        plt.savefig('debug.png')
 
     return regret_total
 
@@ -260,3 +269,4 @@ if __name__ == "__main__":
     # x =  -5
     # #model.likelihood.fix(1) # Fix the likelihood to 0, which corresponds to a zero mean function
     # print(model.predict(np.array([[x]])))
+

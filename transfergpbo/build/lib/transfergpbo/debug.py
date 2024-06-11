@@ -31,6 +31,7 @@ from transfergpbo.models import (
     BHGP,
     STBO,
 )
+
 from transfergpbo.bo.run_bo import run_bo
 from emukit.core.optimization import GradientAcquisitionOptimizer
 from transfergpbo import models, benchmarks
@@ -43,13 +44,13 @@ from emukit.bayesian_optimization.acquisitions import (
 #from transfergpbo.parameters import parameters as params
 
 ## Exp1: double2double 1D 
-from transfergpbo.parameters_d2d_1d import parameters as params
+#from transfergpbo.parameters_d2d_1d import parameters as params
 
 ## Exp2: double2triple 1D
 #from transfergpbo.parameters_d2t_1d import parameters as params
 
 ## Exp3: triple2triple 2D
-#from transfergpbo.parameters_t2t_2d import parameters as params
+from transfergpbo.parameters_t2t_2d import parameters as params
 
 ## EXP4：exponential 2D
 #from transfergpbo.parameters_exp_2d import parameters as params
@@ -131,6 +132,7 @@ def get_model(
 
     return model
 
+
 def best_source_point(source_data: Dict[Hashable, TaskData]):
     """return best point from source task"""
     data = copy.deepcopy(source_data)
@@ -145,12 +147,13 @@ def best_source_point(source_data: Dict[Hashable, TaskData]):
     
     return best_X_source
 
+
 def run_experiment(parameters: dict) -> List[float]:
     """The actual experiment code."""
     num_source_points = parameters["benchmark"]["num_source_points"]
     technique = parameters["technique"]
     benchmark_name = parameters["benchmark"]["name"]
-    num_steps = parameters["benchmark"]["num_steps"]
+    num_steps = 20 # parameters["benchmark"]["num_steps"]
 
     output_noise = parameters["output_noise"]
     start_bo = parameters["start_bo"]    
@@ -158,7 +161,7 @@ def run_experiment(parameters: dict) -> List[float]:
     params_target = parameters["benchmark"].get("parameters_target", None)
 
     # start from existed f1 task file
-    num_repetitions = parameters["benchmark"]["num_repetitions"]
+    num_repetitions = 20 # parameters["benchmark"]["num_repetitions"]
     dir_source_points = parameters["benchmark"]["dir_source_points"]
     file_source_points = parameters["benchmark"]["file_source_points"]
 
@@ -195,7 +198,7 @@ def run_experiment(parameters: dict) -> List[float]:
                 if "rand" in start_bo or "Rand" in start_bo:
                     # sample a random point for the first experiment
                     print(f"Initial step: random sample X at 1st step")                  
-                    X_new = space.sample_uniform(3)
+                    X_new = space.sample_uniform(1)
                     Y_new = experiment_fun(X_new)
                     X, Y = X_new, Y_new
                 else:
@@ -227,21 +230,21 @@ def run_experiment(parameters: dict) -> List[float]:
             print(f"Next training point is: {X_new}, {Y_new}")
             model.fit(TaskData(X, Y), optimize=False)
             
-        x = [-5 + i/40 * 10 for i in range(70)]
-        #af = EI(model)
-        #Ei_x = [af.evaluate(np.array([[x_i]])) for x_i in x]
-        stbo_x = [model.predict(np.array([[x_i]])) for x_i in x]
-        stbo_x_f0 = [model.source_gps[0].predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
-        stbo_x_g = [model.target_gp.predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
+        # x = [-5 + i/40 * 10 for i in range(80)]
+        # #af = EI(model)
+        # #Ei_x = [af.evaluate(np.array([[x_i]])) for x_i in x]
+        # stbo_x = [model.predict(np.array([[x_i]])) for x_i in x]
+        # stbo_x_f0 = [model.source_gps[0].predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
+        # stbo_x_g = [model.target_gp.predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
         
-        plt.plot(x, [-1*v[0][0][0] for v in stbo_x_f0], label="f0")
-        plt.plot(x, [-1*v[0][0][0] for v in stbo_x_g], label="diff_f0_f1")
-        plt.plot(x, [-1*v[0][0][0] for v in stbo_x], label="f2")
-        plt.plot(x, [v[1][0][0] for v in stbo_x], label="var")
-        plt.show()
+        # plt.plot(x, [-1*v[0][0][0] for v in stbo_x_f0], label="f0")
+        # plt.plot(x, [-1*v[0][0][0] for v in stbo_x_g], label="diff_f0_f1")
+        # plt.plot(x, [-1*v[0][0][0] for v in stbo_x], label="f2")
+        # plt.plot(x, [v[1][0][0] for v in stbo_x], label="var")
+        # plt.show()
         
-        plt.legend()
-        plt.savefig('EI_x.png')
+        # plt.legend()
+        # plt.savefig('EI_x.png')
 
     return regret_total
 
