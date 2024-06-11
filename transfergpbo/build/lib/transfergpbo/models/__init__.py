@@ -22,3 +22,4 @@ from .hgp import HGP
 from .wsgp import WSGP
 from .mtgp import MTGP
 from .rgpe import RGPE
+from .stbo import STBO

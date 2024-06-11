@@ -25,7 +25,7 @@ class InputData:
     X: np.ndarray
 
 
-@dataclass
+@dataclass  # >= python3.7
 class TaskData:
     X: np.ndarray
     Y: np.ndarray
@@ -114,3 +114,4 @@ class WrapperBase(IModel):
 
     def optimize(self) -> None:
         return self._wrapped_model.fit(data=TaskData(X=self.X, Y=self.Y), optimize=True)
+

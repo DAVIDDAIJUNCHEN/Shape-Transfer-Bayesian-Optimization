@@ -24,6 +24,7 @@ from emukit.core.optimization import GradientAcquisitionOptimizer
 from emukit.core import ParameterSpace
 from emukit.bayesian_optimization.acquisitions import (
     NegativeLowerConfidenceBound as UCB,
+    ExpectedImprovement as EI,
 )
 
 from transfergpbo.models import TaskData, Model
@@ -100,7 +101,8 @@ def run_bo(
                 line = str(-1*Y_new[0][0]) + '\t' + '\t'.join([str(x_dim) for x_dim in X_new[0]])
                 fout.writelines(line+'\n')
         else:  # optimize the AF
-            af = UCB(model, beta=np.float64(3.0))
+            #af = UCB(model, beta=np.float64(3.0))
+            af = EI(model)
             optimizer = GradientAcquisitionOptimizer(space)
             X_new, _ = optimizer.optimize(af)
             Y_new = experiment_fun(X_new)
@@ -163,7 +165,8 @@ def run_bo_interactive(
 
     model.fit(TaskData(X, Y), optimize=True)
 
-    af = UCB(model, beta=np.float64(3.0))
+    #af = UCB(model, beta=np.float64(3.0))
+    af = EI(model)
     optimizer = GradientAcquisitionOptimizer(space)
     X_new, _ = optimizer.optimize(af)
     

@@ -129,7 +129,7 @@ class GPBO(Model):
         if optimize:
             optimize_restarts_options = self._options.get(
                 "optimize_restarts_options", {}
-            )
+            )  # return value if key exist, otherwise {}
 
             kwargs = copy.deepcopy(optimize_restarts_options)
 
@@ -210,6 +210,7 @@ class GPBO(Model):
                 cov = nearest_pd(cov)
         else:
             cov = np.clip(cov, 1e-20, None)
+            
         return mu, cov
 
     def predict_posterior_mean(self, data: InputData) -> np.ndarray:
@@ -330,4 +331,5 @@ class GPBO(Model):
         mean, cov = self.predict(data, return_full=True, with_noise=with_noise)
         mean = mean.flatten()
         sample = np.random.multivariate_normal(mean, cov, size).T
+        
         return sample
