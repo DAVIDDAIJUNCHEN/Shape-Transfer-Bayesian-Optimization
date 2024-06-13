@@ -30,6 +30,7 @@ from transfergpbo.models import (
     SHGP,
     BHGP,
     STBO,
+    DiffGP,
 )
 
 from transfergpbo.bo.run_bo import run_bo
@@ -122,7 +123,7 @@ def get_model(
 ) -> WrapperBase:
     """Create the model object."""
     model_class = getattr(models, model_name)
-    if model_class == MHGP or model_class == SHGP or model_class == BHGP or model_class == STBO:
+    if model_class == MHGP or model_class == SHGP or model_class == BHGP or model_class == STBO or model_class == DiffGP:
         model = model_class(space.dimensionality)
     else:
         kernel = RBF(space.dimensionality)
@@ -153,7 +154,7 @@ def run_experiment(parameters: dict) -> List[float]:
     num_source_points = parameters["benchmark"]["num_source_points"]
     technique = parameters["technique"]
     benchmark_name = parameters["benchmark"]["name"]
-    num_steps = 3 # parameters["benchmark"]["num_steps"]
+    num_steps = parameters["benchmark"]["num_steps"]
 
     output_noise = parameters["output_noise"]
     start_bo = parameters["start_bo"]    
@@ -161,7 +162,7 @@ def run_experiment(parameters: dict) -> List[float]:
     params_target = parameters["benchmark"].get("parameters_target", None)
 
     # start from existed f1 task file
-    num_repetitions = 1 # parameters["benchmark"]["num_repetitions"]
+    num_repetitions = 20 # parameters["benchmark"]["num_repetitions"]
     dir_source_points = parameters["benchmark"]["dir_source_points"]
     file_source_points = parameters["benchmark"]["file_source_points"]
 
@@ -230,7 +231,7 @@ def run_experiment(parameters: dict) -> List[float]:
             print(f"Next training point is: {X_new}, {Y_new}")
             model.fit(TaskData(X, Y), optimize=False)
         
-        # illustrate selecting process
+        # llustrate selecting process
         x = [-5 + i/40 * 10 for i in range(80)]
         af_ei = EI(model)
         af_ucb = UCB(model, beta=np.float64(3.0))
