@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 parameters = {
-    # Mandatory parameter. Choose from: GPBO, MHGP, SHGP, BHGP, HGP, WSGP, MTGP, RGPE
+    # Mandatory parameter. Choose from: GPBO, MHGP, SHGP, BHGP, HGP, WSGP, MTGP, RGPE, STBO
     "technique": "GPBO",
     "benchmark": {
         # Mandatory parameter. Choose from: forrester, alpine, branin, hartmann3d,

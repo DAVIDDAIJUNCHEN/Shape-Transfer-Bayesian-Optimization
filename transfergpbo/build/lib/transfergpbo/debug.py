@@ -30,6 +30,7 @@ from transfergpbo.models import (
     SHGP,
     BHGP,
     STBO,
+    DiffGP,
 )
 
 from transfergpbo.bo.run_bo import run_bo
@@ -44,13 +45,13 @@ from emukit.bayesian_optimization.acquisitions import (
 #from transfergpbo.parameters import parameters as params
 
 ## Exp1: double2double 1D 
-#from transfergpbo.parameters_d2d_1d import parameters as params
+from transfergpbo.parameters_d2d_1d import parameters as params
 
 ## Exp2: double2triple 1D
 #from transfergpbo.parameters_d2t_1d import parameters as params
 
 ## Exp3: triple2triple 2D
-from transfergpbo.parameters_t2t_2d import parameters as params
+#from transfergpbo.parameters_t2t_2d import parameters as params
 
 ## EXP4：exponential 2D
 #from transfergpbo.parameters_exp_2d import parameters as params
@@ -122,7 +123,7 @@ def get_model(
 ) -> WrapperBase:
     """Create the model object."""
     model_class = getattr(models, model_name)
-    if model_class == MHGP or model_class == SHGP or model_class == BHGP or model_class == STBO:
+    if model_class == MHGP or model_class == SHGP or model_class == BHGP or model_class == STBO or model_class == DiffGP:
         model = model_class(space.dimensionality)
     else:
         kernel = RBF(space.dimensionality)
@@ -153,7 +154,7 @@ def run_experiment(parameters: dict) -> List[float]:
     num_source_points = parameters["benchmark"]["num_source_points"]
     technique = parameters["technique"]
     benchmark_name = parameters["benchmark"]["name"]
-    num_steps = 20 # parameters["benchmark"]["num_steps"]
+    num_steps = parameters["benchmark"]["num_steps"]
 
     output_noise = parameters["output_noise"]
     start_bo = parameters["start_bo"]    
@@ -229,22 +230,28 @@ def run_experiment(parameters: dict) -> List[float]:
 
             print(f"Next training point is: {X_new}, {Y_new}")
             model.fit(TaskData(X, Y), optimize=False)
-            
-        # x = [-5 + i/40 * 10 for i in range(80)]
-        # #af = EI(model)
-        # #Ei_x = [af.evaluate(np.array([[x_i]])) for x_i in x]
-        # stbo_x = [model.predict(np.array([[x_i]])) for x_i in x]
-        # stbo_x_f0 = [model.source_gps[0].predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
-        # stbo_x_g = [model.target_gp.predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
         
-        # plt.plot(x, [-1*v[0][0][0] for v in stbo_x_f0], label="f0")
-        # plt.plot(x, [-1*v[0][0][0] for v in stbo_x_g], label="diff_f0_f1")
-        # plt.plot(x, [-1*v[0][0][0] for v in stbo_x], label="f2")
-        # plt.plot(x, [v[1][0][0] for v in stbo_x], label="var")
-        # plt.show()
+        # llustrate selecting process
+        x = [-5 + i/40 * 10 for i in range(80)]
+        af_ei = EI(model)
+        af_ucb = UCB(model, beta=np.float64(3.0))
+
+        Ei_x = [af_ei.evaluate(np.array([[x_i]])) for x_i in x]
+        ucb_x = [af_ucb.evaluate(np.array([[x_i]])) for x_i in x]
+        stbo_x = [model.predict(np.array([[x_i]])) for x_i in x]
+        stbo_x_f0 = [model.source_gps[0].predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
+        stbo_x_g = [model.target_gp.predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
         
-        # plt.legend()
-        # plt.savefig('EI_x.png')
+        plt.plot(x, [-1*v[0][0][0] for v in stbo_x_f0], label="f_s")
+        plt.plot(x, [-1*v[0][0][0] for v in stbo_x_g], label="diff_fs_ft")
+        plt.plot(x, [-1*v[0][0][0] for v in stbo_x], label="f_t")
+        plt.plot(x, [v[1][0][0] for v in stbo_x], label="var")
+        plt.plot(x, [v[0][0] for v in Ei_x], label="EI")
+        plt.plot(x, [v[0][0] for v in ucb_x], label="UCB")        
+        plt.show()
+        
+        plt.legend()
+        plt.savefig('debug.png')
 
     return regret_total
 
@@ -263,3 +270,4 @@ if __name__ == "__main__":
     # x =  -5
     # #model.likelihood.fix(1) # Fix the likelihood to 0, which corresponds to a zero mean function
     # print(model.predict(np.array([[x]])))
+

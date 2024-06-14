@@ -14,6 +14,7 @@ from transfergpbo.models import (
     SHGP,
     BHGP,
     STBO,
+    DiffGP,
 )
 
 from transfergpbo.bo.run_bo import run_bo_interactive
@@ -67,7 +68,7 @@ def get_model(
 ) -> WrapperBase:
     """Create the model object."""
     model_class = getattr(models, model_name)
-    if model_class == MHGP or model_class == SHGP or model_class == BHGP or model_class == STBO:
+    if model_class == MHGP or model_class == SHGP or model_class == BHGP or model_class == STBO or model_class == DiffGP:
         model = model_class(space.dimensionality)
     else:
         kernel = RBF(space.dimensionality)

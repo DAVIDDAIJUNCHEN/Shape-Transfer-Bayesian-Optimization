@@ -69,7 +69,6 @@ def generate_functions(
         
     return fun_target, funs_source, space
 
-
 def get_benchmark(
     benchmark_name: str,
     num_source_points: List[int],
@@ -86,8 +85,6 @@ def get_benchmark(
     f_target, f_source, space = generate_functions(
         benchmark_name, num_source_functions, params_source, params_target
     )
-    print("source func: ", f_source)
-    print("target func: ", f_target)
 
     source_data = {}
     if dir_source == None:  # generate if no existed source data
@@ -110,7 +107,6 @@ def get_benchmark(
         )
 
     return f_target, source_data, space
-
 
 def get_model(
     model_name: str, space: ParameterSpace, source_data: Dict[Hashable, TaskData]

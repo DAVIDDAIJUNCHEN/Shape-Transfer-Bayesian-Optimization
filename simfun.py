@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import axes3d
+from optimization import ExpectedImprovement
 
 
 # benchmark functions
@@ -344,40 +345,59 @@ def show_two_exp_mu(lambda1, lambda2, mu1, mu2, theta1, theta2, x_low, x_high):
     y1 = [two_exp_mu([ele], lambda1, lambda2, mu1, mu2, theta1, theta2) for ele in x_draw]
     y2 = [two_exp_mu([ele], lambda2, lambda1, mu1, mu2, theta1, theta2) for ele in x_draw]
     
-    diff_y2_y1 = [ele2 - ele1 for ele1, ele2 in zip(y1, y2)]
-
     fig, ax = plt.subplots(1, 1)
     ax.set_title("")
 
-    ax.plot(x_draw, y1, '--', label="task1")
-    ax.plot(x_draw, y2, '-', label="task2")
-    ax.plot(x_draw, diff_y2_y1, '-.', label="task2 - task1")
+    file_task1_gp = "data/Double2Double/1/simDouble2Double_points_task1_gp.tsv" 
+    EI = ExpectedImprovement()
+    EI.get_data_from_file(file_task1_gp)
+
+    y1_mean = [EI.compute_mean([ele]) for ele in x_draw]
+
+    diff_y2_y1_mean = [ele2 - ele1 for ele1, ele2 in zip(y1_mean, y2)]
+    EI.plot_ei(exp_ratio=1)
+
+    ax.plot(x_draw, y1, '-', label="$f^s$")
+    ax.plot(x_draw, y1_mean, '--', label="$\hat{f}^s$")
+    ax.plot(x_draw, y2, '-', label="$f^t$")
+    
+    ax.plot(x_draw, diff_y2_y1_mean, '-.', label="$f^t - \hat{f}^s$")
 
     ax.legend(loc=4)
+    ax.set_xlabel("x", fontsize=20)
     fig.tight_layout()
     fig.savefig("./images/double2double.pdf")    
 
 def show_double2triple_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low, x_high):
     "plot exp func to two exp func"
     x_draw = np.linspace(x_low, x_high, 100)
+    file_task1_gp = "data/Double2Triple/1/simDouble2Triple_points_task1_rand.tsv"
+    EI2 = ExpectedImprovement()
+    EI2.get_data_from_file(file_task1_gp)
+
+    print(EI2.compute_mean([0.5]))
+    y1_mean = [EI2.compute_mean([ele]) for ele in x_draw]
 
     y1 = [tri_exp_mu([ele], lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3) for ele in x_draw]
-    
+
     lambda1_t2 = 1; lambda2_t2 = 1.4; lambda3_t2 = 1.9
     mu1_t2 = [0]; mu2_t2 = [5]; mu3_t2 = [10]
     
     y2 = [tri_exp_mu([ele], lambda1_t2, lambda2_t2, lambda3_t2, mu1_t2, mu2_t2, mu3_t2, theta1, theta2, theta3) for ele in x_draw]
-    
-    diff_y2_y1 = [ele2 - ele1 for ele1, ele2 in zip(y1, y2)]
+    diff_y2_y1_mean = [ele2 - ele1 for ele1, ele2 in zip(y1_mean, y2)]
 
     fig, ax = plt.subplots(1, 1)
     ax.set_title("")
 
-    ax.plot(x_draw, y1, '--', label="task1")
-    ax.plot(x_draw, y2, '-', label="task2")
-    ax.plot(x_draw, diff_y2_y1, '-.', label="task2 - task1")
+    ax.plot(x_draw, y1, '-', label="$f^s$")
+    ax.plot(x_draw, y1_mean, '--', label="$\hat{f}^s$")
+    ax.plot(x_draw, y2, '-', label="$f^t$")
+    
+    ax.plot(x_draw, diff_y2_y1_mean, '-.', label="$f^t - \hat{f}^s$")
 
+    ax.legend(fontsize='x-large')
     ax.legend(loc=4)
+    ax.set_xlabel("x", fontsize=20)
     fig.tight_layout()
     fig.savefig("./images/double2triple.pdf")   
 
@@ -459,7 +479,7 @@ if __name__ == "__main__":
     lambda2 = 2
     mu1 = [0]; mu2 = [9]
     theta1 = 0.5; theta2 = 2
-    show_mono2double_exp_mu(lambda2, mu1, mu2, theta1, theta2, x_low = -5, x_high=15)
+    #show_mono2double_exp_mu(lambda2, mu1, mu2, theta1, theta2, x_low = -5, x_high=15)
 
     # Double to double exponential
     lambda1 = 1; lambda2 = 1.5
@@ -477,8 +497,8 @@ if __name__ == "__main__":
     lambda1 = 1; lambda2 = 1.5; lambda3 = 1.25
     mu1 = [0]; mu2 = [5]; mu3 = [10]
     theta1 = 1; theta2 = 1; theta3 = 1
-    show_triple2double_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low=-5, x_high=15)
+    #show_triple2double_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low=-5, x_high=15)
 
     # 3D Triple Illustration
-    show_3D_triple()
+    #show_3D_triple()
     

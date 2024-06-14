@@ -175,7 +175,7 @@ class MHGP(Model):
         # returned mean: sum of means of the predictions of all source and target GPs
         mu = self.predict_posterior_mean(data)
 
-        # returned variance is the variance of target GP
+        # 
         _, var = self.target_gp.predict(
             data, return_full=return_full, with_noise=with_noise
         )
