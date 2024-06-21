@@ -47,7 +47,7 @@ def exp_2d(theta: float = None, mu: np.ndarray = None) -> Tuple[Callable, Parame
                    theta=theta, mu=mu 
     ), ParameterSpace(
         [
-            ContinuousParameter("x1", -5.0, 10.0),
-            ContinuousParameter("x2", -5.0, 10.0),
+            ContinuousParameter("x1", -1, 3),
+            ContinuousParameter("x2", -1, 3),
         ]
     )

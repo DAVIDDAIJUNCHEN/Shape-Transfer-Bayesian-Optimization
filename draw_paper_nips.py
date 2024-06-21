@@ -21,9 +21,9 @@ def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medi
     fig, axs = plt.subplots(1, 3, figsize=(10, 3))
 
     for i in range(3):
-        axs[i].set_title(title[i+1], fontsize=20)
+        axs[i].set_title(title[i+1], fontsize=17)
         if i == 1:
-          fig.legend(loc=9, bbox_to_anchor=(0.25, 0.5, 0.5, 0.5), ncol=7, fontsize='large')
+          fig.legend(loc=9, bbox_to_anchor=(0.25, 0.5, 0.5, 0.5), ncol=8, fontsize='x-large')
 
         for item in sorted(dct_medium_perc[i].items()):
             x_draw = np.arange(len(item[1]))
@@ -33,19 +33,18 @@ def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medi
             y_perc75 = [ele[2] - ele[1] for ele in item[1]]
             asymmetric_error = [y_perc25, y_perc75]
             
-            if "task2_bcbo_from_" in item[0]:
+            if "task2_DiffGP_from_" in item[0]:
                 label = "Diff-GP"
                 fmt = '-.^'
-                color = "blue"
+                color = "blue"             
             elif "task2_BHGP_from_" in item[0]:
                 label = "BHGP"
                 fmt = '-o'
                 color = "brown"
-            elif "task2_gp_from_" in item[0]:
-                label = "EI"
+            elif "task2_MHGP_from_" in item[0]:
+                label = "MHGP"
                 fmt = '--s'
                 color = "black"
-                continue
             elif "task2_HGP_from_" in item[0]:
                 label = "HGP"
                 fmt = '-.^'
@@ -58,7 +57,7 @@ def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, dct_medi
                 label = "SHGP"
                 fmt = '--s'
                 color = "orange"
-            elif "task2_stbo_from_" in item[0]:
+            elif "task2_STBO_from_" in item[0]:
                 label = "STBO"
                 fmt = '--s'
                 color = "red"
@@ -89,10 +88,10 @@ def show_medium_regret(dct_medium_perc, title, fig_name):
 
     dct_medium_perc = [dct_medium_perc]
 
-    fig, axs = plt.subplots(1, 2, figsize=(10, 2))
+    fig, axs = plt.subplots(1, 2, figsize=(10, 3))
 
     # Left subplot: 10 - RMSE_CV
-    axs[0].set_title(title[1])
+    #axs[0].set_title(title[1])
     max_cv_california = 0
 
     for item in sorted(dct_medium_perc[0].items()):
@@ -105,7 +104,7 @@ def show_medium_regret(dct_medium_perc, title, fig_name):
         if max_cv_california < max(y_medium):
             max_cv_california = max(y_medium)
 
-        if "task2_bcbo_from_" in item[0]:
+        if "task2_DiffGP_from_" in item[0]:
             label = "Diff-GP"
             fmt = '-.^'
             color = "blue"
@@ -113,10 +112,10 @@ def show_medium_regret(dct_medium_perc, title, fig_name):
             label = "BHGP"
             fmt = '-o'
             color = "brown"
-        # elif "task2_gp_from_" in item[0]:
-        #     label = "EI"
-        #     fmt = '--s'
-        #     color = "black"
+        elif "task2_MHGP_from_" in item[0]:
+            label = "MHGP"
+            fmt = '--s'
+            color = "black"
         elif "task2_HGP_from_" in item[0]:
             label = "HGP"
             fmt = '-.^'
@@ -129,7 +128,7 @@ def show_medium_regret(dct_medium_perc, title, fig_name):
             label = "SHGP"
             fmt = '--s'
             color = "orange"
-        elif "task2_stbo_from_" in item[0]:
+        elif "task2_STBO_from_" in item[0]:
             label = "STBO"
             fmt = '--s'
             color = "red"
@@ -139,14 +138,15 @@ def show_medium_regret(dct_medium_perc, title, fig_name):
             color = "violet"
 
         axs[0].errorbar(x_draw, y_medium, yerr=asymmetric_error, label=label, fmt=fmt, color=color)
-        axs[0].set_xticks(np.arange(0, 11, 1))
-        axs[0].set_xlabel('Steps')
+        axs[0].set_xticks(np.arange(0, 21, 5))
+        axs[0].tick_params(axis='x', labelsize=18)
+        axs[0].tick_params(axis='y', labelsize=18)
+        axs[0].set_xlabel('Steps', fontsize=20)
+        axs[0].set_ylabel('10 - RMSE', fontsize=20)
 
-        axs[0].set_ylabel('10 - RMSE')
-
-    fig.legend(loc=9, bbox_to_anchor=(0.25, 0.5, 0.5, 0.5), ncol=8, fontsize='large')
+    fig.legend(loc=9, bbox_to_anchor=(0.25, 0.5, 0.5, 0.5), ncol=8, fontsize='x-large')
     # Right subplot: simple regret
-    axs[1].set_title(title[2])
+    #axs[1].set_title(title[2])
 
     for item in sorted(dct_medium_perc[0].items()):
         x_draw = np.arange(len(item[1]))
@@ -157,7 +157,7 @@ def show_medium_regret(dct_medium_perc, title, fig_name):
         asymmetric_error = [y_perc25, y_perc75]
         regret_medium = [max_cv_california - cv for cv in y_medium]
 
-        if "task2_bcbo_from_" in item[0]:
+        if "task2_DiffGP_from_" in item[0]:
             label = "Diff-GP"
             fmt = '-.^'
             color = "blue"
@@ -165,10 +165,10 @@ def show_medium_regret(dct_medium_perc, title, fig_name):
             label = "BHGP"
             fmt = '-o'
             color = "brown"
-        # elif "task2_gp_from_" in item[0]:
-        #     label = "EI"
-        #     fmt = '--s'
-        #     color = "black"
+        elif "task2_MHGP_from_" in item[0]:
+            label = "MHGP"
+            fmt = '--s'
+            color = "black"
         elif "task2_HGP_from_" in item[0]:
             label = "HGP"
             fmt = '-.^'
@@ -181,7 +181,7 @@ def show_medium_regret(dct_medium_perc, title, fig_name):
             label = "SHGP"
             fmt = '--s'
             color = "orange"
-        elif "task2_stbo_from_" in item[0]:
+        elif "task2_STBO_from_" in item[0]:
             label = "STBO"
             fmt = '--s'
             color = "red"
@@ -191,12 +191,14 @@ def show_medium_regret(dct_medium_perc, title, fig_name):
             color = "violet"
 
         axs[1].errorbar(x_draw, regret_medium, yerr=asymmetric_error, label=label, fmt=fmt, color=color)
-        axs[1].set_xticks(np.arange(0, 11, 1))
-        axs[1].set_xlabel('Steps')
+        axs[1].set_xticks(np.arange(0, 21, 5))
 
-        axs[1].set_ylabel('Simple regret')
+        axs[1].tick_params(axis='x', labelsize=18)
+        axs[1].tick_params(axis='y', labelsize=18)
+        axs[1].set_xlabel('Steps', fontsize=20)
+        axs[1].set_ylabel('Simple regret', fontsize=20)
 
-    plt.gcf().set_size_inches(15, 6)
+    plt.gcf().set_size_inches(25, 6)
 
     plt.show()
     plt.savefig(fig_name)
@@ -299,14 +301,14 @@ if __name__ == "__main__":
     show_medium_percentile_errorbar(dct_medium_perc_close, dct_medium_perc_mid, dct_medium_perc_far, title, fig_name=fig_name_medium)    
 
     # Simulation 5: Boston House price ==> California House price
-    in_dir_xgb = "./data/Xgb_5d_20Source"
-    out_dir_xgb = "./simulation_results/Xgb_5d_20Source"
+    in_dir_xgb = "./data/Xgb_5d_200Source"
+    out_dir_xgb = "./simulation_results/Xgb_5d_200Source"
 
-    file_lsts_xgb = collect_file(in_dir_xgb, topic="from_gp")
+    file_lsts_xgb = collect_file(in_dir_xgb, topic="from_rand")
 
     _, dct_medium_perc = run_statistics(file_lsts_xgb, out_dir_xgb)
 
-    fig_name_medium = "./images/XGB_5d_20Source_paper.pdf"
+    fig_name_medium = "./images/XGB_5d_200Source_paper.pdf"
 
     title = ["Simulation 1: from double modals to double modals", "(a)", "(b)"]
     show_medium_regret(dct_medium_perc, title, fig_name=fig_name_medium)    

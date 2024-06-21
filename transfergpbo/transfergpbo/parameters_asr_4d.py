@@ -15,7 +15,7 @@
 
 parameters = {
     # Mandatory parameter. Choose from: GPBO, MHGP, SHGP, BHGP, HGP, WSGP, MTGP, RGPE, STBO
-    "technique": "MTGP",   # 1. MTGP 2. WSGP 3. HGP 4. BHGP 5. SHGP 6. STBO
+    "technique": "MTGP",   # 1. MTGP 2. WSGP 3. HGP 4. BHGP 5. SHGP 6. STBO 7. MHGP 8. DiffGP
     "benchmark": {
         # Mandatory parameter. Choose from: forrester, alpine, branin, hartmann3d,
         # hartmann6d

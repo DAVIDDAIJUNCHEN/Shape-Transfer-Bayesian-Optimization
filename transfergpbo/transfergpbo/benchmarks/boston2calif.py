@@ -89,6 +89,6 @@ def xgb_5d(city: str = None) -> Tuple[Callable, ParameterSpace]:
 
 
 if __name__ == "__main__":
-    x = [[8.24127596005908,        0.1820006829315179  ,    4.945703487432738   ,    1.0   ,  0.0]]
+    x = [[8.24127596005908,        0.1820006829315179  ,    4.945703487432738   ,    1.0   ,  0.1]]
     
     print(xgb_5d_function(x, city="California"))

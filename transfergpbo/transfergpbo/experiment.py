@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright (c) 2021 Robert Bosch GmbH
 #
 # This program is free software: you can redistribute it and/or modify
@@ -12,6 +13,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 from typing import List, Tuple, Callable, Dict, Hashable
 from functools import partial

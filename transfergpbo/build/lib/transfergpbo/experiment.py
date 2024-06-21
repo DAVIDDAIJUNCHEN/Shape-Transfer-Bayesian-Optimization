@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright (c) 2021 Robert Bosch GmbH
 #
 # This program is free software: you can redistribute it and/or modify
@@ -12,6 +13,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 from typing import List, Tuple, Callable, Dict, Hashable
 from functools import partial
@@ -29,6 +31,7 @@ from transfergpbo.models import (
     SHGP,
     BHGP,
     STBO,
+    DiffGP,
 )
 from transfergpbo.bo.run_bo import run_bo
 from transfergpbo import models, benchmarks
@@ -113,7 +116,7 @@ def get_model(
 ) -> WrapperBase:
     """Create the model object."""
     model_class = getattr(models, model_name)
-    if model_class == MHGP or model_class == SHGP or model_class == BHGP or model_class == STBO:
+    if model_class == MHGP or model_class == SHGP or model_class == BHGP or model_class == STBO or model_class == DiffGP:
         model = model_class(space.dimensionality)
     else:
         kernel = RBF(space.dimensionality)

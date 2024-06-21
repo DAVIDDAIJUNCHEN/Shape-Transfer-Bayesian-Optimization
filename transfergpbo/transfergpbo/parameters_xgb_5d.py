@@ -15,16 +15,16 @@
 
 parameters = {
     # Mandatory parameter. Choose from: GPBO, MHGP, SHGP, BHGP, HGP, WSGP, MTGP, RGPE
-    "technique": "STBO",   # 1. MTGP 2. WSGP 3. HGP 4. BHGP 5. SHGP 6. STBO
+    "technique": "MTGP",   # 1. MTGP 2. WSGP 3. HGP 4. BHGP 5. SHGP 6. STBO 7. DiffGP 8. MHGP
     "benchmark": {
         # Mandatory parameter. Choose from: forrester, alpine, branin, hartmann3d,
         # hartmann6d
         "name": "xgb_5d",
         # Mandatory parameter of type List[int]. Has no effect for GPBO
-        "num_source_points": [25],
-        "num_repetitions": 1, 
-        "dir_source_points": "/mnt/users/daijun_chen/gits/github/Shape-Transfer-Bayesian-Optimization/data/Xgb_5d",
-        "file_source_points": "xgb_boston_task1_gp.tsv",
+        "num_source_points": [200],
+        "num_repetitions": 20, 
+        "dir_source_points": "/mnt/users/daijun_chen/gits/github/Shape-Transfer-Bayesian-Optimization/data/Xgb_5d_200Source",
+        "file_source_points": "xgb_boston_task1_rand.tsv",
         # Mandatory parameter. Defines the number of BO iterations.
         "num_steps": 20,
         # Optional parameter of type List[Dict[str, float]] or None. Defines the
@@ -34,8 +34,8 @@ parameters = {
         # Optional parameter of type Dict[str, float] or None. Defines the parameters
         # of the target function. Leave to None for random sampling according to default
         # probabilities for the respective function family.
-        "parameters_target":  {"city": "California"},
-        "dir_target_points": "/mnt/users/daijun_chen/gits/github/Shape-Transfer-Bayesian-Optimization/data/Xgb_5d",
+        "parameters_target": {"city": "California"},
+        "dir_target_points": "/mnt/users/daijun_chen/gits/github/Shape-Transfer-Bayesian-Optimization/data/Xgb_5d_200Source",
         "file_target_points": "xgb_california_task2"
     },
     # Mandatory parameter. Defines the magnitude of the i.i.d. measurement noise.

@@ -22,7 +22,7 @@ class STBO(Model):
     target mean function, but we differe much on the target variance.
     """
 
-    def __init__(self, n_features: int, within_model_normalie: bool = True):
+    def __init__(self, n_features: int, within_model_normalie: bool = False):
         """Initialize the method
         
         Args:
@@ -35,7 +35,7 @@ class STBO(Model):
         self.n_samples = 0
         self.n_features = n_features
 
-        self._within_model_normalize = within_model_normalie
+        self._within_model_normalize = False
 
         self.source_gps = []
 
@@ -43,7 +43,7 @@ class STBO(Model):
         self.target_gp = GPBO(
             RBF(self.n_features, ARD=True),
             noise_variance=0.0, # origin: 0.1
-            normalize=False,#self._within_model_normalize,
+            normalize=False, #self._within_model_normalize,
         )
 
     def _compute_residuals(self, data: TaskData) -> np.ndarray :
@@ -77,7 +77,7 @@ class STBO(Model):
     def meta_fit(
         self,
         source_datasets: Dict[Hashable, TaskData],
-        optimize: Union[bool, Sequence[bool]] = True,
+        optimize: Union[bool, Sequence[bool]] = False,
     ):
         """Train the source GPs on the given source data sets.
 
@@ -88,6 +88,7 @@ class STBO(Model):
             optimize: Switch to run hyperparameter optimization.
         """
         # get optimize_flat: [optimize_1, ..., optimize_N]
+        optimize = False
         assert isinstance(optimize, bool) or isinstance(optimize, list)
 
         if isinstance(optimize, list):
@@ -127,11 +128,11 @@ class STBO(Model):
         residuals = self._compute_residuals(data)
         kernel = RBF(self.n_features, ARD=True)
         new_gp = GPBO(
-            kernel, noise_variance=0.0, normalize=self._within_model_normalize
+            kernel, noise_variance=0.0, normalize=False
         ) # origin: noise_variance=0.1
         new_gp.fit(
             TaskData(X=data.X, Y=residuals),
-            optimize,
+            optimize
         )
 
         return new_gp  
@@ -142,16 +143,16 @@ class STBO(Model):
             raise ValueError(
                 "Error: source gps are not trained. Forgot to call `meta_fit`."
             )
-
+        optimize = False
         self._X = copy.deepcopy(data.X)
         self._y = copy.deepcopy(data.Y)
 
         self.n_samples, n_features = self._X.shape
         if self.n_features != n_features:
             raise ValueError("Number of features in model and input data mismatch.")
-
+        
         residuals = self._compute_residuals(data)
-
+            
         self.target_gp.fit(TaskData(data.X, residuals), optimize)        
 
     def predict(

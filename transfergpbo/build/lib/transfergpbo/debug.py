@@ -17,7 +17,7 @@ from typing import List, Tuple, Callable, Dict, Hashable
 from functools import partial
 import pandas as pd
 import numpy as np
-import os, copy
+import os, copy, time 
 
 from emukit.core import ParameterSpace
 import matplotlib.pyplot as plt
@@ -45,7 +45,7 @@ from emukit.bayesian_optimization.acquisitions import (
 #from transfergpbo.parameters import parameters as params
 
 ## Exp1: double2double 1D 
-from transfergpbo.parameters_d2d_1d import parameters as params
+#from transfergpbo.parameters_d2d_1d import parameters as params
 
 ## Exp2: double2triple 1D
 #from transfergpbo.parameters_d2t_1d import parameters as params
@@ -57,7 +57,8 @@ from transfergpbo.parameters_d2d_1d import parameters as params
 #from transfergpbo.parameters_exp_2d import parameters as params
 
 ## EXP5: XGB from Boston to California
-#from transfergpbo.parameters_xgb_5d import parameters as params
+from transfergpbo.parameters_xgb_5d import parameters as params
+
 
 def generate_functions(
     function_name: str,
@@ -162,7 +163,7 @@ def run_experiment(parameters: dict) -> List[float]:
     params_target = parameters["benchmark"].get("parameters_target", None)
 
     # start from existed f1 task file
-    num_repetitions = 20 # parameters["benchmark"]["num_repetitions"]
+    num_repetitions = parameters["benchmark"]["num_repetitions"]
     dir_source_points = parameters["benchmark"]["dir_source_points"]
     file_source_points = parameters["benchmark"]["file_source_points"]
 
@@ -198,10 +199,14 @@ def run_experiment(parameters: dict) -> List[float]:
             if i == 0: # only support 1 source Now
                 if "rand" in start_bo or "Rand" in start_bo:
                     # sample a random point for the first experiment
-                    print(f"Initial step: random sample X at 1st step")                  
+                    print(f"Initial step: random sample X at 1st step")   
+                    np.random.seed(int(time.time()))               
                     X_new = space.sample_uniform(1)
-                    Y_new = experiment_fun(X_new)
-                    X, Y = X_new, Y_new
+                    Y_new = []
+                    for x_pnt in X_new:
+                        y_pnt = experiment_fun([x_pnt])
+                        Y_new.append(y_pnt[0].tolist())
+                    X, Y = X_new, np.array(Y_new)
                 else:
                     print(f"Initial step: start from best source point")
                     X_new = np.array([best_X_source[0].tolist()])                   
@@ -212,8 +217,9 @@ def run_experiment(parameters: dict) -> List[float]:
                 with open(file_target, "w", encoding="utf-8") as fout:
                     header_x = '#'.join(["dim"+str(dim) for dim in range(len(X[0]))])
                     fout.writelines("response#" + header_x + '\n')
-                    line = str(-1*Y_new[0][0]) + '\t' + '\t'.join([str(x_dim) for x_dim in X_new[0]])
-                    fout.writelines(line+'\n')
+                    for i in range(len(Y_new)):
+                        line = str(-1*Y_new[i][0]) + '\t' + '\t'.join([str(x_dim) for x_dim in X_new[i]])
+                        fout.writelines(line+'\n')
             else:  # optimize the AF
                 #af = UCB(model, beta=np.float64(3.0))
                 af = EI(model)
@@ -231,27 +237,27 @@ def run_experiment(parameters: dict) -> List[float]:
             print(f"Next training point is: {X_new}, {Y_new}")
             model.fit(TaskData(X, Y), optimize=False)
         
-        # llustrate selecting process
-        x = [-5 + i/40 * 10 for i in range(80)]
-        af_ei = EI(model)
-        af_ucb = UCB(model, beta=np.float64(3.0))
+        # # llustrate selecting process in 1-D
+        # x = [-5 + i/40 * 10 for i in range(80)]
+        # af_ei = EI(model)
+        # af_ucb = UCB(model, beta=np.float64(3.0))
 
-        Ei_x = [af_ei.evaluate(np.array([[x_i]])) for x_i in x]
-        ucb_x = [af_ucb.evaluate(np.array([[x_i]])) for x_i in x]
-        stbo_x = [model.predict(np.array([[x_i]])) for x_i in x]
-        stbo_x_f0 = [model.source_gps[0].predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
-        stbo_x_g = [model.target_gp.predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
+        # Ei_x = [af_ei.evaluate(np.array([[x_i]])) for x_i in x]
+        # ucb_x = [af_ucb.evaluate(np.array([[x_i]])) for x_i in x]
+        # stbo_x = [model.predict(np.array([[x_i]])) for x_i in x]
+        # stbo_x_f0 = [model.source_gps[0].predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
+        # stbo_x_g = [model.target_gp.predict(TaskData(X=np.array([[x_i]]), Y=None)) for x_i in x]
+
+        # plt.plot(x, [-1*v[0][0][0] for v in stbo_x_f0], label="f_s")
+        # plt.plot(x, [-1*v[0][0][0] for v in stbo_x_g], label="diff_fs_ft")
+        # plt.plot(x, [-1*v[0][0][0] for v in stbo_x], label="f_t")
+        # plt.plot(x, [v[1][0][0] for v in stbo_x], label="var")
+        # plt.plot(x, [v[0][0] for v in Ei_x], label="EI")
+        # #plt.plot(x, [v[0][0] for v in ucb_x], label="UCB")        
+        # plt.show()
         
-        plt.plot(x, [-1*v[0][0][0] for v in stbo_x_f0], label="f_s")
-        plt.plot(x, [-1*v[0][0][0] for v in stbo_x_g], label="diff_fs_ft")
-        plt.plot(x, [-1*v[0][0][0] for v in stbo_x], label="f_t")
-        plt.plot(x, [v[1][0][0] for v in stbo_x], label="var")
-        plt.plot(x, [v[0][0] for v in Ei_x], label="EI")
-        plt.plot(x, [v[0][0] for v in ucb_x], label="UCB")        
-        plt.show()
-        
-        plt.legend()
-        plt.savefig('debug.png')
+        # plt.legend()
+        # plt.savefig('debug.png')
 
     return regret_total
 

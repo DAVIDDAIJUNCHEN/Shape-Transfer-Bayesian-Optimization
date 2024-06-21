@@ -11,6 +11,13 @@ transfergpbo/parameters_d2t_1d.py
 transfergpbo/parameters_exp_2d.py
 transfergpbo/parameters_t2t_2d.py
 transfergpbo/parameters_xgb_5d.py
+transfergpbo/parameters_xgb_5d_bhgp.py
+transfergpbo/parameters_xgb_5d_diffgp.py
+transfergpbo/parameters_xgb_5d_hgp.py
+transfergpbo/parameters_xgb_5d_mhgp.py
+transfergpbo/parameters_xgb_5d_shgp.py
+transfergpbo/parameters_xgb_5d_stbo.py
+transfergpbo/parameters_xgb_5d_wsgp.py
 transfergpbo/run_experiment_interactive.py
 transfergpbo.egg-info/PKG-INFO
 transfergpbo.egg-info/SOURCES.txt
