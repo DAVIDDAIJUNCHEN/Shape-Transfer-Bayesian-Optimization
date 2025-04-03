@@ -89,6 +89,20 @@ def exp_mu(input, mu, theta=1):
 
     return exp_mu
 
+def rkhs_norm(lst_coeff, lst_mu, theta=1):
+    """
+    compute the RKHS norm  
+    """
+    cross_part = 0
+    for ind_a, coeff_a in enumerate(lst_coeff):
+        for ind_b, coeff_b in enumerate(lst_coeff):
+            cross_part += coeff_a * coeff_b * exp_mu(lst_mu[ind_a], lst_mu[ind_b], theta=theta)
+    
+    norm = np.sqrt(cross_part)
+
+    return norm
+
+
 def diff_mu1_mu2(mu1, mu2, theta=1):
     "The RKHS norm of exp_mu(,mu1) - exp_mu(,mu2)"
     norm_rkhs = np.sqrt(2 - 2 * exp_mu(mu1, mu2, theta))
@@ -337,7 +351,6 @@ def show_mono2double_exp_mu(lambda2, mu1, mu2, theta1, theta2, x_low, x_high):
     fig.tight_layout()
     fig.savefig("./images/mono2double.png")       
 
-
 def show_two_exp_mu(lambda1, lambda2, mu1, mu2, theta1, theta2, x_low, x_high):
     "plot exp func to two exp func"
     x_draw = np.linspace(x_low, x_high, 100)
@@ -459,46 +472,142 @@ def show_3D_triple():
 
 
 if __name__ == "__main__":
-    print(six_hump([1, 0]))
-    # Exponential family
-    plot_rkhs_norm()
-    size = 4
-    show_exp(mu2=[0.1, 0.1], theta=0.5, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
+    # print(six_hump([1, 0]))
+    # # Exponential family
+    # plot_rkhs_norm()
+    # size = 4
+    # show_exp(mu2=[0.1, 0.1], theta=0.5, x_nums=200, y_nums=200, x_low=-size,x_up=size,y_low=-size, y_up=size)
     
-    print(diff_mu1_mu2(mu1=[0, 0], mu2=[0.707, 0.707], theta=1.414))
-    # Branin
-    show_branin()
+    # print(diff_mu1_mu2(mu1=[0, 0], mu2=[0.707, 0.707], theta=1.414))
+    # # Branin
+    # show_branin()
 
-    # Needle to Needle 
-    show_needle(0, 6, shift=0.0)
+    # # Needle to Needle 
+    # show_needle(0, 6, shift=0.0)
 
-    # Mono to Needle
-    show_mono2needle(0, 10, shift=-0.2)
+    # # Mono to Needle
+    # show_mono2needle(0, 10, shift=-0.2)
 
-    # Mono to double exponential 
-    lambda2 = 2
-    mu1 = [0]; mu2 = [9]
-    theta1 = 0.5; theta2 = 2
-    #show_mono2double_exp_mu(lambda2, mu1, mu2, theta1, theta2, x_low = -5, x_high=15)
+    # # Mono to double exponential 
+    # lambda2 = 2
+    # mu1 = [0]; mu2 = [9]
+    # theta1 = 0.5; theta2 = 2
+    # #show_mono2double_exp_mu(lambda2, mu1, mu2, theta1, theta2, x_low = -5, x_high=15)
 
-    # Double to double exponential
-    lambda1 = 1; lambda2 = 1.5
-    mu1 = [0]; mu2 = [5]
-    theta1 = 1; theta2 = 1
-    show_two_exp_mu(lambda1, lambda2, mu1, mu2, theta1, theta2, x_low=-5, x_high=15)
+    # # Double to double exponential
+    # lambda1 = 1; lambda2 = 1.5
+    # mu1 = [0]; mu2 = [5]
+    # theta1 = 1; theta2 = 1
+    # show_two_exp_mu(lambda1, lambda2, mu1, mu2, theta1, theta2, x_low=-5, x_high=15)
 
-    # Double to Triple exponential 
-    lambda1 = 1.7; lambda2 = 0; lambda3 = 0.8
-    mu1 = [0.5]; mu2 = [5]; mu3 = [9.5]
-    theta1 = 1; theta2 = 1; theta3 = 1
-    show_double2triple_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low=-5, x_high=15)    
+    # # Double to Triple exponential 
+    # lambda1 = 1.7; lambda2 = 0; lambda3 = 0.8
+    # mu1 = [0.5]; mu2 = [5]; mu3 = [9.5]
+    # theta1 = 1; theta2 = 1; theta3 = 1
+    # show_double2triple_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low=-5, x_high=15)    
 
-    # Triple to triple exponential 
-    lambda1 = 1; lambda2 = 1.5; lambda3 = 1.25
-    mu1 = [0]; mu2 = [5]; mu3 = [10]
-    theta1 = 1; theta2 = 1; theta3 = 1
-    #show_triple2double_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low=-5, x_high=15)
+    # # Triple to triple exponential 
+    # lambda1 = 1; lambda2 = 1.5; lambda3 = 1.25
+    # mu1 = [0]; mu2 = [5]; mu3 = [10]
+    # theta1 = 1; theta2 = 1; theta3 = 1
+    # #show_triple2double_exp_mu(lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3, x_low=-5, x_high=15)
 
     # 3D Triple Illustration
     #show_3D_triple()
+ 
+    # sim_fun 1
+    # mu = [0.5, 0.5]
+    lst_coeff_target = [1]
+    lst_mu_target = [[0.5, 0.5]]
+    norm_f_target = rkhs_norm(lst_coeff_target, lst_mu_target)
+
+    lst_coeff_diff = [1, -1]
+    lst_mu_diff = [[0.5, 0.5], [0,0]]
+    norm_f_diff = rkhs_norm(lst_coeff_diff, lst_mu_diff)    
+
+    print("|| fs - ft || = ", norm_f_diff)
+    print("|| ft || = ", norm_f_target)
+    print(" similarity: ", norm_f_diff / norm_f_target)
+
+    # mu = [0.8325, 0.8325]
+    lst_coeff_target = [1]
+    lst_mu_target = [[0.8325, 0.8325]]
+    norm_f_target = rkhs_norm(lst_coeff_target, lst_mu_target)
+
+    lst_coeff_diff = [1, -1]
+    lst_mu_diff = [[0.8325, 0.8325], [0, 0]]
+    norm_f_diff = rkhs_norm(lst_coeff_diff, lst_mu_diff)    
+
+    print("|| fs - ft || = ", norm_f_diff)
+    print("|| ft || = ", norm_f_target)
+    print(" similarity: ", norm_f_diff / norm_f_target)
+
+    # mu = [2, 2]
+    lst_coeff_target = [1]
+    lst_mu_target = [[2, 2]]
+    norm_f_target = rkhs_norm(lst_coeff_target, lst_mu_target)
+
+    lst_coeff_diff = [1, -1]
+    lst_mu_diff = [[2, 2], [0, 0]]
+    norm_f_diff = rkhs_norm(lst_coeff_diff, lst_mu_diff)    
+
+    print("|| fs - ft || = ", norm_f_diff)
+    print("|| ft || = ", norm_f_target)
+    print(" similarity: ", norm_f_diff / norm_f_target)    
+
+    # sim_fun 2
+    lst_coeff_target = [1.5, 1]
+    lst_mu_target = [[0], [5]]
+    norm_f_target = rkhs_norm(lst_coeff_target, lst_mu_target)
     
+    lst_coeff_diff = [1, 1.5, -1.5, -1]
+    lst_mu_diff = [[0], [5], [0], [5]]
+    norm_f_diff = rkhs_norm(lst_coeff_diff, lst_mu_diff)
+
+    print("|| fs - ft || = ", norm_f_diff)
+    print("|| ft || = ", norm_f_target)
+    print(" similarity: ", norm_f_diff / norm_f_target)
+
+    # sim_fun 3
+    lst_coeff_target = [1, 1.4, 1.9]
+    lst_mu_target = [[0], [5], [10]]
+    norm_f_target = rkhs_norm(lst_coeff_target, lst_mu_target)
+    
+    lst_coeff_diff = [1, 1.4, 1.9, -1.7, -0.8]
+    lst_mu_diff = [[0], [5], [10], [0.5], [9.5]]
+    norm_f_diff = rkhs_norm(lst_coeff_diff, lst_mu_diff)
+
+    print("|| fs - ft || = ", norm_f_diff)
+    print("|| ft || = ", norm_f_target)
+    print(" similarity: ", norm_f_diff / norm_f_target) 
+
+    # sim_fun 4
+    lst_coeff_target = [1, 1.4, 1.9]
+    lst_mu_target = [[0,0], [5,5], [10,10]]
+    norm_f_target = rkhs_norm(lst_coeff_target, lst_mu_target)
+    
+    lst_coeff_diff = [1, 1.4, 1.9, -1.7, -1.2, -0.8]
+    lst_mu_diff = [[0,0], [5,5], [10,10], [0.5,0.5], [5.5,5.5], [9.5,9.5]]
+    norm_f_diff = rkhs_norm(lst_coeff_diff, lst_mu_diff)
+
+    print("|| fs - ft || = ", norm_f_diff)
+    print("|| ft || = ", norm_f_target)   
+    print(" similarity: ", norm_f_diff / norm_f_target)   
+
+    # faimly of sim_fun 4
+    mu1 = 0; mu2 = 3; mu3 = 8
+
+    lst_coeff_target = [1.0, 1.4, 1.9]
+    lst_mu_target = [[mu1, mu1], [mu2, mu2], [mu3, mu3]]
+    norm_f_target = rkhs_norm(lst_coeff_target, lst_mu_target)
+
+    lst_coeff_target = [1, 1.4, 1.9, -1.7, -1.2, -0.8]
+    lst_mu_diff = [[mu1, mu1], [mu2, mu2], [mu3, mu3], [0,0], [5, 5], [10, 10]]
+    norm_f_diff = rkhs_norm(lst_coeff_diff, lst_mu_diff)
+ 
+    print("Faimly of simu_fun 4")
+    print("|| fs - ft || = ", norm_f_diff)
+    print("|| ft || = ", norm_f_target)   
+    print(" similarity: ", norm_f_diff / norm_f_target)   
+
+

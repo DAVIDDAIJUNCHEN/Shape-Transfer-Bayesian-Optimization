@@ -22,9 +22,9 @@ from emukit.core import ParameterSpace, ContinuousParameter
 
 def t2t_2d_function(
     x: np.ndarray, 
-    alpha1: float = 1.7, beta1: np.ndarray = np.array([[0.5, 0.5]]),
-    alpha2: float = 1.2, beta2: np.ndarray = np.array([[5.5, 5.5]]),
-    alpha3: float = 0.8, beta3: np.ndarray = np.array([[9.5, 9.5]]), 
+    alpha1: float = 1.0, beta1: np.ndarray = np.array([[0.0, 0.0]]),
+    alpha2: float = 1.4, beta2: np.ndarray = np.array([[5.0, 5.0]]),
+    alpha3: float = 1.9, beta3: np.ndarray = np.array([[10.0, 10.0]]), 
     output_noise: float = 0.0):
 
     beta1 = np.asarray(beta1)

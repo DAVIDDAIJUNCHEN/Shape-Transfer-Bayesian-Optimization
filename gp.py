@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm, qmc
 from smt.sampling_methods import LHS
 import itertools
-from utils import write_exp_result, dist, find_max_min_of_each_component, check_inBounds
+from utils import write_exp_result, dist, find_max_min_of_each_component, check_inBounds, rkhs_norm
 
 
 class ZeroGProcess:
@@ -162,6 +162,19 @@ class ZeroGProcess:
             return mean[0, 0]
         else:
             return self.r_out_bound*mean[0, 0]
+    
+    def compute_mean_rkhs(self):
+        "compute the mean value in RKHS format at current_point"
+        kernel_Cov_mat = self.compute_kernel_cov(self.X, self.theta)
+        inv_kernel_Cov = np.linalg.inv(kernel_Cov_mat)
+
+        response_vec = np.transpose(np.matrix(self.Y))
+
+        # introduce RKHS format
+        lst_coeff = np.transpose(np.matmul(inv_kernel_Cov, response_vec)).tolist()[0]
+        lst_mu = self.X 
+
+        return lst_coeff, lst_mu
 
     def compute_grad_mean(self, current_point):
         "compute the gradient of mean(x) at current_point"
@@ -375,41 +388,63 @@ class ZeroGProcess:
 
 if __name__ == "__main__":
     # Instance 
-    zeroGP = ZeroGProcess()
+    zeroGP_source = ZeroGProcess()
+    zeroGP_target = ZeroGProcess()
+
+    # Toy Example Data [same sample data point]
+    zeroGP_source.get_data_from_file("data/EXP_mu2_0.5_0.5_theta_1/1/simExp_points_task1_gp.tsv")
+    zeroGP_target.get_data_from_file("data/EXP_mu2_0.5_0.5_theta_1/1/simExp_points_task2_task1-gp.tsv")
+
+    lst_coeff_source, lst_mu_source = zeroGP_source.compute_mean_rkhs()
+    lst_coeff_target, lst_mu_target = zeroGP_target.compute_mean_rkhs()
+    
+    lst_coeff_diff = [c_t - c_s for c_t, c_s in zip(lst_coeff_target, lst_coeff_source)]
+    lst_mu_diff = lst_mu_target  # source / target share the same sample points
+
+    norm_f_source = rkhs_norm(lst_coeff_source, lst_mu_source)
+    norm_f_target = rkhs_norm(lst_coeff_target, lst_mu_target)
+    norm_f_diff = rkhs_norm(lst_coeff_diff, lst_mu_diff)
+    
+    sim_t_s = norm_f_diff / norm_f_target
+
+    print("Source RKHS norm: ", norm_f_source)
+    print("Target RKHS norm: ", norm_f_target)
+    print("Diff RKHS norm: ", norm_f_diff)
+
+    print("Similarity: ", sim_t_s)
+    
+    # Instance 
+    # zeroGP = ZeroGProcess()
 
     # ASR experiment data 
-    zeroGP.get_data_from_file("data/experiment_points_task1_gp.tsv")
-    #zeroGP.get_data_from_file("data/simDouble2Double_points_task1_sample.tsv")
+    # zeroGP.get_data_from_file("data/experiment_points_task1_gp_stbo.tsv")
 
-    print(zeroGP.X)
-    print(zeroGP.Y)
-    
     # sample from GP
-    lower_bound = [0, 0, 0, 0]
-    upper_bound = [5000, 5000, 5000, 5000]
+    # lower_bound = [0, 0, 0, 0]
+    # upper_bound = [5000, 5000, 5000, 5000]
     #lower_bound = [-5]
     #upper_bound = [10]
 
-    prior_pnt = [([1758, 2194, 4496, 3444], 1.2), ([2000, 2000, 500, 3000], 1.2), ([4000, 500, 4000, 500], 1.2)]
-    zeroGP.sample(num=5, mean=0.8, sigma=0.01, prior_points=prior_pnt, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False)
+    # prior_pnt = [([1758, 2194, 4496, 3444], 1.2), ([2000, 2000, 500, 3000], 1.2), ([4000, 500, 4000, 500], 1.2)]
+    # zeroGP.sample(num=5, mean=0.8, sigma=0.01, prior_points=prior_pnt, l_bounds=lower_bound, u_bounds=upper_bound, mean_fix=False)
 
-    # verify functions at x
-    x = [9, 10, 11, 12]
+    # # verify functions at x
+    # x = [9, 10, 11, 12]
 
-    print(zeroGP.compute_mean(x))
-    print(zeroGP.compute_var(x))
-    print(zeroGP.conf_interval(x))
+    # print(zeroGP.compute_mean(x))
+    # print(zeroGP.compute_var(x))
+    # print(zeroGP.conf_interval(x))
 
-    print(zeroGP.compute_grad_mean(x))
-    print(zeroGP.compute_grad_kernel_vec(zeroGP.X, x))
-    print(zeroGP.compute_grad_var(x))
+    # print(zeroGP.compute_grad_mean(x))
+    # print(zeroGP.compute_grad_kernel_vec(zeroGP.X, x))
+    # print(zeroGP.compute_grad_var(x))
 
-    # plot images
-    #zeroGP.plot(num_points=100, exp_ratio=0.0, confidence=0.90)
+    # # plot images
+    # #zeroGP.plot(num_points=100, exp_ratio=0.0, confidence=0.90)
 
-    # GP based on samples 
-    zeroGP_sample = ZeroGProcess(prior_mean=0.5, param_kernel=0.7) 
-    zeroGP_sample.get_data_from_file("data/sample_points_task1_gp.tsv")
+    # # GP based on samples 
+    # zeroGP_sample = ZeroGProcess(prior_mean=0.5, param_kernel=0.7) 
+    # zeroGP_sample.get_data_from_file("data/sample_points_task1_gp.tsv")
 
-    zeroGP_sample.plot(num_points=100, exp_ratio=0.0, confidence=0.90)
+    # zeroGP_sample.plot(num_points=100, exp_ratio=0.0, confidence=0.90)
 

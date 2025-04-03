@@ -15,7 +15,18 @@ def arg_parser():
 
     return parser
 
-def collect_file(root_dir, topic):
+def get_similarity(file_similar):
+    "get tao from the file_similar"
+
+    with open(file_similar, 'r') as file:  
+        lines = file.readlines()
+    
+    second_line = lines[1].strip() 
+    first_number = float(second_line.split('#')[0])
+
+    return first_number
+
+def collect_file(root_dir, topic, similar=None):
     "collect files of topic in subdirs of root_dir"
     root_dir = os.path.abspath(root_dir)
     list_lens_dir = []
@@ -40,12 +51,22 @@ def collect_file(root_dir, topic):
         file_lst_k = []
         for subdir in os.listdir(root_dir):
             full_subdir = os.path.join(root_dir, subdir)
-            file_name = os.path.join(full_subdir, file)
+            file_name = os.path.join(full_subdir, file) 
             
-            if os.path.isfile(file_name):
+            if similar != None:
+                file_similar_base = file.split('_')[0] + "_readme.tsv"
+                file_similar = os.path.join(full_subdir, file_similar_base)
+                tao = get_similarity(file_similar)
+
+            if (similar == None) and os.path.isfile(file_name):
                 file_lst_k.append(file_name)
-        
-        file_lsts.append(sorted(file_lst_k))      # [[file1_name1, file2_name1], [file1_name2, file2_name2]]
+                file_lsts.append(sorted(file_lst_k)) 
+            elif (similar == "ge1") and (tao >=1) and os.path.isfile(file_name):
+                file_lst_k.append(file_name)
+                file_lsts.append(sorted(file_lst_k)) 
+            elif (similar == "lt1") and (tao <1) and os.path.isfile(file_name):
+                file_lst_k.append(file_name)
+                file_lsts.append(sorted(file_lst_k)) 
 
     return file_lsts
 

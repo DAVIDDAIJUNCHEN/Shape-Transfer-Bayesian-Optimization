@@ -4,12 +4,16 @@ setup.py
 transfergpbo/__init__.py
 transfergpbo/debug.py
 transfergpbo/experiment.py
+transfergpbo/experiment_1D_sampling.py
+transfergpbo/experiment_2D_sampling.py
 transfergpbo/parameters.py
 transfergpbo/parameters_asr_4d.py
 transfergpbo/parameters_d2d_1d.py
 transfergpbo/parameters_d2t_1d.py
 transfergpbo/parameters_exp_2d.py
+transfergpbo/parameters_t2t_1d_sampling.py
 transfergpbo/parameters_t2t_2d.py
+transfergpbo/parameters_t2t_2d_sampling.py
 transfergpbo/parameters_xgb_5d.py
 transfergpbo/parameters_xgb_5d_bhgp.py
 transfergpbo/parameters_xgb_5d_diffgp.py
@@ -34,6 +38,7 @@ transfergpbo/benchmarks/d2t_1d.py
 transfergpbo/benchmarks/exp_2d.py
 transfergpbo/benchmarks/forrester.py
 transfergpbo/benchmarks/hartmann.py
+transfergpbo/benchmarks/t2t_1d.py
 transfergpbo/benchmarks/t2t_2d.py
 transfergpbo/bo/__init__.py
 transfergpbo/bo/run_bo.py

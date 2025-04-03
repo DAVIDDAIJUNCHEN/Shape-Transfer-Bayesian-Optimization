@@ -19,6 +19,7 @@ from .alpine import alpine
 from .forrester import forrester
 from .d2d_1d import d2d_1d
 from .d2t_1d import d2t_1d
+from .t2t_1d import t2t_1d
 from .t2t_2d import t2t_2d
 from .exp_2d import exp_2d
 from .boston2calif import xgb_5d

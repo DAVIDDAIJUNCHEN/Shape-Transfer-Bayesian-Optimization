@@ -74,7 +74,7 @@ def main_experiment(num_exp1, num_exp2, task2_from_gp=True, num_start_opt1=30, l
         mu1 = [float(ele) for ele in mu1.split("_")]
         mu2 = [float(ele) for ele in mu2.split("_")]
         
-        assert(len(mu1) == len(mu2))
+        assert(len(mu1) == len(mu2)) 
         dim = len(mu1)
     elif fun_type == "BR":
         dim = 2
