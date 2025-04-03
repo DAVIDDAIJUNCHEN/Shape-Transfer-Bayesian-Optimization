@@ -10,7 +10,7 @@ from gp import ZeroGProcess
 from simfun import two_exp_mu, tri_exp_mu
 
 
-def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, title, fig_name):
+def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, title, fig_name, STBO="scratch"):
     "plot lines with error bar based on medium and percentile"
 
     #fig = plt.figure(figsize=plt.figaspect(0.3))
@@ -34,8 +34,10 @@ def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, title, f
                 continue
             elif "gp_from" in item[0]:
                 continue
-            # elif "stbo" in item[0]:
-            #     continue
+            elif "STBO" in item[0] and STBO == "scratch":
+                continue
+            elif "stbo" in item[0] and STBO == "package":
+                continue
 
             x_draw = np.arange(len(item[1]))
             x_draw = [ele + 1 for ele in x_draw]
@@ -68,14 +70,14 @@ def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, title, f
                 label = "SHGP"
                 fmt = '--s'
                 color = "orange"
-            elif "task2_STBO_from_" in item[0] and "0_" in item[0]:
+            elif "task2_stbo_from_" in item[0] and "0_" in item[0] and STBO == "scratch":
                 label = "STBO"
                 fmt = '--s'
                 color = "red"             
-            elif "task2_stbo_from_" in item[0] and "0_" in item[0]:
+            elif "task2_STBO_from_" in item[0] and "0_" in item[0] and STBO == "package":
                 label = "STBO"
                 fmt = '--s'
-                color = "yellow"    
+                color = "red"      
             elif "task2_WSGP_from_" in item[0] and "0_" in item[0]:
                 label = "WSGP"
                 fmt = "-s"
@@ -99,129 +101,6 @@ def show_medium_percentile_errorbar(dct_medium_perc1, dct_medium_perc2, title, f
     return 0
 
 
-def show_medium_regret(dct_medium_perc, title, fig_name):
-    "plot lines with error bar based on medium and regret"
-
-    dct_medium_perc = [dct_medium_perc]
-
-    fig, axs = plt.subplots(1, 2, figsize=(10, 3))
-
-    # Left subplot: 10 - RMSE_CV
-    #axs[0].set_title(title[1])
-    max_cv_california = 0
-
-    for item in sorted(dct_medium_perc[0].items()):
-        x_draw = np.arange(len(item[1]))
-        x_draw = [ele + 1 for ele in x_draw]
-        y_medium = [ele[1] for ele in item[1]]
-        y_perc25 = [ele[1] - ele[0] for ele in item[1]]
-        y_perc75 = [ele[2] - ele[1] for ele in item[1]]
-        asymmetric_error = [y_perc25, y_perc75]
-        if max_cv_california < max(y_medium):
-            max_cv_california = max(y_medium)
-
-        if "task2_DiffGP_from_" in item[0]:
-            label = "Diff-GP"
-            fmt = '-.^'
-            color = "blue"
-        elif "task2_BHGP_from_" in item[0]:
-            label = "BHGP"
-            fmt = '-o'
-            color = "brown"
-        elif "task2_MHGP_from_" in item[0]:
-            label = "MHGP"
-            fmt = '--s'
-            color = "black"
-        elif "task2_HGP_from_" in item[0]:
-            label = "HGP"
-            fmt = '-.^'
-            color = "green"
-        elif "task2_MTGP_from_" in item[0]:
-            label = "MTGP"
-            fmt = '-o'
-            color = "grey"
-        elif "task2_SHGP_from_" in item[0]:
-            label = "SHGP"
-            fmt = '--s'
-            color = "orange"
-        elif "task2_STBO_from_" in item[0]:
-            label = "STBO"
-            fmt = '--s'
-            color = "red"
-        elif "task2_WSGP_from_" in item[0]:
-            label = "WSGP"
-            fmt = "-s"
-            color = "violet"
-
-        axs[0].errorbar(x_draw, y_medium, yerr=asymmetric_error, label=label, fmt=fmt, color=color)
-        axs[0].set_xticks(np.arange(0, 21, 5))
-        axs[0].tick_params(axis='x', labelsize=18)
-        axs[0].tick_params(axis='y', labelsize=18)
-        axs[0].set_xlabel('Steps', fontsize=20)
-        axs[0].set_ylabel('10 - RMSE', fontsize=20)
-
-    fig.legend(loc=9, bbox_to_anchor=(0.25, 0.5, 0.5, 0.5), ncol=8, fontsize='x-large')
-    # Right subplot: simple regret
-    #axs[1].set_title(title[2])
-
-    for item in sorted(dct_medium_perc[0].items()):
-        x_draw = np.arange(len(item[1]))
-        x_draw = [ele + 1 for ele in x_draw]
-        y_medium = [ele[1] for ele in item[1]]
-        y_perc25 = [ele[1] - ele[0] for ele in item[1]]
-        y_perc75 = [ele[2] - ele[1] for ele in item[1]]
-        asymmetric_error = [y_perc25, y_perc75]
-        regret_medium = [max_cv_california - cv for cv in y_medium]
-
-        if "task2_DiffGP_from_" in item[0]:
-            label = "Diff-GP"
-            fmt = '-.^'
-            color = "blue"
-        elif "task2_BHGP_from_" in item[0]:
-            label = "BHGP"
-            fmt = '-o'
-            color = "brown"
-        elif "task2_MHGP_from_" in item[0]:
-            label = "MHGP"
-            fmt = '--s'
-            color = "black"
-        elif "task2_HGP_from_" in item[0]:
-            label = "HGP"
-            fmt = '-.^'
-            color = "green"
-        elif "task2_MTGP_from_" in item[0]:
-            label = "MTGP"
-            fmt = '-o'
-            color = "grey"
-        elif "task2_SHGP_from_" in item[0]:
-            label = "SHGP"
-            fmt = '--s'
-            color = "orange"
-        elif "task2_STBO_from_" in item[0]:
-            label = "STBO"
-            fmt = '--s'
-            color = "red"
-        elif "task2_WSGP_from_" in item[0]:
-            label = "WSGP"
-            fmt = "-s"
-            color = "violet"
-
-        axs[1].errorbar(x_draw, regret_medium, yerr=asymmetric_error, label=label, fmt=fmt, color=color)
-        axs[1].set_xticks(np.arange(0, 21, 5))
-
-        axs[1].tick_params(axis='x', labelsize=18)
-        axs[1].tick_params(axis='y', labelsize=18)
-        axs[1].set_xlabel('Steps', fontsize=20)
-        axs[1].set_ylabel('Simple regret', fontsize=20)
-
-    plt.gcf().set_size_inches(25, 6)
-
-    plt.show()
-    plt.savefig(fig_name)
-    
-    return 0
-
-
 if __name__ == "__main__":
     # simulation 1: 1D sampling triple2triple
     in_dir_d2d = "./data/sampling_experiments/Dimension-1"
@@ -236,7 +115,7 @@ if __name__ == "__main__":
     fig_name_medium = "./images/sampling_simulation_1D_rand_paper.pdf"
 
     title = ["Simulation 1: target function sampled from triple modules", "Similar", "Dissimilar"]
-    show_medium_percentile_errorbar(dct_medium_perc_similar, dct_medium_perc_dissimilar, title, fig_name=fig_name_medium)
+    show_medium_percentile_errorbar(dct_medium_perc_similar, dct_medium_perc_dissimilar, title, fig_name=fig_name_medium, STBO="scratch")
 
     # simulation 2: 2D sampling triple2triple
     # part 1: 2D sampling from gp
@@ -252,7 +131,7 @@ if __name__ == "__main__":
     fig_name_medium = "./images/sampling_simulation_2D_gp_paper.pdf"
 
     title = ["Simulation 1: target function sampled from triple modules", "Similar", "Dissimilar"]
-    show_medium_percentile_errorbar(dct_medium_perc_similar, dct_medium_perc_dissimilar, title, fig_name=fig_name_medium)
+    show_medium_percentile_errorbar(dct_medium_perc_similar, dct_medium_perc_dissimilar, title, fig_name=fig_name_medium, STBO="package")
 
     # part 2: 2D sampling from random
     in_dir_d2d = "./data/sampling_experiments/Dimension-2"
@@ -267,4 +146,5 @@ if __name__ == "__main__":
     fig_name_medium = "./images/sampling_simulation_2D_rand_paper.pdf"
 
     title = ["Simulation 1: target function sampled from triple modules", "Similar", "Dissimilar"]
-    show_medium_percentile_errorbar(dct_medium_perc_similar, dct_medium_perc_dissimilar, title, fig_name=fig_name_medium)
+    show_medium_percentile_errorbar(dct_medium_perc_similar, dct_medium_perc_dissimilar, title, fig_name=fig_name_medium, STBO="scratch")
+
