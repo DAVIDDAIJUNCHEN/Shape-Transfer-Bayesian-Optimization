@@ -35,7 +35,7 @@ def arg_parser():
 
 def main_experiment(dim, num_exp1, num_exp2, num_targets=1, task2_from_gp=True, num_start_opt1=30, low_opt1=-5, high_opt1=5, lr1=0.5, num_steps_opt1=30, kessi_1=0.0,
                     file_1_gp="f1_gp.tsv", file_1_rand="f1_rand.tsv",
-                    num_start_opt2=50, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=100, kessi_2=0.0,
+                    num_start_opt2=50, low_opt2=-5, high_opt2=10, lr2=0.5, num_steps_opt2=30, kessi_2=0.0,
                     file_2_gp="f2_gp.tsv", file_2_gp_cold="f2_gp_cold.tsv", file_2_stbo="f2_stbo.tsv", file_2_bcbo="f2_bcbo.tsv"):
     """
     
@@ -71,7 +71,24 @@ def main_experiment(dim, num_exp1, num_exp2, num_targets=1, task2_from_gp=True, 
 
         bd_mu1_t = [-0.5, 0.5]
         bd_mu2_t = [4.5, 5.5]
-        bd_mu3_t = [9.5, 10.5]        
+        bd_mu3_t = [9.5, 10.5] 
+    elif dim == 10:
+        # define source function 
+        dim = 10
+        lambda1 = 1; lambda2 = 1.4; lambda3 = 1.9
+        mu1 = [0 for i in range(dim)]
+        mu2 = [5 for i in range(dim)]
+        mu3 = [10 for i in range(dim)]
+        theta1 = 1; theta2 = 1; theta3 = 1
+
+        # range of sampling target function 
+        bd_lambda1_t = [0, 2]
+        bd_lambda2_t = [0, 2]
+        bd_lambda3_t = [0, 2]
+
+        bd_mu1_t = [-0.5, 0.5]
+        bd_mu2_t = [4.5, 5.5]
+        bd_mu3_t = [9.5, 10.5]       
 
     # Step 1: experiment 1 (skip if start_from_exp1 is 0, run if start_from_exp1 is 1 or 2)
     if start_from_exp1:
@@ -102,16 +119,16 @@ def main_experiment(dim, num_exp1, num_exp2, num_targets=1, task2_from_gp=True, 
                 next_response_rand = tri_exp_mu(next_point_rand, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
     
                 # Method 2: ZeroGProcess model with EI
-                EI = ExpectedImprovement()
-                EI.get_data_from_file(file_1_gp)
+                #EI = ExpectedImprovement()
+                #EI.get_data_from_file(file_1_gp)
                 
-                start_points = [np.random.uniform(low_opt1, high_opt1, size=dim).tolist() for i in range(num_start_opt1)]
-                next_point_ei, _ = EI.find_best_NextPoint_ei(start_points, l_bounds=lower_bound, u_bounds=upper_bound,
-                                                            learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)
-                next_response_ei = tri_exp_mu(next_point_ei, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
+                #start_points = [np.random.uniform(low_opt1, high_opt1, size=dim).tolist() for i in range(num_start_opt1)]
+                #next_point_ei, _ = EI.find_best_NextPoint_ei(start_points, l_bounds=lower_bound, u_bounds=upper_bound,
+                #                                            learn_rate=lr1, num_step=num_steps_opt1, kessi=kessi_1)
+                #next_response_ei = tri_exp_mu(next_point_ei, lambda1, lambda2, lambda3, mu1, mu2, mu3, theta1, theta2, theta3)
                 
                 write_exp_result(file_1_rand, next_response_rand, next_point_rand)
-                write_exp_result(file_1_gp,  next_response_ei, next_point_ei)
+                #write_exp_result(file_1_gp,  next_response_ei, next_point_ei)
 
     # Skip experiment 2 if start_from_exp1 = 2
     if start_from_exp1 == 2:
@@ -201,33 +218,52 @@ def main_experiment(dim, num_exp1, num_exp2, num_targets=1, task2_from_gp=True, 
             write_exp_result(file_2_gp_cold_num_t, res2_point_cold, cold_start_point)  # start point from cold not exp1            
 
         if num_exp2 > 1:
+            lower_bound = [low_opt1 for i in range(dim)]
+            upper_bound = [high_opt1 for i in range(dim)]
+            
             for round_k in range(num_exp2-1):
+                # get random start points from file1_rand
+                with open(file_1_rand, "r", encoding="utf-8") as f1:
+                    lines = f1.readlines()
+                    start_points = []
+                    for line in lines[1:]:
+                        line = line.strip().split('\t')
+                        start_points.append([float(line[i]) for i in range(1, dim+1)])
+                        start_points.append([float(line[i]) + np.random.uniform(-0.5, 0.5) for i in range(1, dim+1)])
+                        start_points.append([float(line[i]) + np.random.uniform(-0.5, 0.5) for i in range(1, dim+1)])
+                        start_points.append([float(line[i]) + np.random.uniform(-0.5, 0.5) for i in range(1, dim+1)])
+                        start_points.append([float(line[i]) + np.random.uniform(-0.5, 0.5) for i in range(1, dim+1)])
+                        start_points.append([float(line[i]) + np.random.uniform(-0.5, 0.5) for i in range(1, dim+1)])
+                        start_points.append([float(line[i]) + np.random.uniform(-0.5, 0.5) for i in range(1, dim+1)])
+                        start_points.append([float(line[i]) + np.random.uniform(-0.5, 0.5) for i in range(1, dim+1)])
+                        
                 # all AC optimization start from the same random start points
-                start_points = [np.random.uniform(low_opt2, high_opt2, size=dim).tolist() for i in range(num_start_opt2)]
-    
+                #start_points_rand = [np.random.uniform(low_opt2, high_opt2, size=dim).tolist() for i in range(num_start_opt2)]
+                #start_points = start_points + start_points_rand
+
                 # Method 1: ZeroGProcess model based on EI
                 # 1.1 GP starting from task1 best point
-                EI = ExpectedImprovement()
-                EI.get_data_from_file(file_2_gp_num_t)
+                #EI = ExpectedImprovement()
+                #EI.get_data_from_file(file_2_gp_num_t)
 
-                next_point_gp, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr2, l_bounds=lower_bound, u_bounds=upper_bound,
-                                                                       num_step=num_steps_opt2, kessi=kessi_2)            
-                next_response_gp = tri_exp_mu(next_point_gp, lambda1_t, lambda2_t, lambda3_t,
-                                     mu1_t, mu2_t, mu3_t, theta1, theta2, theta3)
+                #next_point_gp, next_point_aux = EI.find_best_NextPoint_ei(start_points, learn_rate=lr2, l_bounds=lower_bound, u_bounds=upper_bound,
+                #                                                       num_step=num_steps_opt2, kessi=kessi_2)            
+                #next_response_gp = tri_exp_mu(next_point_gp, lambda1_t, lambda2_t, lambda3_t,
+                #                     mu1_t, mu2_t, mu3_t, theta1, theta2, theta3)
                 
-                write_exp_result(file_2_gp_num_t, next_response_gp, next_point_gp)
+                #write_exp_result(file_2_gp_num_t, next_response_gp, next_point_gp)
 
                 # 1.2 GP with cold start point
-                if not task2_from_gp:   # when other methods start from rand
-                    EI_cold = ExpectedImprovement()
-                    EI_cold.get_data_from_file(file_2_gp_cold_num_t)
+                #if not task2_from_gp:   # when other methods start from rand
+                #    EI_cold = ExpectedImprovement()
+                #    EI_cold.get_data_from_file(file_2_gp_cold_num_t)
     
-                    next_point_gp_cold, next_point_aux = EI_cold.find_best_NextPoint_ei(start_points, learn_rate=lr2, l_bounds=lower_bound, u_bounds=upper_bound,
-                                                                                        num_step=num_steps_opt2, kessi=kessi_2)
-                    next_response_gp_cold = tri_exp_mu(next_point_gp_cold, lambda1_t, lambda2_t, lambda3_t,
-                                         mu1_t, mu2_t, mu3_t, theta1, theta2, theta3)                                                       
+                #    next_point_gp_cold, next_point_aux = EI_cold.find_best_NextPoint_ei(start_points, learn_rate=lr2, l_bounds=lower_bound, u_bounds=upper_bound,
+                #                                                                        num_step=num_steps_opt2, kessi=kessi_2)
+                #    next_response_gp_cold = tri_exp_mu(next_point_gp_cold, lambda1_t, lambda2_t, lambda3_t,
+                #                         mu1_t, mu2_t, mu3_t, theta1, theta2, theta3)                                                       
 
-                    write_exp_result(file_2_gp_cold_num_t, next_response_gp_cold, next_point_gp_cold)
+                #    write_exp_result(file_2_gp_cold_num_t, next_response_gp_cold, next_point_gp_cold)
 
                 # Method 2: STBO method based on EI from our paper
                 STBO = ShapeTransferBO()
@@ -248,27 +284,28 @@ def main_experiment(dim, num_exp1, num_exp2, num_targets=1, task2_from_gp=True, 
                 write_exp_result(file_2_stbo_num_t, next_response_stbo, next_point_stbo)                
 
                 # Method 3: BCBO method based on EI from some other paper
-                BCBO = BiasCorrectedBO()
-                BCBO.get_data_from_file(file_2_bcbo_num_t)
+                #BCBO = BiasCorrectedBO()
+                #BCBO.get_data_from_file(file_2_bcbo_num_t)
     
-                if task2_from_gp:
-                    BCBO.build_task1_gp(file_1_gp)
-                else:
-                    BCBO.build_task1_gp(file_1_rand)
+                #if task2_from_gp:
+                #    BCBO.build_task1_gp(file_1_gp)
+                #else:
+                #    BCBO.build_task1_gp(file_1_rand)
     
-                BCBO.build_diff_gp()
+                #BCBO.build_diff_gp()
     
-                next_point_bcbo, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=lr2, l_bounds=lower_bound, u_bounds=upper_bound,
-                                                                         num_step=num_steps_opt2, kessi=kessi_2)                
-                next_response_bcbo = tri_exp_mu(next_point_bcbo, lambda1_t, lambda2_t, lambda3_t,
-                                         mu1_t, mu2_t, mu3_t, theta1, theta2, theta3)                  
+                #next_point_bcbo, next_point_aux = BCBO.find_best_NextPoint_ei(start_points, learn_rate=lr2, l_bounds=lower_bound, u_bounds=upper_bound,
+                #                                                         num_step=num_steps_opt2, kessi=kessi_2)                
+                #next_response_bcbo = tri_exp_mu(next_point_bcbo, lambda1_t, lambda2_t, lambda3_t,
+                #                         mu1_t, mu2_t, mu3_t, theta1, theta2, theta3)                  
 
-                write_exp_result(file_2_bcbo_num_t, next_response_bcbo, next_point_bcbo)
+                #write_exp_result(file_2_bcbo_num_t, next_response_bcbo, next_point_bcbo)
 
     return 0
 
 
 if __name__ == "__main__":
+
     # get parameters 
     parser = arg_parser()
 
@@ -295,6 +332,8 @@ if __name__ == "__main__":
         f2_gp_cold = os.path.join(out_dir, "simTriple2Triple1D_task2_gp" + "_from_cold" + ".tsv")
         f2_stbo = os.path.join(out_dir, "simTriple2Triple1D_task2_stbo" + "_from_" + task2_start_from + ".tsv")
         f2_bcbo = os.path.join(out_dir, "simTriple2Triple1D_task2_bcbo" + "_from_" + task2_start_from + ".tsv")
+        
+        num_start_opt1=30; num_steps_opt1=30
     elif dim == 2:
         # define files
         f1_gp = os.path.join(out_dir, "simTriple2Triple2D_task1_gp.tsv")
@@ -304,6 +343,20 @@ if __name__ == "__main__":
         f2_gp_cold = os.path.join(out_dir, "simTriple2Triple2D_task2_gp" + "_from_cold" + ".tsv")
         f2_stbo = os.path.join(out_dir, "simTriple2Triple2D_task2_stbo" + "_from_" + task2_start_from + ".tsv")
         f2_bcbo = os.path.join(out_dir, "simTriple2Triple2D_task2_bcbo" + "_from_" + task2_start_from + ".tsv")
+        
+        num_start_opt1=30; num_steps_opt1=30
+    elif dim == 10:
+        # define files
+        f1_gp = os.path.join(out_dir, "simTriple2Triple10D_task1_gp.tsv")
+        f1_rand = os.path.join(out_dir, "simTriple2Triple10D_task1_rand.tsv")
+    
+        f2_gp = os.path.join(out_dir, "simTriple2Triple10D_task2_gp" + "_from_" + task2_start_from + ".tsv")
+        f2_gp_cold = os.path.join(out_dir, "simTriple2Triple10D_task2_gp" + "_from_cold" + ".tsv")
+        f2_stbo = os.path.join(out_dir, "simTriple2Triple10D_task2_stbo" + "_from_" + task2_start_from + ".tsv")
+        f2_bcbo = os.path.join(out_dir, "simTriple2Triple10D_task2_bcbo" + "_from_" + task2_start_from + ".tsv")
+        
+        num_start_opt1=100; num_steps_opt1=100
+
 
     low_opt1 = -5
     high_opt1 = 15
@@ -311,7 +364,7 @@ if __name__ == "__main__":
     high_opt2 = 15
 
     # run experiments 
-    main_experiment(dim, T1, T2, num_targets, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, file_1_gp=f1_gp, file_1_rand=f1_rand, 
-            low_opt2=low_opt2, high_opt2=high_opt2, file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, 
-            file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
+    main_experiment(dim, T1, T2, num_targets, task2_from_gp, low_opt1=low_opt1, high_opt1=high_opt1, num_start_opt1=num_start_opt1,
+                    num_steps_opt1=num_steps_opt1 , file_1_gp=f1_gp, file_1_rand=f1_rand, low_opt2=low_opt2, high_opt2=high_opt2, 
+                    file_2_gp=f2_gp, file_2_gp_cold=f2_gp_cold, file_2_stbo=f2_stbo, file_2_bcbo=f2_bcbo)
 

@@ -107,7 +107,7 @@ if __name__ == "__main__":
     out_dir_d2d = "./simulation_results/sampling_experiments/Dimension-1"
 
     file_lsts_dissimilar = collect_file(in_dir_d2d, topic="from_rand", similar="ge1") # Tao >= 1
-    file_lsts_similar    = collect_file(in_dir_d2d, topic="from_rand", similar="lt1")     # Tao <  1
+    file_lsts_similar    = collect_file(in_dir_d2d, topic="from_rand", similar="lt1") # Tao <  1
 
     _, dct_medium_perc_dissimilar = run_statistics(file_lsts_dissimilar, out_dir_d2d)
     _, dct_medium_perc_similar = run_statistics(file_lsts_similar, out_dir_d2d)

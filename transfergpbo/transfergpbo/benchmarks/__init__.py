@@ -24,3 +24,4 @@ from .t2t_2d import t2t_2d
 from .exp_2d import exp_2d
 from .boston2calif import xgb_5d
 from .asr_4d import asr_4d
+from .t2t_10d import t2t_10d
